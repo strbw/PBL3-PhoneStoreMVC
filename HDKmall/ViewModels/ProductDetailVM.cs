@@ -17,5 +17,7 @@ namespace HDKmall.ViewModels
         public List<ReviewVM> Reviews { get; set; } = new List<ReviewVM>();
         public double AverageRating { get; set; }
         public int TotalReviews { get; set; }
+        public List<ProductImageVM> Images { get; set; } = new List<ProductImageVM>();
+        public List<ProductSpecVM> Specifications { get; set; } = new List<ProductSpecVM>();
     }
 }

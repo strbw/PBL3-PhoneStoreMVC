@@ -1,11 +1,11 @@
 @model HDKmall.ViewModels.ProductVM
 
 @{
-    ViewData["Title"] = "Thêm Sản Phẩm Mới";
+    ViewData["Title"] = "Sửa Sản Phẩm";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2 class="mb-4">Thêm Sản Phẩm</h2>
+<h2 class="mb-4">Sửa Sản Phẩm #@Model.Id</h2>
 
 @if (!ViewData.ModelState.IsValid)
 {
@@ -19,7 +19,7 @@
     </div>
 }
 
-<form asp-action="Create" method="post" enctype="multipart/form-data">
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
 
     <!-- Basic Info -->
@@ -29,7 +29,7 @@
             <div class="row">
                 <div class="col-md-8 mb-3">
                     <label asp-for="Name" class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
-                    <input asp-for="Name" class="form-control" placeholder="Ví dụ: iPhone 16 Pro Max" />
+                    <input asp-for="Name" class="form-control" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
                 <div class="col-md-4 mb-3">
@@ -54,7 +54,7 @@
             </div>
             <div class="mb-3">
                 <label asp-for="Description" class="form-label">Mô tả sản phẩm</label>
-                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả chi tiết về sản phẩm..."></textarea>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
             </div>
         </div>
     </div>
@@ -63,10 +63,22 @@
     <div class="card mb-4">
         <div class="card-header fw-bold">Hình ảnh sản phẩm</div>
         <div class="card-body">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="mb-3">
+                    <label class="form-label">Ảnh hiện tại</label><br />
+                    <img src="@Model.ImageUrl" alt="@Model.Name" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:2px solid #d70018;" />
+                </div>
+            }
             <div class="mb-3">
-                <label class="form-label">Upload nhiều ảnh (ảnh đầu tiên sẽ là ảnh chính)</label>
+                <label class="form-label">Thêm ảnh mới (các ảnh sẽ được thêm vào danh sách)</label>
                 <input type="file" name="Images" multiple accept="image/*" class="form-control" id="imageInput" />
-                <small class="text-muted">Chọn nhiều file cùng lúc. Hỗ trợ JPG, PNG, WEBP.</small>
+                <small class="text-muted">Chọn nhiều file cùng lúc. Ảnh mới sẽ được thêm vào danh sách hiện có.</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Thay thế ảnh chính</label>
+                <input type="file" asp-for="Image" accept="image/*" class="form-control" />
+                <small class="text-muted">Chọn file này để thay thế ảnh chính hiện tại.</small>
             </div>
             <div id="imagePreview" class="d-flex flex-wrap gap-2 mt-2"></div>
         </div>
@@ -80,9 +92,39 @@
         </div>
         <div class="card-body">
             <div id="variantsContainer">
-                <!-- Variants will be added dynamically -->
+                @if (Model.Variants != null)
+                {
+                    for (int i = 0; i < Model.Variants.Count; i++)
+                    {
+                        <div class="row g-2 mb-2 align-items-end variant-row" id="variant_existing_@i">
+                            <div class="col-md-3">
+                                <label class="form-label small">Màu sắc</label>
+                                <input type="text" name="Variants[@i].Color" value="@Model.Variants[i].Color" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Dung lượng</label>
+                                <input type="text" name="Variants[@i].Capacity" value="@Model.Variants[i].Capacity" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Giá (₫)</label>
+                                <input type="number" name="Variants[@i].Price" value="@Model.Variants[i].Price" class="form-control form-control-sm" min="0" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Tồn kho</label>
+                                <input type="number" name="Variants[@i].Stock" value="@Model.Variants[i].Stock" class="form-control form-control-sm" min="0" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">URL ảnh</label>
+                                <input type="text" name="Variants[@i].ImageUrl" value="@Model.Variants[i].ImageUrl" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeRow('variant_existing_@i')">✕</button>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
-            <p class="text-muted small" id="variantHint">Chưa có phiên bản nào. Nhấn "Thêm phiên bản" để thêm.</p>
+            <p class="text-muted small" id="variantHint" style="@(Model.Variants?.Count > 0 ? "display:none" : "")">Chưa có phiên bản nào. Nhấn "Thêm phiên bản" để thêm.</p>
         </div>
     </div>
 
@@ -94,14 +136,32 @@
         </div>
         <div class="card-body">
             <div id="specsContainer">
-                <!-- Specs will be added dynamically -->
+                @if (Model.Specifications != null)
+                {
+                    for (int i = 0; i < Model.Specifications.Count; i++)
+                    {
+                        <div class="row g-2 mb-2 align-items-end spec-row" id="spec_existing_@i">
+                            <div class="col-md-4">
+                                <label class="form-label small">Tên thông số</label>
+                                <input type="text" name="Specifications[@i].SpecName" value="@Model.Specifications[i].SpecName" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-7">
+                                <label class="form-label small">Giá trị</label>
+                                <input type="text" name="Specifications[@i].SpecValue" value="@Model.Specifications[i].SpecValue" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeRow('spec_existing_@i')">✕</button>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
-            <p class="text-muted small" id="specHint">Chưa có thông số nào. Nhấn "Thêm thông số" để thêm.</p>
+            <p class="text-muted small" id="specHint" style="@(Model.Specifications?.Count > 0 ? "display:none" : "")">Chưa có thông số nào. Nhấn "Thêm thông số" để thêm.</p>
         </div>
     </div>
 
     <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">💾 Lưu Sản Phẩm</button>
+        <button type="submit" class="btn btn-primary">💾 Lưu Thay Đổi</button>
         <a asp-action="Index" class="btn btn-secondary">Hủy</a>
     </div>
 </form>
@@ -109,10 +169,11 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        let variantIndex = 0;
-        let specIndex = 0;
+        // Keep track of the highest variant/spec index from server-rendered rows
+        let variantIndex = @(Model.Variants?.Count ?? 0);
+        let specIndex = @(Model.Specifications?.Count ?? 0);
 
-        // Image preview
+        // Image preview for new uploads
         document.getElementById('imageInput').addEventListener('change', function () {
             const preview = document.getElementById('imagePreview');
             preview.innerHTML = '';
@@ -120,9 +181,7 @@
                 const reader = new FileReader();
                 reader.onload = e => {
                     const div = document.createElement('div');
-                    div.style.position = 'relative';
-                    div.innerHTML = `<img src="${e.target.result}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:2px solid ${i === 0 ? '#d70018' : '#ddd'}">
-                        ${i === 0 ? '<span style="position:absolute;top:2px;left:2px;background:#d70018;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;">Chính</span>' : ''}`;
+                    div.innerHTML = `<img src="${e.target.result}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:2px solid #ddd">`;
                     preview.appendChild(div);
                 };
                 reader.readAsDataURL(file);
@@ -136,22 +195,22 @@
             <div class="row g-2 mb-2 align-items-end variant-row" id="variant_${idx}">
                 <div class="col-md-3">
                     <label class="form-label small">Màu sắc</label>
-                    <input type="text" name="Variants[${idx}].Color" class="form-control form-control-sm" placeholder="Ví dụ: Đen, Trắng, Xanh..." />
+                    <input type="text" name="Variants[${idx}].Color" class="form-control form-control-sm" placeholder="Ví dụ: Đen, Trắng..." />
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small">Dung lượng</label>
-                    <input type="text" name="Variants[${idx}].Capacity" class="form-control form-control-sm" placeholder="Ví dụ: 256GB" />
+                    <input type="text" name="Variants[${idx}].Capacity" class="form-control form-control-sm" placeholder="256GB" />
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small">Giá (₫)</label>
-                    <input type="number" name="Variants[${idx}].Price" class="form-control form-control-sm" min="0" placeholder="0" />
+                    <input type="number" name="Variants[${idx}].Price" class="form-control form-control-sm" min="0" />
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small">Tồn kho</label>
                     <input type="number" name="Variants[${idx}].Stock" class="form-control form-control-sm" min="0" value="0" />
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small">URL ảnh (tùy chọn)</label>
+                    <label class="form-label small">URL ảnh</label>
                     <input type="text" name="Variants[${idx}].ImageUrl" class="form-control form-control-sm" placeholder="https://..." />
                 </div>
                 <div class="col-md-1">
@@ -172,7 +231,7 @@
                 </div>
                 <div class="col-md-7">
                     <label class="form-label small">Giá trị</label>
-                    <input type="text" name="Specifications[${idx}].SpecValue" class="form-control form-control-sm" placeholder="Ví dụ: 6.3 inch Super Retina" />
+                    <input type="text" name="Specifications[${idx}].SpecValue" class="form-control form-control-sm" placeholder="Ví dụ: 6.3 inch" />
                 </div>
                 <div class="col-md-1">
                     <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeRow('spec_${idx}')">✕</button>

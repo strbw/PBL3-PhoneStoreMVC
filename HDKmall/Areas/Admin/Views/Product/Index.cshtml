@@ -2,13 +2,28 @@
 
 @{
     ViewData["Title"] = "Danh Sách Sản Phẩm";
-    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; // hoặc _Layout tuỳ của bạn
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Danh Sách Sản Phẩm</h2>
-    <a asp-action="Create" class="btn btn-primary">Thêm Sản Phẩm Mới</a>
+    <a asp-action="Create" class="btn btn-primary">+ Thêm Sản Phẩm Mới</a>
 </div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -18,6 +33,7 @@
             <th>Tên Sản Phẩm</th>
             <th>Giá</th>
             <th>Danh Mục</th>
+            <th>Thương Hiệu</th>
             <th>Thao Tác</th>
         </tr>
     </thead>
@@ -29,16 +45,17 @@
                 <tr>
                     <td>@item.Id</td>
                     <td>
-                        <!-- Hiển thị ảnh kích thước nhỏ -->
-                        <img src="@item.ImageUrl" alt="@item.Name" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
+                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/img/Product_Default.jpg" : item.ImageUrl)"
+                             alt="@item.Name"
+                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;" />
                     </td>
                     <td>@item.Name</td>
-                    <td>@item.Price.ToString("N0") VNĐ</td>
-                    <td>@item.CategoryId</td>
+                    <td>@item.Price.ToString("N0") ₫</td>
+                    <td>@(item.Category?.Name ?? item.CategoryId.ToString())</td>
+                    <td>@(item.Brand?.Name ?? "-")</td>
                     <td>
-                        <!-- Nút Edit và Delete chờ bạn phát triển tiếp -->
-                        <a href="#" class="btn btn-sm btn-warning">Sửa</a>
-                        <a href="#" class="btn btn-sm btn-danger">Xóa</a>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">✏️ Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">🗑️ Xóa</a>
                     </td>
                 </tr>
             }
@@ -46,7 +63,7 @@
         else
         {
             <tr>
-                <td colspan="6" class="text-center">Chưa có sản phẩm nào.</td>
+                <td colspan="7" class="text-center">Chưa có sản phẩm nào.</td>
             </tr>
         }
     </tbody>

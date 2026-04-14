@@ -16,10 +16,21 @@ namespace HDKmall.ViewModels
 
         public int CategoryId { get; set; }
 
-        // Dùng để upload file từ form
+        public int? BrandId { get; set; }
+
+        // Single main image (kept for backward compatibility)
         public IFormFile? Image { get; set; }
-        
-        // Thuộc tính để hiển thị URL nếu cần
+
+        // Multiple images upload
+        public List<IFormFile>? Images { get; set; }
+
+        // Existing image URL (for display on edit)
         public string? ImageUrl { get; set; }
+
+        // Variants
+        public List<ProductVariantVM> Variants { get; set; } = new List<ProductVariantVM>();
+
+        // Specifications
+        public List<ProductSpecVM> Specifications { get; set; } = new List<ProductSpecVM>();
     }
 }
