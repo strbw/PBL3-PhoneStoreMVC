@@ -2,265 +2,375 @@
 
 @{
     ViewData["Title"] = Model.Name;
+    var colors = Model.Variants.Select(v => v.Color).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
+    var capacities = Model.Variants.Select(v => v.Capacity).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
+    var totalStock = Model.Variants.Any() ? Model.Variants.Sum(v => v.Stock) : 1;
 }
 
-<div class="container py-5">
-    <div class="row">
-        <!-- Images -->
-        <div class="col-md-5">
-            <img src="@Model.ImageUrl" class="img-fluid rounded mb-3" alt="@Model.Name" style="max-height: 500px; object-fit: cover;">
+<style>
+    /* ---- Product Detail ---- */
+    .pd-section { background: #f4f6f8; padding: 24px 0 40px; }
+    .pd-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,.08); }
+
+    /* Image */
+    .pd-img-main { width: 100%; aspect-ratio: 1/1; object-fit: contain; border-radius: 10px; background: #fff; padding: 16px; }
+
+    /* Variant buttons */
+    .variant-btn {
+        display: inline-block; padding: 7px 16px; border: 1.5px solid #ddd;
+        border-radius: 6px; font-size: 14px; cursor: pointer; background: #fff;
+        color: #333; transition: all .15s; user-select: none; margin: 4px 4px 4px 0;
+    }
+    .variant-btn:hover { border-color: #d70018; color: #d70018; }
+    .variant-btn.active { border-color: #d70018; color: #d70018; background: #fff5f5; font-weight: 600; }
+    .variant-btn.out-stock { opacity: .5; cursor: not-allowed; text-decoration: line-through; }
+
+    /* Service badges */
+    .service-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; padding: 6px 0; }
+    .service-item .svc-icon { font-size: 18px; flex-shrink: 0; }
+
+    /* Qty */
+    .qty-box { display: inline-flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .qty-box button { width: 36px; height: 36px; background: #f5f5f5; border: none; font-size: 20px; cursor: pointer; color: #555; }
+    .qty-box button:hover { background: #e8e8e8; }
+    .qty-box input { width: 44px; height: 36px; text-align: center; border: none; border-left: 1.5px solid #ddd; border-right: 1.5px solid #ddd; font-size: 15px; font-weight: 600; outline: none; }
+
+    /* Buy button */
+    .btn-add-cart { background: #d70018; color: #fff; border: none; border-radius: 8px; padding: 14px 0; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; transition: background .15s; }
+    .btn-add-cart:hover { background: #b5000f; }
+    .btn-add-cart:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* Review stars */
+    .star-display { color: #ffc107; font-size: 15px; }
+    .review-card { border: 1px solid #f0f0f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+
+    /* Rating selector */
+    .rating-stars label { font-size: 28px; color: #ddd; cursor: pointer; transition: color .1s; }
+    .rating-stars input:checked ~ label,
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label { color: #ffc107; }
+    .rating-stars { display: flex; flex-direction: row-reverse; width: fit-content; }
+    .rating-stars input { display: none; }
+</style>
+
+<div class="pd-section">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav class="mb-3" style="font-size:14px;">
+        <a href="/" class="text-decoration-none text-muted">Trang chủ</a>
+        <span class="mx-1 text-muted">›</span>
+        <a href="/Product" class="text-decoration-none text-muted">Sản phẩm</a>
+        @if (Model.Category != null)
+        {
+            <span class="mx-1 text-muted">›</span>
+            <a href="/Product?categoryId=@Model.CategoryId" class="text-decoration-none text-muted">@Model.Category.Name</a>
+        }
+        <span class="mx-1 text-muted">›</span>
+        <span class="text-dark fw-medium">@Model.Name</span>
+    </nav>
+
+    <div class="row gx-4">
+        <!-- Left: Image -->
+        <div class="col-md-5 mb-4 mb-md-0">
+            <div class="pd-card p-3 text-center">
+                <img id="mainImage"
+                     src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/img/Product_Default.jpg" : Model.ImageUrl)"
+                     alt="@Model.Name"
+                     class="pd-img-main" />
+            </div>
         </div>
 
-        <!-- Product Info -->
+        <!-- Right: Info -->
         <div class="col-md-7">
-            <h1 class="mb-3">@Model.Name</h1>
+            <div class="pd-card p-4">
+                <!-- Brand tag -->
+                @if (Model.Brand != null)
+                {
+                    <a href="/Product?brandId=@Model.BrandId" class="text-decoration-none">
+                        <span class="badge bg-light text-secondary border mb-2" style="font-size:12px;">@Model.Brand.Name</span>
+                    </a>
+                }
 
-            <!-- Rating -->
-            <div class="mb-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <span class="badge bg-warning">
-                            ⭐ @Model.AverageRating.ToString("F1") 
-                        </span>
-                        <span class="text-muted">(@Model.TotalReviews đánh giá)</span>
-                    </div>
+                <!-- Name -->
+                <h1 class="fs-4 fw-bold text-dark mb-2" style="line-height:1.3;">@Model.Name</h1>
+
+                <!-- Rating row -->
+                <div class="d-flex align-items-center gap-2 mb-3" style="font-size:14px;">
+                    <span class="star-display">
+                        @for (int s = 1; s <= 5; s++)
+                        {
+                            <span>@(s <= Math.Round(Model.AverageRating) ? "★" : "☆")</span>
+                        }
+                    </span>
+                    <span class="fw-bold">@Model.AverageRating.ToString("F1")</span>
+                    <span class="text-muted">(@Model.TotalReviews đánh giá)</span>
+                    @if (totalStock > 0)
+                    {
+                        <span class="ms-auto badge bg-success-subtle text-success border border-success" style="font-size:12px;">Còn hàng</span>
+                    }
+                    else
+                    {
+                        <span class="ms-auto badge bg-danger-subtle text-danger border border-danger" style="font-size:12px;">Hết hàng</span>
+                    }
                 </div>
-            </div>
 
-            <!-- Category & Brand -->
-            <p class="text-muted">
-                <strong>Danh Mục:</strong> @Model.Category?.Name<br>
-                <strong>Thương Hiệu:</strong> @Model.Brand?.Name
-            </p>
+                <!-- Price -->
+                <div class="mb-3" style="background:#fff5f5; border-radius:8px; padding:14px 16px;">
+                    <span class="text-danger fw-bolder" style="font-size:2rem; line-height:1;">@Model.BasePrice.ToString("N0")₫</span>
+                </div>
 
-            <hr>
-
-            <!-- Price -->
-            <h3 class="text-danger mb-3">₫@Model.BasePrice.ToString("N0")</h3>
-
-            <!-- Description -->
-            <p>@Model.Description</p>
-
-            <!-- Variants -->
-            @if (Model.Variants.Any())
-            {
-                <div class="mb-4">
-                    <h5>Chọn Phiên Bản</h5>
-
+                <!-- Color variants -->
+                @if (colors.Any())
+                {
                     <div class="mb-3">
-                        <label class="form-label">Màu Sắc:</label>
-                        <select class="form-select" id="colorSelect">
-                            <option value="">-- Chọn Màu --</option>
-                            @foreach (var variant in Model.Variants.DistinctBy(v => v.Color))
+                        <div class="fw-semibold mb-2" style="font-size:14px;">Màu sắc:</div>
+                        <div id="colorOptions">
+                            @foreach (var color in colors)
                             {
-                                <option value="@variant.Id">@variant.Color</option>
+                                var firstVariant = Model.Variants.First(v => v.Color == color);
+                                <button type="button"
+                                        class="variant-btn @(firstVariant.InStock ? "" : "out-stock")"
+                                        data-color="@color"
+                                        onclick="selectColor(this)">
+                                    @color
+                                </button>
                             }
-                        </select>
+                        </div>
                     </div>
+                }
 
+                <!-- Capacity variants -->
+                @if (capacities.Any())
+                {
                     <div class="mb-3">
-                        <label class="form-label">Dung Lượng:</label>
-                        <select class="form-select" id="capacitySelect">
-                            <option value="">-- Chọn Dung Lượng --</option>
-                            @foreach (var variant in Model.Variants.DistinctBy(v => v.Capacity))
+                        <div class="fw-semibold mb-2" style="font-size:14px;">Dung lượng:</div>
+                        <div id="capacityOptions">
+                            @foreach (var cap in capacities)
                             {
-                                <option value="@variant.Id">@variant.Capacity</option>
+                                var firstVariant = Model.Variants.First(v => v.Capacity == cap);
+                                <button type="button"
+                                        class="variant-btn @(firstVariant.InStock ? "" : "out-stock")"
+                                        data-capacity="@cap"
+                                        onclick="selectCapacity(this)">
+                                    @cap
+                                </button>
                             }
-                        </select>
+                        </div>
+                    </div>
+                }
+
+                <!-- Quantity + Add to Cart -->
+                <form method="post" asp-controller="Cart" asp-action="Add" class="mb-4">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" name="variantId" id="selectedVariantId" value="0" />
+                    <input type="hidden" name="quantity" id="selectedQuantity" value="1" />
+
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="fw-semibold" style="font-size:14px; white-space:nowrap;">Số lượng:</div>
+                        <div class="qty-box">
+                            <button type="button" onclick="changeQty(-1)">−</button>
+                            <input type="text" id="qtyDisplay" value="1" readonly />
+                            <button type="button" onclick="changeQty(1)">+</button>
+                        </div>
                     </div>
 
-                    <div class="alert alert-info" id="variantInfo">
-                        Vui lòng chọn phiên bản
-                    </div>
-                </div>
-            }
-
-            <div class="mb-4">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Số Lượng:</label>
-                    <div class="input-group" style="max-width: 150px;">
-                        <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('quantity').value = Math.max(1, parseInt(document.getElementById('quantity').value) - 1); document.getElementById('selectedQuantity').value = document.getElementById('quantity').value;">-</button>
-                        <input type="number" class="form-control text-center bg-white" id="quantity" value="1" min="1" readonly>
-                        <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('quantity').value = parseInt(document.getElementById('quantity').value) + 1; document.getElementById('selectedQuantity').value = document.getElementById('quantity').value;">+</button>
-                    </div>
-                </div>
-
-                <form method="post" asp-controller="Cart" asp-action="Add">
-                    <input type="hidden" name="productId" value="@Model.Id">
-                    <input type="hidden" name="variantId" id="selectedVariantId" value="0">
-                    <input type="hidden" name="quantity" id="selectedQuantity" value="1">
-
-                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3 fs-5 rounded-pill shadow-sm">
-                        <i class="bi bi-cart-plus me-2"></i> THÊM VÀO GIỎ HÀNG
+                    <button type="submit" class="btn-add-cart" @(totalStock <= 0 ? "disabled" : "")>
+                        🛒 THÊM VÀO GIỎ HÀNG
                     </button>
                 </form>
-            </div>
 
-            <hr>
-
-            <!-- Share -->
-            <div>
-                <strong>Chia sẻ:</strong>
-                <a href="#" class="btn btn-sm btn-outline-primary">Facebook</a>
-                <a href="#" class="btn btn-sm btn-outline-info">Twitter</a>
+                <!-- Service badges -->
+                <div class="border-top pt-3">
+                    <div class="service-item"><span class="svc-icon">🛡️</span> Bảo hành chính hãng 12 tháng</div>
+                    <div class="service-item"><span class="svc-icon">🔄</span> Đổi trả miễn phí trong 30 ngày</div>
+                    <div class="service-item"><span class="svc-icon">🚚</span> Giao hàng toàn quốc, miễn phí từ 500K</div>
+                    <div class="service-item"><span class="svc-icon">✅</span> Sản phẩm chính hãng 100%</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <hr class="my-5">
+    <!-- Description + Reviews row -->
+    <div class="row gx-4 mt-4">
+        <div class="col-lg-8">
+            <!-- Description tab card -->
+            <div class="pd-card p-4 mb-4">
+                <h5 class="fw-bold mb-3 section-title">Mô tả sản phẩm</h5>
+                <div style="font-size:15px; color:#444; line-height:1.7;">
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        @Html.Raw(Model.Description.Replace("\n", "<br/>"))
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có mô tả sản phẩm.</p>
+                    }
+                </div>
+            </div>
 
-    <!-- Reviews Section -->
-    <div class="row">
-        <div class="col-md-8">
-            <h3 class="mb-4">📝 Đánh Giá &amp; Bình Luận</h3>
+            <!-- Reviews -->
+            <div class="pd-card p-4">
+                <h5 class="fw-bold mb-4 section-title">Đánh giá từ khách hàng</h5>
 
-            @if (User.Identity.IsAuthenticated)
-            {
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Viết Đánh Giá</h5>
+                <!-- Rating summary -->
+                <div class="d-flex align-items-center gap-4 mb-4 p-3" style="background:#fafafa; border-radius:10px;">
+                    <div class="text-center">
+                        <div class="text-danger fw-bolder" style="font-size:3rem; line-height:1;">@Model.AverageRating.ToString("F1")</div>
+                        <div class="star-display">
+                            @for (int s = 1; s <= 5; s++) { <span>@(s <= Math.Round(Model.AverageRating) ? "★" : "☆")</span> }
+                        </div>
+                        <div class="text-muted small mt-1">@Model.TotalReviews đánh giá</div>
                     </div>
-                    <div class="card-body">
-                        <form method="post" asp-controller="Review" asp-action="Add">
-                            <input type="hidden" name="productId" value="@Model.Id">
+                </div>
 
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <div class="mb-4 p-3" style="background:#f8f9fa; border-radius:10px; border:1px solid #eee;">
+                        <h6 class="fw-bold mb-3">Viết đánh giá của bạn</h6>
+                        <form method="post" asp-controller="Review" asp-action="Add">
+                            <input type="hidden" name="productId" value="@Model.Id" />
                             <div class="mb-3">
-                                <label class="form-label">Đánh Giá (Sao)</label>
-                                <div class="rating-selector">
-                                    @for (int i = 1; i <= 5; i++)
+                                <div class="rating-stars">
+                                    @for (int ri = 5; ri >= 1; ri--)
                                     {
-                                        <input type="radio" name="rating" value="@i" id="rating_@i" style="display:none;">
-                                        <label for="rating_@i" style="cursor: pointer; font-size: 24px; margin-right: 5px;">⭐</label>
+                                        <input type="radio" name="rating" value="@ri" id="r_@ri" />
+                                        <label for="r_@ri">★</label>
                                     }
                                 </div>
                             </div>
-
                             <div class="mb-3">
-                                <label class="form-label">Bình Luận</label>
-                                <textarea class="form-control" name="comment" rows="4" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." required></textarea>
+                                <textarea class="form-control" name="comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..." required style="border-radius:8px;"></textarea>
                             </div>
-
-                            <button type="submit" class="btn btn-primary">Gửi Đánh Giá</button>
+                            <button type="submit" class="btn fw-bold px-4" style="background:#d70018; color:#fff; border-radius:8px;">Gửi đánh giá</button>
                         </form>
                     </div>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info">
-                    <strong>Lưu Ý:</strong> 
-                    <a href="@Url.Action("Login", "Account")">Đăng nhập</a> để viết đánh giá sản phẩm.
-                </div>
-            }
+                }
+                else
+                {
+                    <div class="alert alert-light border mb-4" style="border-radius:10px;">
+                        <a href="@Url.Action("Login", "Account")" class="text-danger fw-bold">Đăng nhập</a> để viết đánh giá sản phẩm.
+                    </div>
+                }
 
-            <!-- Existing Reviews -->
-            <div id="reviewsList">
+                <!-- Review list -->
                 @if (Model.Reviews.Any())
                 {
                     @foreach (var review in Model.Reviews)
                     {
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1">@review.UserName</h6>
-                                        <div class="mb-2">
-                                            @for (int i = 0; i < review.Rating; i++)
-                                            {
-                                                <span style="color: #ffc107;">⭐</span>
-                                            }
-                                        </div>
-                                        <p class="mb-2">@review.Comment</p>
-                                        <small class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                                    </div>
-                                </div>
+                        <div class="review-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="fw-bold">@review.UserName</span>
+                                <small class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy")</small>
                             </div>
+                            <div class="star-display mb-2">
+                                @for (int s = 1; s <= 5; s++) { <span>@(s <= review.Rating ? "★" : "☆")</span> }
+                            </div>
+                            <p class="mb-0" style="font-size:14px; color:#444;">@review.Comment</p>
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="alert alert-info">
-                        Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!
-                    </div>
+                    <p class="text-muted">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
                 }
             </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Thông Tin Sản Phẩm</h5>
-                </div>
-                <div class="card-body">
-                    <p>
-                        <strong>Danh Mục:</strong> <a href="@Url.Action("Index", "Product", new { categoryId = Model.CategoryId })">@Model.Category?.Name</a><br>
-                        <strong>Thương Hiệu:</strong> <a href="@Url.Action("Index", "Product", new { brandId = Model.BrandId })">@Model.Brand?.Name</a>
-                    </p>
-
-                    <hr>
-
-                    <h6>Đánh Giá Chung</h6>
-                    <div class="text-center">
-                        <h2 class="text-warning mb-0">⭐ @Model.AverageRating.ToString("F1")</h2>
-                        <small class="text-muted">(@Model.TotalReviews đánh giá)</small>
-                    </div>
-
-                    @if (Model.Variants.Any())
-                    {
-                        <hr>
-                        <h6>Số Lượng Có Sẵn</h6>
-                        var totalStock = Model.Variants.Sum(v => v.Stock);
-                        <p>
-                            @if (totalStock > 0)
-                            {
-                                <span class="badge bg-success">Có Hàng (@totalStock)</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">Hết Hàng</span>
-                            }
-                        </p>
-                    }
-                </div>
+        <!-- Right info card -->
+        <div class="col-lg-4">
+            <div class="pd-card p-4">
+                <h6 class="fw-bold mb-3 section-title">Thông tin sản phẩm</h6>
+                <table class="table table-sm table-borderless mb-0" style="font-size:14px;">
+                    <tbody>
+                        @if (Model.Brand != null)
+                        {
+                            <tr><td class="text-muted ps-0">Thương hiệu</td><td class="fw-semibold"><a href="/Product?brandId=@Model.BrandId" class="text-decoration-none text-dark">@Model.Brand.Name</a></td></tr>
+                        }
+                        @if (Model.Category != null)
+                        {
+                            <tr><td class="text-muted ps-0">Danh mục</td><td class="fw-semibold"><a href="/Product?categoryId=@Model.CategoryId" class="text-decoration-none text-dark">@Model.Category.Name</a></td></tr>
+                        }
+                        <tr>
+                            <td class="text-muted ps-0">Tình trạng</td>
+                            <td>
+                                @if (totalStock > 0) { <span class="text-success fw-semibold">Còn hàng</span> }
+                                else { <span class="text-danger fw-semibold">Hết hàng</span> }
+                            </td>
+                        </tr>
+                        @if (colors.Any())
+                        {
+                            <tr><td class="text-muted ps-0">Màu sắc</td><td class="fw-semibold">@string.Join(", ", colors)</td></tr>
+                        }
+                        @if (capacities.Any())
+                        {
+                            <tr><td class="text-muted ps-0">Dung lượng</td><td class="fw-semibold">@string.Join(", ", capacities)</td></tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+  </div>
 </div>
 
 <script>
-    // Quantity controls
-    document.getElementById('increaseBtn').addEventListener('click', function() {
-        const qty = document.getElementById('quantity');
-        qty.value = parseInt(qty.value) + 1;
-        document.getElementById('selectedQuantity').value = qty.value;
-    });
+    // Variant data from server
+    const variants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Variants.Select(v => new {
+        id = v.Id,
+        color = v.Color ?? "",
+        capacity = v.Capacity ?? "",
+        price = v.Price,
+        stock = v.Stock,
+        imageUrl = v.ImageUrl ?? ""
+    })));
 
-    document.getElementById('decreaseBtn').addEventListener('click', function() {
-        const qty = document.getElementById('quantity');
-        if (parseInt(qty.value) > 1) {
-            qty.value = parseInt(qty.value) - 1;
-            document.getElementById('selectedQuantity').value = qty.value;
+    let selectedColor = '';
+    let selectedCapacity = '';
+
+    function selectColor(btn) {
+        document.querySelectorAll('#colorOptions .variant-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedColor = btn.dataset.color;
+        // Show variant image if available
+        const match = variants.find(v => v.color === selectedColor);
+        if (match && match.imageUrl) {
+            document.getElementById('mainImage').src = match.imageUrl;
         }
-    });
+        updateSelectedVariant();
+    }
 
-    // Update quantity when input changes
-    document.getElementById('quantity').addEventListener('change', function() {
-        document.getElementById('selectedQuantity').value = this.value;
-    });
+    function selectCapacity(btn) {
+        document.querySelectorAll('#capacityOptions .variant-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedCapacity = btn.dataset.capacity;
+        updateSelectedVariant();
+    }
 
-    // Variant selection
-    document.getElementById('colorSelect').addEventListener('change', updateVariantInfo);
-    document.getElementById('capacitySelect').addEventListener('change', updateVariantInfo);
-
-    function updateVariantInfo() {
-        const colorId = document.getElementById('colorSelect').value;
-        const capacityId = document.getElementById('capacitySelect').value;
-
-        if (colorId && capacityId) {
-            document.getElementById('selectedVariantId').value = colorId;
-            document.getElementById('variantInfo').innerHTML = 'Phiên bản được chọn';
+    function updateSelectedVariant() {
+        const match = variants.find(v =>
+            (!selectedColor || v.color === selectedColor) &&
+            (!selectedCapacity || v.capacity === selectedCapacity)
+        );
+        if (match) {
+            document.getElementById('selectedVariantId').value = match.id;
+            if (match.price > 0) {
+                // Optionally update displayed price
+            }
         }
     }
+
+    function changeQty(delta) {
+        const input = document.getElementById('qtyDisplay');
+        const hidden = document.getElementById('selectedQuantity');
+        let val = parseInt(input.value) + delta;
+        if (val < 1) val = 1;
+        input.value = val;
+        hidden.value = val;
+    }
+
+    // Auto-select first available variants
+    const firstColorBtn = document.querySelector('#colorOptions .variant-btn:not(.out-stock)');
+    if (firstColorBtn) firstColorBtn.click();
+    const firstCapBtn = document.querySelector('#capacityOptions .variant-btn:not(.out-stock)');
+    if (firstCapBtn) firstCapBtn.click();
 </script>
