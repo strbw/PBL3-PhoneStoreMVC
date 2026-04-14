@@ -1,0 +1,77 @@
+﻿@model HDKmall.ViewModels.LoginVM
+@{
+    ViewData["Title"] = "Đăng nhập - HDKmall";
+}
+
+<div class="container" style="padding-top:40px;padding-bottom:60px;max-width:480px">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb" style="margin-bottom:24px">
+        <a href="/">Trang chủ</a>
+        <span class="breadcrumb-sep">›</span>
+        <span id="breadcrumb-label">Đăng nhập</span>
+    </div>
+
+    <div id="auth-forms">
+        <!-- Tabs -->
+        <div class="auth-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <a asp-action="Login" class="auth-tab active" style="flex:1; text-align:center; text-decoration:none; padding:10px; border-bottom: 2px solid var(--primary); font-weight:bold; color:var(--primary);">Đăng nhập</a>
+            <a asp-action="Register" class="auth-tab" style="flex:1; text-align:center; text-decoration:none; padding:10px; border-bottom: 2px solid #ccc; color:#666;">Đăng ký</a>
+        </div>
+
+        <!-- Login Form -->
+        <div id="form-login" class="auth-form-panel">
+            <h2 class="auth-title">Chào mừng trở lại!</h2>
+            <p class="auth-subtitle">Đăng nhập để xem đơn hàng và nhận ưu đãi cá nhân.</p>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div style="color: green; font-weight: bold; background: #e0f8e0; border: 1px solid green; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="All" class="form-error text-danger mb-3" style="color:red; font-weight: bold;"></div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label" asp-for="Email">Email <span class="required">*</span></label>
+                    <input asp-for="Email" class="form-input" placeholder="example@email.com" />
+                    <span asp-validation-for="Email" class="form-error" style="color:red; display:block; margin-top:5px;"></span>
+                </div>
+                
+                <div class="form-group mb-4">
+                    <label class="form-label" asp-for="Password">Mật khẩu <span class="required">*</span></label>
+                    <div class="input-password-wrapper" style="position: relative;">
+                        <input asp-for="Password" class="form-input" placeholder="Nhập mật khẩu" id="login-password" />
+                        <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; cursor: pointer;">👁</button>
+                    </div>
+                    <span asp-validation-for="Password" class="form-error" style="color:red; display:block; margin-top:5px;"></span>
+                </div>
+                
+                <button type="submit" class="btn-primary btn-full w-100" style="padding: 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Đăng nhập</button>
+            </form>
+
+            <div class="auth-footer-text mt-3 text-center" style="margin-top: 20px;">
+                Chưa có tài khoản?
+                <a asp-action="Register">Đăng ký ngay</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+      }
+    }
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

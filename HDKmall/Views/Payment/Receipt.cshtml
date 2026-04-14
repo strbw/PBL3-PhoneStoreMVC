@@ -1,0 +1,91 @@
+@model Order
+
+@{
+    ViewData["Title"] = "Hoá Đơn Thanh Toán";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">✅ Thanh Toán Thành Công</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Mã Đơn Hàng</h6>
+                            <h4>@Model.Id</h4>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h6 class="text-muted">Ngày Tạo</h6>
+                            <h4>@Model.OrderDate.ToString("dd/MM/yyyy")</h4>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h5>Chi Tiết Đơn Hàng</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Sản Phẩm</th>
+                                <th>Số Lượng</th>
+                                <th>Giá</th>
+                                <th>Thành Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.OrderDetails)
+                            {
+                                <tr>
+                                    <td>@detail.Product.Name</td>
+                                    <td>@detail.Quantity</td>
+                                    <td>₫@detail.UnitPrice.ToString("N0")</td>
+                                    <td>₫@(detail.UnitPrice * detail.Quantity).ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="row text-end">
+                        <div class="col-md-6 offset-md-6">
+                            <h6>Tổng Tiền: <span class="text-danger">₫@Model.TotalAmount.ToString("N0")</span></h6>
+                            <h6>Phương Thức: <strong>@Model.PaymentMethod</strong></h6>
+                            <h6>Trạng Thái: <span class="badge bg-info">@Model.Status</span></h6>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h5>Thông Tin Giao Hàng</h5>
+                    <p>
+                        <strong>Địa Chỉ:</strong> @Model.Address<br>
+                        <strong>Người Nhận:</strong> @Model.User.FullName<br>
+                        <strong>Điện Thoại:</strong> @Model.User.PhoneNumber
+                    </p>
+
+                    @if (ViewBag.PaymentHistory != null)
+                    {
+                        <hr>
+                        <h5>Thông Tin Thanh Toán</h5>
+                        <p>
+                            <strong>Phương Thức:</strong> @ViewBag.PaymentHistory.PaymentMethod<br>
+                            <strong>Trạng Thái:</strong> <span class="badge bg-success">@ViewBag.PaymentHistory.Status</span><br>
+                            <strong>Mã Giao Dịch:</strong> @ViewBag.PaymentHistory.TransactionId<br>
+                            <strong>Ngày Thanh Toán:</strong> @ViewBag.PaymentHistory.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                    }
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("Detail", "Order", new { id = Model.Id })" class="btn btn-primary">
+                        Xem Chi Tiết Đơn Hàng
+                    </a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
+                        Tiếp Tục Mua Sắm
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

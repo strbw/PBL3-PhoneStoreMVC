@@ -1,0 +1,416 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "F:\\pbl3\\HDKmall\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\cart\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\cart\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\bll\\interfaces\\icategoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\bll\\interfaces\\icategoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\dal\\interfaces\\iorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\dal\\interfaces\\iorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\dal\\repositories\\orderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\dal\\repositories\\orderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\dal\\repositories\\reviewrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\dal\\repositories\\reviewrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\dal\\repositories\\couponrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\dal\\repositories\\couponrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\bll\\interfaces\\icartservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\bll\\interfaces\\icartservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\project_status.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\project_status.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\payment\\history.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\payment\\history.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\_viewimports.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\_viewimports.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\product\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\product\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\wwwroot\\js\\data.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\wwwroot\\js\\data.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\product\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\product\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\order\\checkout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\order\\checkout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\order\\history.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\order\\history.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\views\\order\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\views\\order\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\controllers\\cartcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\controllers\\cartcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|f:\\pbl3\\hdkmall\\hdkmall\\helpers\\imagehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D350FB45-7E00-C4EE-2F66-F55D13118357}|HDKmall\\HDKmall.csproj|solutionrelative:hdkmall\\helpers\\imagehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 10,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\appsettings.json",
+              "RelativeDocumentMoniker": "HDKmall\\appsettings.json",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\appsettings.json",
+              "RelativeToolTip": "HDKmall\\appsettings.json",
+              "ViewState": "AgIAABkAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-13T16:59:58.1Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "ImageHelper.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Helpers\\ImageHelper.cs",
+              "RelativeDocumentMoniker": "HDKmall\\Helpers\\ImageHelper.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Helpers\\ImageHelper.cs",
+              "RelativeToolTip": "HDKmall\\Helpers\\ImageHelper.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T17:16:59.42Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "CartController.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Controllers\\CartController.cs",
+              "RelativeDocumentMoniker": "HDKmall\\Controllers\\CartController.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Controllers\\CartController.cs",
+              "RelativeToolTip": "HDKmall\\Controllers\\CartController.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T18:03:55.009Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "Detail.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Order\\Detail.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Order\\Detail.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Order\\Detail.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Order\\Detail.cshtml",
+              "ViewState": "AgIAAEUAAAAAAAAAAIBJwF4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:57:22.83Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "History.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Order\\History.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Order\\History.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Order\\History.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Order\\History.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:57:08.275Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Home\\Index.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAALMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:56:40.473Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "HDKmall\\Controllers\\HomeController.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "HDKmall\\Controllers\\HomeController.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T17:55:33.815Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Checkout.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Order\\Checkout.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Order\\Checkout.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Order\\Checkout.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Order\\Checkout.cshtml",
+              "ViewState": "AgIAALUAAAAAAAAAAIBJwPgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:43:03.176Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Cart\\Index.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Cart\\Index.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Cart\\Index.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Cart\\Index.cshtml",
+              "ViewState": "AgIAACYAAAAAAAAAAAAgwGoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:40:04.474Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Product\\Index.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Product\\Index.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Product\\Index.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Product\\Index.cshtml",
+              "ViewState": "AgIAAE4AAAAAAAAAAIBJwHsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:39:45.587Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAHEAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:36:02.927Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Program.cs",
+              "RelativeDocumentMoniker": "HDKmall\\Program.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Program.cs",
+              "RelativeToolTip": "HDKmall\\Program.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T17:29:55.601Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "data.js",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\wwwroot\\js\\data.js",
+              "RelativeDocumentMoniker": "HDKmall\\wwwroot\\js\\data.js",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\wwwroot\\js\\data.js",
+              "RelativeToolTip": "HDKmall\\wwwroot\\js\\data.js",
+              "ViewState": "AgIAAJIEAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-04-13T17:25:20.216Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ProductController.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Controllers\\ProductController.cs",
+              "RelativeDocumentMoniker": "HDKmall\\Controllers\\ProductController.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Controllers\\ProductController.cs",
+              "RelativeToolTip": "HDKmall\\Controllers\\ProductController.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAIBJwAMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T17:25:02.63Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "PROJECT_STATUS.md",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\PROJECT_STATUS.md",
+              "RelativeDocumentMoniker": "HDKmall\\PROJECT_STATUS.md",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\PROJECT_STATUS.md",
+              "RelativeToolTip": "HDKmall\\PROJECT_STATUS.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAOYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-04-13T16:52:47.926Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Detail.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Product\\Detail.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Product\\Detail.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Product\\Detail.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Product\\Detail.cshtml",
+              "ViewState": "AgIAAC8AAAAAAAAAAIBJwAoBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:02:36.009Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "_ViewImports.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\_ViewImports.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\_ViewImports.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\_ViewImports.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\_ViewImports.cshtml",
+              "ViewState": "AgIAAAIAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:01:36.603Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "History.cshtml",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Payment\\History.cshtml",
+              "RelativeDocumentMoniker": "HDKmall\\Views\\Payment\\History.cshtml",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\Views\\Payment\\History.cshtml",
+              "RelativeToolTip": "HDKmall\\Views\\Payment\\History.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-13T17:00:56.907Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ICartService.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\BLL\\Interfaces\\ICartService.cs",
+              "RelativeDocumentMoniker": "HDKmall\\BLL\\Interfaces\\ICartService.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\BLL\\Interfaces\\ICartService.cs",
+              "RelativeToolTip": "HDKmall\\BLL\\Interfaces\\ICartService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:50:22.688Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "CouponRepository.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Repositories\\CouponRepository.cs",
+              "RelativeDocumentMoniker": "HDKmall\\DAL\\Repositories\\CouponRepository.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Repositories\\CouponRepository.cs",
+              "RelativeToolTip": "HDKmall\\DAL\\Repositories\\CouponRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:50:16.233Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ReviewRepository.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Repositories\\ReviewRepository.cs",
+              "RelativeDocumentMoniker": "HDKmall\\DAL\\Repositories\\ReviewRepository.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Repositories\\ReviewRepository.cs",
+              "RelativeToolTip": "HDKmall\\DAL\\Repositories\\ReviewRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:50:05.928Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "OrderRepository.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Repositories\\OrderRepository.cs",
+              "RelativeDocumentMoniker": "HDKmall\\DAL\\Repositories\\OrderRepository.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Repositories\\OrderRepository.cs",
+              "RelativeToolTip": "HDKmall\\DAL\\Repositories\\OrderRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:49:57.861Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IOrderRepository.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Interfaces\\IOrderRepository.cs",
+              "RelativeDocumentMoniker": "HDKmall\\DAL\\Interfaces\\IOrderRepository.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\DAL\\Interfaces\\IOrderRepository.cs",
+              "RelativeToolTip": "HDKmall\\DAL\\Interfaces\\IOrderRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:49:35.385Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ICategoryService.cs",
+              "DocumentMoniker": "F:\\pbl3\\HDKmall\\HDKmall\\BLL\\Interfaces\\ICategoryService.cs",
+              "RelativeDocumentMoniker": "HDKmall\\BLL\\Interfaces\\ICategoryService.cs",
+              "ToolTip": "F:\\pbl3\\HDKmall\\HDKmall\\BLL\\Interfaces\\ICategoryService.cs",
+              "RelativeToolTip": "HDKmall\\BLL\\Interfaces\\ICategoryService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:48:19.546Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

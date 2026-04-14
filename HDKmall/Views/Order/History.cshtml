@@ -1,0 +1,87 @@
+@model IEnumerable<HDKmall.Models.Order>
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+<div class="main-content bg-light py-5">
+    <div class="container">
+        <h2 class="section-title mb-4">Lịch sử đơn hàng</h2>
+        
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-body p-0">
+                @if (Model != null && Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted">
+                                <tr>
+                                    <th class="ps-4">Mã ĐH</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th class="pe-4 text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                                {
+                                    <tr>
+                                        <td class="ps-4 fw-bold">#@order.Id</td>
+                                        <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            @if(order.OrderDetails != null && order.OrderDetails.Any())
+                                            {
+                                                var firstItem = order.OrderDetails.First();
+                                                <div>@firstItem.Product?.Name <span class="text-muted text-nowrap">x @firstItem.Quantity</span></div>
+                                                if (order.OrderDetails.Count > 1)
+                                                {
+                                                    <small class="text-muted">+ @(order.OrderDetails.Count - 1) sản phẩm khác</small>
+                                                }
+                                            }
+                                        </td>
+                                        <td class="text-danger fw-bold">@order.TotalAmount.ToString("N0")₫</td>
+                                        <td>
+                                            @{
+                                                var statusClass = order.Status switch {
+                                                    "Pending" => "bg-warning text-dark",
+                                                    "Processing" => "bg-info text-dark",
+                                                    "Shipped" => "bg-primary",
+                                                    "Delivered" => "bg-success",
+                                                    "Cancelled" => "bg-danger",
+                                                    _ => "bg-secondary"
+                                                };
+                                                
+                                                var statusText = order.Status switch {
+                                                    "Pending" => "Chờ xử lý",
+                                                    "Processing" => "Đang xử lý",
+                                                    "Shipped" => "Đang giao",
+                                                    "Delivered" => "Đã giao",
+                                                    "Cancelled" => "Đã hủy",
+                                                    _ => order.Status
+                                                };
+                                            }
+                                            <span class="badge @statusClass rounded-pill px-3 py-2">@statusText</span>
+                                        </td>
+                                        <td class="pe-4 text-end">
+                                            <a href="/Order/Detail/@order.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <div style="font-size: 4rem; color: #ccc;" class="mb-3">📦</div>
+                        <h4>Bạn chưa có đơn hàng nào</h4>
+                        <p class="text-muted">Hãy khám phá các sản phẩm của chúng tôi và đặt đơn hàng đầu tiên nhé!</p>
+                        <a href="/Product" class="btn btn-primary px-4 py-2 mt-2 rounded-pill">Tiếp tục mua sắm</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

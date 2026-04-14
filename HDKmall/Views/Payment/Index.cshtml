@@ -1,0 +1,128 @@
+@model Order
+
+@{
+    ViewData["Title"] = "Chọn Phương Thức Thanh Toán";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">💳 Chọn Phương Thức Thanh Toán</h1>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Thông Tin Đơn Hàng</h5>
+                    <table class="table">
+                        <tr>
+                            <td><strong>Mã Đơn:</strong></td>
+                            <td>@Model.Id</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ngày Tạo:</strong></td>
+                            <td>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Địa Chỉ Giao:</strong></td>
+                            <td>@Model.Address</td>
+                        </tr>
+                        <tr class="table-active">
+                            <td><strong>Tổng Tiền:</strong></td>
+                            <td class="text-danger"><strong>₫@Model.TotalAmount.ToString("N0")</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <form method="post" asp-action="ProcessPayment">
+                <input type="hidden" name="orderId" value="@Model.Id">
+
+                <h5 class="mb-3">Chọn Phương Thức Thanh Toán</h5>
+
+                <div class="row">
+                    <!-- COD -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card payment-option">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-box" style="font-size: 48px; color: #28a745;"></i>
+                                </div>
+                                <h5 class="card-title">Thanh Toán Khi Nhận</h5>
+                                <p class="card-text small text-muted">
+                                    Thanh toán trực tiếp khi nhận hàng
+                                </p>
+                                <button type="submit" class="btn btn-success btn-sm" name="paymentMethod" value="COD">
+                                    Chọn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VNPay -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card payment-option">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-credit-card" style="font-size: 48px; color: #007bff;"></i>
+                                </div>
+                                <h5 class="card-title">VNPay</h5>
+                                <p class="card-text small text-muted">
+                                    Thanh toán qua cổng VNPay
+                                </p>
+                                <button type="submit" class="btn btn-primary btn-sm" name="paymentMethod" value="VNPay">
+                                    Chọn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MoMo -->
+                    <div class="col-md-4 mb-3">
+                        <div class="card payment-option">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-mobile-alt" style="font-size: 48px; color: #e6007e;"></i>
+                                </div>
+                                <h5 class="card-title">MoMo</h5>
+                                <p class="card-text small text-muted">
+                                    Thanh toán qua ví MoMo
+                                </p>
+                                <button type="submit" class="btn btn-danger btn-sm" name="paymentMethod" value="MoMo">
+                                    Chọn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="alert alert-info mb-0">
+                    <strong>ℹ️ Lưu Ý:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Thanh toán khi nhận: Thanh toán tiền mặt sau khi nhận hàng</li>
+                        <li>VNPay & MoMo: Bạn sẽ được chuyển hướng đến trang thanh toán để hoàn tất giao dịch</li>
+                        <li>Quá trình thanh toán an toàn và được mã hóa</li>
+                    </ul>
+                </div>
+            </form>
+
+            <div class="mt-4">
+                <a href="@Url.Action("Index", "Cart")" class="btn btn-secondary">
+                    ← Quay Lại Giỏ Hàng
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-option {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .payment-option:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+</style>

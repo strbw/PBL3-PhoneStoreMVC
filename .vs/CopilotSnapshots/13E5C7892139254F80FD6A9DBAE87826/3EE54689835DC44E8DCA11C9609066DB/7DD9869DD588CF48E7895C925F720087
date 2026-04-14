@@ -1,0 +1,42 @@
+﻿using HDKmall.BLL.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HDKmall.Controllers.Api
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BrandsController : ControllerBase
+    {
+        private readonly IBrandService _brandService;
+
+        public BrandsController(IBrandService brandService)
+        {
+            _brandService = brandService;
+        }
+
+        // GET: api/brands
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            try
+            {
+                var brands = _brandService.GetAllBrands();
+                var result = brands.Select(b => new
+                {
+                    id = b.Id,
+                    name = b.Name,
+                    slug = b.Slug ?? b.Name?.ToLower().Replace(" ", "-") ?? "",
+                    logo = b.Logo ?? "",
+                    count = b.Products?.Count ?? 0,
+                    description = b.Description ?? ""
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+    }
+}

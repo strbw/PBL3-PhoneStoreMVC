@@ -1,0 +1,46 @@
+﻿using HDKmall.DAL.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using HDKmall.Models;
+using System.Data;
+
+namespace HDKmall.DAL.Repositories
+{
+    public class UserRepository : IUserRepository
+    {
+        private readonly ApplicationDbContext _context;
+
+        public UserRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public User GetUserByEmail(string email)
+        {
+            // Include bảng Role để lấy RoleName
+            return _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == email);
+        }
+
+        public void AddUser(User user)
+        {
+            _context.Users.Add(user);
+        }
+
+        public void SaveChanges()
+        {
+            _context.SaveChanges();
+        }
+
+        // Thêm hàm lấy RoleID mặc định cho khách hàng
+        public int GetCustomerRoleId()
+        {
+            var role = _context.Roles.FirstOrDefault(r => r.RoleName == "Customer");
+            if (role != null) return role.RoleId;
+
+            // Nếu chưa có, tự tạo role Customer
+            var newRole = new Role { RoleName = "Customer" };
+            _context.Roles.Add(newRole);
+            _context.SaveChanges();
+            return newRole.RoleId;
+        }
+    }
+}

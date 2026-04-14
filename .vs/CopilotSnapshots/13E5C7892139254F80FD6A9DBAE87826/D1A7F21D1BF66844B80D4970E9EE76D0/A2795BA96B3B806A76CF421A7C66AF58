@@ -1,0 +1,146 @@
+﻿@model HDKmall.Models.ShoppingCart
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="main-content" style="background-color: #f8f9fa;">
+    <div class="container py-5">
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="section-title m-0">Giỏ hàng của bạn (<span id="cart-item-count">@(Model?.Items?.Count ?? 0)</span>)</h2>
+        </div>
+
+        @if (Model != null && Model.Items.Any())
+        {
+            <div class="row gx-lg-5">
+                <div class="col-lg-8 mb-4">
+                    <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card-body p-0">
+                            <!-- Header Row -->
+                            <div class="row align-items-center bg-light text-muted fw-bold py-3 px-4 border-bottom d-none d-md-flex m-0">
+                                <div class="col-md-5">Sản phẩm</div>
+                                <div class="col-md-2 text-center">Đơn giá</div>
+                                <div class="col-md-2 text-center">Số lượng</div>
+                                <div class="col-md-2 text-end">Thành tiền</div>
+                                <div class="col-md-1 text-center"><i class="bi bi-trash3 text-secondary">🗑️</i></div>
+                            </div>
+
+                            @foreach (var item in Model.Items)
+                            {
+                                <div class="row align-items-center py-4 px-4 border-bottom m-0">
+                                    <!-- Image and Info -->
+                                    <div class="col-md-5 mb-3 mb-md-0 d-flex align-items-center">
+                                        <div class="bg-white p-2 rounded border border-light me-3 flex-shrink-0" style="width: 80px; height: 80px; display:flex; align-items:center; justify-content:center;">
+                                            <img src="@(string.IsNullOrEmpty(item.Product.ImageUrl) ? "/img/default.png" : item.Product.ImageUrl)" alt="@item.Product.Name" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                        </div>
+                                        <div>
+                                            <a href="/Product/Detail/@item.ProductId" class="text-decoration-none text-dark fw-semibold d-block mb-1">@item.Product.Name</a>
+                                            @if (item.Variant != null)
+                                            {
+                                                <small class="text-muted d-block mt-1 bg-light px-2 py-1 rounded d-inline-block border">Phân loại: <span class="fw-medium text-dark">@item.Variant.Color - @item.Variant.Storage</span></small>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Price -->
+                                    <div class="col-md-2 text-md-center">
+                                        <span class="d-md-none text-muted">Đơn giá:</span>
+                                        <span class="fw-medium">@item.Product.Price.ToString("N0")₫</span>
+                                    </div>
+
+                                    <!-- Quantity Input -->
+                                    <div class="col-md-2 text-md-center my-2 my-md-0">
+                                        <span class="d-md-none text-muted me-2">Số lượng:</span>
+                                        <form asp-action="Update" asp-controller="Cart" method="post" class="d-inline-flex align-items-center" style="max-width: 120px;">
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <div class="input-group input-group-sm">
+                                                <button class="btn btn-outline-secondary" type="submit" name="quantity" value="@(item.Quantity - 1)">-</button>
+                                                <input type="number" class="form-control text-center px-1 fw-bold bg-white" name="quantity" value="@item.Quantity" readonly>
+                                                <button class="btn btn-outline-secondary" type="submit" name="quantity" value="@(item.Quantity + 1)">+</button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- Total Price -->
+                                    <div class="col-md-2 text-md-end text-danger fw-bold">
+                                        <span class="d-md-none text-muted fw-normal">Thành tiền:</span>
+                                        @((item.Product.Price * item.Quantity).ToString("N0"))₫
+                                    </div>
+
+                                    <!-- Remove Button -->
+                                    <div class="col-md-1 text-md-center ms-auto">
+                                        <form asp-action="Remove" asp-controller="Cart" method="post">
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Xóa khỏi giỏ">
+                                                <span style="font-size: 1.2rem;">✖</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="card-footer bg-white py-3 px-4 border-top-0 d-flex justify-content-between align-items-center">
+                            <a href="/Product" class="text-decoration-none text-primary fw-medium">
+                                <span class="me-1">←</span> Tiếp tục mua sắm
+                            </a>
+                            <form asp-action="Clear" asp-controller="Cart" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="return confirm('Bạn muốn xóa tất cả sản phẩm khỏi giỏ hàng?')">Xóa tất cả</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card shadow-sm border-0 rounded-3 sticky-top" style="top: 80px;">
+                        <div class="card-header bg-white py-3 px-4">
+                            <h5 class="mb-0 fw-bold">Tóm tắt đơn hàng</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Tạm tính (@Model.Items.Sum(x => x.Quantity) sản phẩm):</span>
+                                <span class="fw-medium">@Model.TotalAmount.ToString("N0")₫</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 text-success">
+                                <span>Giảm giá:</span>
+                                <span>-0₫</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Phí giao hàng:</span>
+                                <span class="text-muted">Chưa tính</span>
+                            </div>
+                            <hr class="my-4">
+                            <div class="d-flex justify-content-between mb-4 align-items-end">
+                                <span class="fw-bold fs-5">Tổng cộng:</span>
+                                <div class="text-end">
+                                    <span class="fs-4 fw-bold text-danger d-block lh-1">@Model.TotalAmount.ToString("N0")₫</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">(Đã bao gồm VAT nếu có)</small>
+                                </div>
+                            </div>
+                            <a href="/Order/Checkout" class="btn btn-primary w-100 py-3 fw-bold fs-5 rounded-3 d-flex align-items-center justify-content-center">
+                                TIẾN HÀNH ĐẶT HÀNG <span class="ms-2">→</span>
+                            </a>
+                            <div class="text-center mt-3 text-muted small">
+                                🔒 Thanh toán an toàn & bảo mật
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row py-5 mt-4">
+                <div class="col-12 col-md-6 mx-auto text-center">
+                    <div class="p-5 bg-white rounded-4 shadow-sm border border-light">
+                        <div style="font-size: 80px; margin-bottom: 20px; line-height: 1;">🛒</div>
+                        <h4 class="fw-bold text-dark mb-3">Giỏ hàng của bạn đang trống</h4>
+                        <p class="text-muted mb-4">Hãy xem thêm các sản phẩm tuyệt vời của chúng tôi và chọn cho mình những món đồ ưng ý nhất nhé!</p>
+                        <a href="/Product" class="btn btn-primary px-5 py-3 rounded-pill fw-bold fs-6 shadow-sm">
+                            VỀ TRANG SẢN PHẨM
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

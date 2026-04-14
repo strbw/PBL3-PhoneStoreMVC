@@ -1,0 +1,55 @@
+﻿using HDKmall.BLL.Interfaces;
+using HDKmall.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HDKmall.Controllers.Api
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CategoriesController : ControllerBase
+    {
+        private readonly ICategoryService _categoryService;
+
+        public CategoriesController(ICategoryService categoryService)
+        {
+            _categoryService = categoryService;
+        }
+
+        // GET: api/categories
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            try
+            {
+                var categories = _categoryService.GetAllCategories();
+                var result = categories.Select(c => new
+                {
+                    id = c.Id,
+                    name = c.Name,
+                    slug = c.Slug ?? c.Name?.ToLower().Replace(" ", "-") ?? "",
+                    icon = GetCategoryIcon(c.Name),
+                    count = c.Products?.Count ?? 0,
+                    description = c.Description ?? ""
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        private string GetCategoryIcon(string categoryName)
+        {
+            return categoryName?.ToLower() switch
+            {
+                var x when x.Contains("điện") || x.Contains("phone") => "📱",
+                var x when x.Contains("máy tính") || x.Contains("tablet") => "📟",
+                var x when x.Contains("laptop") => "💻",
+                var x when x.Contains("phụ kiện") || x.Contains("accessory") => "🎧",
+                _ => "📦"
+            };
+        }
+    }
+}

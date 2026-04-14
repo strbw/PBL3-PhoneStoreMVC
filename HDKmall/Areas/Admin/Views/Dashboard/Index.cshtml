@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Admin";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-dashboard">
+    
+    <div class="admin-meta-row" style="margin-bottom: 24px;">
+        <span class="admin-mode-badge mock" id="admin-mode-badge">Mock Data Mode</span>
+        <span class="admin-last-sync" id="admin-last-sync">Cập nhật lúc: --:--:--</span>
+        <button class="admin-btn admin-btn-ghost" id="admin-reset-data">Reset dữ liệu local</button>
+    </div>
+
+    <div class="admin-summary" id="admin-summary"></div>
+
+    <div class="admin-grid-3">
+        <div class="admin-section">
+            <div class="admin-section-header">
+                <h2>Top thương hiệu</h2>
+            </div>
+            <div id="dashboard-top-brands"></div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-header">
+                <h2>Trạng thái đơn hàng</h2>
+            </div>
+            <div id="dashboard-order-status"></div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-header">
+                <h2>Sắp hết hàng</h2>
+            </div>
+            <div id="dashboard-low-stock"></div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,160 @@
+﻿using HDKmall.BLL.Interfaces;
+using HDKmall.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HDKmall.Controllers
+{
+    public class ProductController : Controller
+    {
+        private readonly IProductSearchService _searchService;
+        private readonly ICategoryService _categoryService;
+        private readonly IBrandService _brandService;
+
+        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService)
+        {
+            _searchService = searchService;
+            _categoryService = categoryService;
+            _brandService = brandService;
+        }
+
+        // GET: Product/Index
+        public IActionResult Index(int? categoryId, int? brandId, decimal? minPrice, decimal? maxPrice, string sortBy = "newest", int page = 1)
+        {
+            var filter = new ProductFilterVM
+            {
+                CategoryId = categoryId,
+                BrandId = brandId,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                SortBy = sortBy,
+                PageNumber = page,
+                PageSize = 12
+            };
+
+            var result = _searchService.SearchProducts(filter);
+
+            // Pass filter info to view for sidebar
+            ViewBag.Categories = _categoryService.GetAllCategories();
+            ViewBag.Brands = _brandService.GetAllBrands();
+            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SelectedBrandId = brandId;
+            ViewBag.SelectedMinPrice = minPrice;
+            ViewBag.SelectedMaxPrice = maxPrice;
+            ViewBag.SelectedSortBy = sortBy;
+
+            return View(result);
+        }
+
+        // GET: Product/Detail/5
+        public IActionResult Detail(int id)
+        {
+            var product = _searchService.GetProductDetail(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return View(product);
+        }
+
+        // GET: Product/Search?q=iphone
+        public IActionResult Search(string q, int page = 1)
+        {
+            if (string.IsNullOrWhiteSpace(q))
+            {
+                return RedirectToAction("Index");
+            }
+
+            var filter = new ProductFilterVM
+            {
+                SearchQuery = q,
+                PageNumber = page,
+                PageSize = 12
+            };
+
+            var result = _searchService.SearchProducts(filter);
+            ViewBag.SearchQuery = q;
+
+            return View("Index", result);
+        }
+
+        // GET: Product/Category/1
+        public IActionResult Category(int id, int page = 1)
+        {
+            var filter = new ProductFilterVM
+            {
+                CategoryId = id,
+                PageNumber = page,
+                PageSize = 12
+            };
+
+            var result = _searchService.SearchProducts(filter);
+            ViewBag.Categories = _categoryService.GetAllCategories();
+            ViewBag.SelectedCategoryId = id;
+
+            return View("Index", result);
+        }
+
+        // GET: Product/Brand/1
+        public IActionResult Brand(int id, int page = 1)
+        {
+            var filter = new ProductFilterVM
+            {
+                BrandId = id,
+                PageNumber = page,
+                PageSize = 12
+            };
+
+            var result = _searchService.SearchProducts(filter);
+            ViewBag.Brands = _brandService.GetAllBrands();
+            ViewBag.SelectedBrandId = id;
+
+            return View("Index", result);
+        }
+
+        // API Endpoints for Home Page
+        [HttpGet]
+        public IActionResult GetCategories()
+        {
+            try
+            {
+                var categories = _categoryService.GetAllCategories();
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetBrands()
+        {
+            try
+            {
+                var brands = _brandService.GetAllBrands();
+                var brandNames = brands.Select(b => b.Name).ToList();
+                return Ok(brandNames);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetProducts()
+        {
+            try
+            {
+                var filter = new ProductFilterVM { PageSize = 100 };
+                var result = _searchService.SearchProducts(filter);
+                return Ok(result.Products);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+    }
+}

@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@ViewData["Title"] - PhoneStore</title>
+  <link rel="stylesheet" href="~/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>" />
+</head>
+<body>
+
+<!-- ========== MOBILE MENU ========== -->
+<div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+<nav class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu-header">
+    <div class="logo">
+      <div class="logo-icon">📱</div>
+      <div class="logo-text">Phone<span>Store</span></div>
+    </div>
+    <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
+  </div>
+  <a href="/" class="mobile-nav-item">🏠 Trang chủ</a>
+  <a href="/products" class="mobile-nav-item">📱 Điện thoại</a>
+  <a href="/cart" class="mobile-nav-item">🛒 Giỏ hàng</a>
+  <a href="/orders" class="mobile-nav-item">📦 Đơn hàng</a>
+  <a href="/Account/Login" class="mobile-nav-item">👤 Tài khoản</a>
+</nav>
+
+<!-- ========== HEADER ========== -->
+<header class="header">
+  <div class="header-top">
+    <div class="container">
+      <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
+      <a href="/" class="logo">
+        <div class="logo-icon">📱</div>
+        <div class="logo-text">Phone<span>Store</span></div>
+      </a>
+      <form class="search-bar" id="search-form" action="/search">
+        <div class="search-input-wrapper">
+          <input type="text" id="search-input" name="q" class="search-input" placeholder="Tìm điện thoại, phụ kiện...">
+          <button type="submit" class="search-btn">🔍</button>
+        </div>
+      </form>
+      <div class="header-actions">
+        <a href="/cart" class="header-btn">
+          <span class="btn-icon">🛒</span>
+          <span>Giỏ hàng</span>
+          <span class="cart-badge" id="cart-badge">0</span>
+        </a>
+
+        @if (User.Identity!.IsAuthenticated)
+        {
+            <div class="header-user-menu" style="display:flex; align-items:center; gap: 8px;">
+              <span class="btn-icon">👤</span>
+              <span class="user-name">@User.Identity.Name</span>
+              <a href="/Account/Logout" class="header-btn logout-btn" title="Đăng xuất">⏻</a>
+            </div>
+        }
+        else
+        {
+            <a href="/Account/Login" class="header-btn header-auth-btn">
+              <span class="btn-icon">👤</span>
+              <span>Đăng nhập</span>
+            </a>
+        }
+      </div>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <div class="container">
+      <a href="/products?cat=dien-thoai" class="nav-item"><span class="nav-icon">📱</span>Điện thoại</a>
+      <a href="/products?cat=may-tinh-bang" class="nav-item"><span class="nav-icon">📟</span>Máy tính bảng</a>
+      <a href="/products?cat=phu-kien" class="nav-item"><span class="nav-icon">🎧</span>Phụ kiện</a>
+      <a href="/products?cat=laptop" class="nav-item"><span class="nav-icon">💻</span>Laptop</a>
+      <a href="/products" class="nav-item" style="margin-left:auto;background:rgba(255,255,255,.15)">🔥 Khuyến mãi</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ========== MAIN ========== -->
+<main>
+    @RenderBody()
+</main>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="logo" style="margin-bottom:12px">
+          <div class="logo-icon">📱</div>
+          <div class="logo-text" style="font-size:20px">Phone<span>Store</span></div>
+        </div>
+        <p class="footer-desc">Cửa hàng điện thoại và phụ kiện chính hãng với hơn 200 sản phẩm từ các thương hiệu uy tín trên thế giới.</p>
+      </div>
+      <div>
+        <div class="footer-heading">Hỗ trợ</div>
+        <div class="footer-links">
+          <a href="#">Chính sách bảo hành</a>
+          <a href="#">Liên hệ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      © 2026 PhoneStore. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<script src="~/js/main.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
