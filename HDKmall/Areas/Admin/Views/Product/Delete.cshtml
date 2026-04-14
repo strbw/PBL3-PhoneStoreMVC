@@ -1,0 +1,35 @@
+@model HDKmall.Models.Product
+
+@{
+    ViewData["Title"] = "Xóa Sản Phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="mb-4 text-danger">Xác nhận xóa sản phẩm</h2>
+
+<div class="card" style="max-width:600px;">
+    <div class="card-body">
+        <div class="d-flex align-items-center gap-4 mb-4">
+            <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/img/Product_Default.jpg" : Model.ImageUrl)"
+                 alt="@Model.Name"
+                 style="width:100px;height:100px;object-fit:cover;border-radius:8px;" />
+            <div>
+                <h5 class="fw-bold mb-1">@Model.Name</h5>
+                <div class="text-muted mb-1">ID: @Model.Id</div>
+                <div class="text-danger fw-bold" style="font-size:1.2rem;">@Model.Price.ToString("N0") ₫</div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <strong>⚠️ Cảnh báo:</strong> Bạn sắp xóa vĩnh viễn sản phẩm này cùng toàn bộ hình ảnh, phiên bản và thông số kỹ thuật liên quan. Hành động này không thể hoàn tác.
+        </div>
+
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">🗑️ Xác nhận Xóa</button>
+                <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -15,12 +15,23 @@ namespace HDKmall.DAL.Repositories
 
         public IEnumerable<Product> GetAll()
         {
-            return _context.Products.ToList();
+            return _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Variants)
+                .Include(p => p.Images)
+                .ToList();
         }
 
         public Product GetById(int id)
         {
-            return _context.Products.FirstOrDefault(p => p.Id == id);
+            return _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Variants)
+                .Include(p => p.Images)
+                .Include(p => p.Specifications)
+                .FirstOrDefault(p => p.Id == id);
         }
 
         public void Add(Product product)
@@ -37,12 +48,61 @@ namespace HDKmall.DAL.Repositories
 
         public void Delete(int id)
         {
-            var product = GetById(id);
+            var product = _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Variants)
+                .Include(p => p.Specifications)
+                .FirstOrDefault(p => p.Id == id);
             if (product != null)
             {
                 _context.Products.Remove(product);
                 _context.SaveChanges();
             }
+        }
+
+        // Image methods
+        public void AddImage(ProductImage image)
+        {
+            _context.ProductImages.Add(image);
+            _context.SaveChanges();
+        }
+
+        public void DeleteImage(int imageId)
+        {
+            var image = _context.ProductImages.Find(imageId);
+            if (image != null)
+            {
+                _context.ProductImages.Remove(image);
+                _context.SaveChanges();
+            }
+        }
+
+        // Variant methods
+        public void AddVariant(ProductVariant variant)
+        {
+            _context.ProductVariants.Add(variant);
+            _context.SaveChanges();
+        }
+
+        public void DeleteVariants(int productId)
+        {
+            var variants = _context.ProductVariants.Where(v => v.ProductId == productId).ToList();
+            _context.ProductVariants.RemoveRange(variants);
+            _context.SaveChanges();
+        }
+
+        // Specification methods
+        public void AddSpecification(ProductSpecification spec)
+        {
+            _context.ProductSpecifications.Add(spec);
+            _context.SaveChanges();
+        }
+
+        public void DeleteSpecifications(int productId)
+        {
+            var specs = _context.ProductSpecifications.Where(s => s.ProductId == productId).ToList();
+            _context.ProductSpecifications.RemoveRange(specs);
+            _context.SaveChanges();
         }
     }
 }

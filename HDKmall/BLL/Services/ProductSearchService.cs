@@ -173,7 +173,25 @@ namespace HDKmall.BLL.Services
                     CreatedAt = r.CreatedAt
                 }).ToList(),
                 AverageRating = product.Reviews.Any() ? product.Reviews.Average(r => r.Rating) : 0,
-                TotalReviews = product.Reviews.Count
+                TotalReviews = product.Reviews.Count,
+                Images = (product.Images ?? new List<ProductImage>())
+                    .OrderBy(i => i.DisplayOrder)
+                    .Select(i => new ProductImageVM
+                    {
+                        Id = i.Id,
+                        ImageUrl = i.ImageUrl,
+                        IsMain = i.IsMain,
+                        DisplayOrder = i.DisplayOrder
+                    }).ToList(),
+                Specifications = (product.Specifications ?? new List<ProductSpecification>())
+                    .OrderBy(s => s.DisplayOrder)
+                    .Select(s => new ProductSpecVM
+                    {
+                        Id = s.Id,
+                        SpecName = s.SpecName,
+                        SpecValue = s.SpecValue,
+                        DisplayOrder = s.DisplayOrder
+                    }).ToList()
             };
         }
 

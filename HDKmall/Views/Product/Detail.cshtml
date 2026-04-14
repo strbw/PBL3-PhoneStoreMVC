@@ -5,6 +5,14 @@
     var colors = Model.Variants.Select(v => v.Color).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
     var capacities = Model.Variants.Select(v => v.Capacity).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
     var totalStock = Model.Variants.Any() ? Model.Variants.Sum(v => v.Stock) : 1;
+    // Build image gallery: prioritize ProductImages, fallback to variant images and product image
+    var galleryImages = Model.Images.OrderBy(i => i.DisplayOrder).ToList();
+    if (!galleryImages.Any() && !string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        galleryImages = new List<HDKmall.ViewModels.ProductImageVM> {
+            new HDKmall.ViewModels.ProductImageVM { Id = 0, ImageUrl = Model.ImageUrl, IsMain = true, DisplayOrder = 0 }
+        };
+    }
 }
 
 <style>
@@ -14,6 +22,9 @@
 
     /* Image */
     .pd-img-main { width: 100%; aspect-ratio: 1/1; object-fit: contain; border-radius: 10px; background: #fff; padding: 16px; }
+    .pd-img-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 2px solid #eee; cursor: pointer; transition: border-color .15s; }
+    .pd-img-thumb.active { border-color: #d70018; }
+    .pd-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; justify-content: center; }
 
     /* Variant buttons */
     .variant-btn {
@@ -51,6 +62,10 @@
     .rating-stars label:hover ~ label { color: #ffc107; }
     .rating-stars { display: flex; flex-direction: row-reverse; width: fit-content; }
     .rating-stars input { display: none; }
+
+    /* Spec table */
+    .spec-table td { padding: 8px 12px; font-size: 14px; }
+    .spec-table tr:nth-child(even) { background: #f9f9f9; }
 </style>
 
 <div class="pd-section">
@@ -70,13 +85,26 @@
     </nav>
 
     <div class="row gx-4">
-        <!-- Left: Image -->
+        <!-- Left: Image Gallery -->
         <div class="col-md-5 mb-4 mb-md-0">
             <div class="pd-card p-3 text-center">
                 <img id="mainImage"
-                     src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/img/Product_Default.jpg" : Model.ImageUrl)"
+                     src="@(galleryImages.Any() ? galleryImages.First().ImageUrl : "/img/Product_Default.jpg")"
                      alt="@Model.Name"
                      class="pd-img-main" />
+
+                @if (galleryImages.Count > 1)
+                {
+                    <div class="pd-thumbs">
+                        @foreach (var img in galleryImages)
+                        {
+                            <img src="@img.ImageUrl"
+                                 alt="@Model.Name"
+                                 class="pd-img-thumb @(img.IsMain || img == galleryImages.First() ? "active" : "")"
+                                 onclick="switchMainImage(this, '@img.ImageUrl')" />
+                        }
+                    </div>
+                }
             </div>
         </div>
 
@@ -116,7 +144,7 @@
 
                 <!-- Price -->
                 <div class="mb-3" style="background:#fff5f5; border-radius:8px; padding:14px 16px;">
-                    <span class="text-danger fw-bolder" style="font-size:2rem; line-height:1;">@Model.BasePrice.ToString("N0")₫</span>
+                    <span id="displayPrice" class="text-danger fw-bolder" style="font-size:2rem; line-height:1;">@Model.BasePrice.ToString("N0")₫</span>
                 </div>
 
                 <!-- Color variants -->
@@ -190,7 +218,7 @@
         </div>
     </div>
 
-    <!-- Description + Reviews row -->
+    <!-- Description + Specs + Reviews row -->
     <div class="row gx-4 mt-4">
         <div class="col-lg-8">
             <!-- Description tab card -->
@@ -207,6 +235,25 @@
                     }
                 </div>
             </div>
+
+            <!-- Specifications -->
+            @if (Model.Specifications.Any())
+            {
+                <div class="pd-card p-4 mb-4">
+                    <h5 class="fw-bold mb-3 section-title">Thông số kỹ thuật</h5>
+                    <table class="table spec-table mb-0">
+                        <tbody>
+                            @foreach (var spec in Model.Specifications)
+                            {
+                                <tr>
+                                    <td class="text-muted fw-semibold" style="width:40%;">@spec.SpecName</td>
+                                    <td>@spec.SpecValue</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
 
             <!-- Reviews -->
             <div class="pd-card p-4">
@@ -327,15 +374,16 @@
     let selectedColor = '';
     let selectedCapacity = '';
 
+    function switchMainImage(thumb, url) {
+        document.getElementById('mainImage').src = url;
+        document.querySelectorAll('.pd-img-thumb').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+    }
+
     function selectColor(btn) {
         document.querySelectorAll('#colorOptions .variant-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedColor = btn.dataset.color;
-        // Show variant image if available
-        const match = variants.find(v => v.color === selectedColor);
-        if (match && match.imageUrl) {
-            document.getElementById('mainImage').src = match.imageUrl;
-        }
         updateSelectedVariant();
     }
 
@@ -354,7 +402,12 @@
         if (match) {
             document.getElementById('selectedVariantId').value = match.id;
             if (match.price > 0) {
-                // Optionally update displayed price
+                document.getElementById('displayPrice').innerText =
+                    match.price.toLocaleString('vi-VN') + '₫';
+            }
+            if (match.imageUrl) {
+                document.getElementById('mainImage').src = match.imageUrl;
+                document.querySelectorAll('.pd-img-thumb').forEach(t => t.classList.remove('active'));
             }
         }
     }
@@ -374,3 +427,4 @@
     const firstCapBtn = document.querySelector('#capacityOptions .variant-btn:not(.out-stock)');
     if (firstCapBtn) firstCapBtn.click();
 </script>
+

@@ -28,6 +28,8 @@ namespace HDKmall.Models
         public Brand Brand { get; set; }
 
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+        public ICollection<ProductSpecification> Specifications { get; set; } = new List<ProductSpecification>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }
