@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace HDKmall.Controllers
 {
@@ -29,6 +31,7 @@ namespace HDKmall.Controllers
                 {
                     var claims = new List<Claim>
                     {
+                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                         new Claim(ClaimTypes.Name, user.FullName),
                         new Claim(ClaimTypes.Email, user.Email),
                         new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "Customer")
@@ -38,8 +41,6 @@ namespace HDKmall.Controllers
                     var principal = new ClaimsPrincipal(identity);
 
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                    if (user.Role?.RoleName == "Admin") return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
                     return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
@@ -75,6 +76,150 @@ namespace HDKmall.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            var userId = GetCurrentUserId();
+            if (userId <= 0) return RedirectToAction("Login");
+
+            var profile = _accountService.GetProfile(userId);
+            if (profile == null) return RedirectToAction("Login");
+
+            return View(profile);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(ProfileVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.Addresses = _accountService.GetProfile(GetCurrentUserId())?.Addresses ?? new List<AddressItemVM>();
+                return View(model);
+            }
+
+            var userId = GetCurrentUserId();
+            var updated = _accountService.UpdateProfile(userId, model);
+            if (!updated)
+            {
+                ModelState.AddModelError("", "Không thể cập nhật hồ sơ.");
+                model.Addresses = _accountService.GetProfile(userId)?.Addresses ?? new List<AddressItemVM>();
+                return View(model);
+            }
+
+            await RefreshIdentityAsync(userId, model.FullName, model.Email);
+            TempData["SuccessMessage"] = "Cập nhật hồ sơ thành công.";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangePassword(ProfileVM model)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(model.CurrentPassword) ||
+                string.IsNullOrWhiteSpace(model.NewPassword) ||
+                string.IsNullOrWhiteSpace(model.ConfirmNewPassword))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập đầy đủ thông tin đổi mật khẩu.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            if (model.NewPassword != model.ConfirmNewPassword)
+            {
+                TempData["ErrorMessage"] = "Mật khẩu xác nhận không khớp.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            if (model.NewPassword.Length < 6)
+            {
+                TempData["ErrorMessage"] = "Mật khẩu mới phải có ít nhất 6 ký tự.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            var success = _accountService.ChangePassword(userId, model.CurrentPassword, model.NewPassword);
+            TempData[success ? "SuccessMessage" : "ErrorMessage"] = success
+                ? "Đổi mật khẩu thành công."
+                : "Mật khẩu hiện tại không đúng.";
+
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AddAddress(ProfileVM model)
+        {
+            if (!string.IsNullOrWhiteSpace(model.NewAddressPhoneNumber))
+            {
+                if (!Regex.IsMatch(model.NewAddressPhoneNumber, @"^(0[3-9])\d{8}$"))
+                {
+                    TempData["ErrorMessage"] = "Số điện thoại giao hàng không hợp lệ.";
+                    return RedirectToAction(nameof(Profile));
+                }
+            }
+
+            var success = _accountService.AddAddress(GetCurrentUserId(), model);
+            TempData[success ? "SuccessMessage" : "ErrorMessage"] = success
+                ? "Thêm địa chỉ thành công."
+                : "Không thể thêm địa chỉ. Vui lòng kiểm tra lại thông tin.";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteAddress(int addressId)
+        {
+            var success = _accountService.DeleteAddress(GetCurrentUserId(), addressId);
+            TempData[success ? "SuccessMessage" : "ErrorMessage"] = success
+                ? "Xóa địa chỉ thành công."
+                : "Không thể xóa địa chỉ.";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SetDefaultAddress(int addressId)
+        {
+            var success = _accountService.SetDefaultAddress(GetCurrentUserId(), addressId);
+            TempData[success ? "SuccessMessage" : "ErrorMessage"] = success
+                ? "Đã đặt địa chỉ mặc định."
+                : "Không thể cập nhật địa chỉ mặc định.";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        private int GetCurrentUserId()
+        {
+            return int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : 0;
+        }
+
+        private async Task RefreshIdentityAsync(int userId, string fullName, string email)
+        {
+            var role = User.FindFirstValue(ClaimTypes.Role) ?? "Customer";
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Name, fullName),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
     }
 }

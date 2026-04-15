@@ -20,9 +20,19 @@ namespace HDKmall.DAL.Repositories
             return _context.Users.Include(u => u.Role).FirstOrDefault(u => u.Email == email);
         }
 
+        public User GetUserById(int userId)
+        {
+            return _context.Users.Include(u => u.Role).FirstOrDefault(u => u.UserId == userId);
+        }
+
         public void AddUser(User user)
         {
             _context.Users.Add(user);
+        }
+
+        public void UpdateUser(User user)
+        {
+            _context.Users.Update(user);
         }
 
         public void SaveChanges()
@@ -41,6 +51,30 @@ namespace HDKmall.DAL.Repositories
             _context.Roles.Add(newRole);
             _context.SaveChanges();
             return newRole.RoleId;
+        }
+
+        public List<UserAddress> GetUserAddressesByUserId(int userId)
+        {
+            return _context.UserAddresses
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.IsDefault)
+                .ThenByDescending(a => a.CreatedAt)
+                .ToList();
+        }
+
+        public UserAddress GetUserAddressById(int userId, int addressId)
+        {
+            return _context.UserAddresses.FirstOrDefault(a => a.AddressId == addressId && a.UserId == userId);
+        }
+
+        public void AddUserAddress(UserAddress address)
+        {
+            _context.UserAddresses.Add(address);
+        }
+
+        public void DeleteUserAddress(UserAddress address)
+        {
+            _context.UserAddresses.Remove(address);
         }
     }
 }
