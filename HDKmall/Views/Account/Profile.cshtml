@@ -68,69 +68,72 @@
         </div>
     </div>
 
-    <div class="card p-3 mt-4">
-        <h5 class="mb-3">Quản lý địa chỉ giao hàng</h5>
-        <form asp-action="AddAddress" method="post" class="row g-3">
-            @Html.AntiForgeryToken()
-            <div class="col-md-4">
-                <input asp-for="NewAddressRecipientName" class="form-control" placeholder="Người nhận" />
-            </div>
-            <div class="col-md-3">
-                <input asp-for="NewAddressPhoneNumber" class="form-control" placeholder="Số điện thoại" />
-            </div>
-            <div class="col-md-5">
-                <input asp-for="NewAddressLine" class="form-control" placeholder="Địa chỉ cụ thể" />
-            </div>
-            <div class="col-12">
-                <label class="form-check">
-                    <input asp-for="SetAsDefaultAddress" class="form-check-input" />
-                    <span class="form-check-label">Đặt làm địa chỉ mặc định</span>
-                </label>
-            </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-success">Thêm địa chỉ</button>
-            </div>
-        </form>
+    @if (!User.IsInRole("Admin"))
+    {
+        <div class="card p-3 mt-4">
+            <h5 class="mb-3">Quản lý địa chỉ giao hàng</h5>
+            <form asp-action="AddAddress" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+                <div class="col-md-4">
+                    <input asp-for="NewAddressRecipientName" class="form-control" placeholder="Người nhận" />
+                </div>
+                <div class="col-md-3">
+                    <input asp-for="NewAddressPhoneNumber" class="form-control" placeholder="Số điện thoại" />
+                </div>
+                <div class="col-md-5">
+                    <input asp-for="NewAddressLine" class="form-control" placeholder="Địa chỉ cụ thể" />
+                </div>
+                <div class="col-12">
+                    <label class="form-check">
+                        <input asp-for="SetAsDefaultAddress" class="form-check-input" />
+                        <span class="form-check-label">Đặt làm địa chỉ mặc định</span>
+                    </label>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">Thêm địa chỉ</button>
+                </div>
+            </form>
 
-        <hr />
-        @if (Model.Addresses.Any())
-        {
-            <div class="list-group">
-                @foreach (var address in Model.Addresses)
-                {
-                    <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
-                        <div>
-                            <strong>@address.RecipientName</strong> - @address.PhoneNumber
-                            <div>@address.AddressLine</div>
-                            @if (address.IsDefault)
-                            {
-                                <span class="badge bg-primary mt-1">Mặc định</span>
-                            }
-                        </div>
-                        <div class="d-flex gap-2">
-                            @if (!address.IsDefault)
-                            {
-                                <form asp-action="SetDefaultAddress" method="post">
+            <hr />
+            @if (Model.Addresses.Any())
+            {
+                <div class="list-group">
+                    @foreach (var address in Model.Addresses)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                            <div>
+                                <strong>@address.RecipientName</strong> - @address.PhoneNumber
+                                <div>@address.AddressLine</div>
+                                @if (address.IsDefault)
+                                {
+                                    <span class="badge bg-primary mt-1">Mặc định</span>
+                                }
+                            </div>
+                            <div class="d-flex gap-2">
+                                @if (!address.IsDefault)
+                                {
+                                    <form asp-action="SetDefaultAddress" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="addressId" value="@address.AddressId" />
+                                        <button type="submit" class="btn btn-outline-primary btn-sm">Đặt mặc định</button>
+                                    </form>
+                                }
+                                <form asp-action="DeleteAddress" method="post">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="addressId" value="@address.AddressId" />
-                                    <button type="submit" class="btn btn-outline-primary btn-sm">Đặt mặc định</button>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>
                                 </form>
-                            }
-                            <form asp-action="DeleteAddress" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="addressId" value="@address.AddressId" />
-                                <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>
-                            </form>
+                            </div>
                         </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p class="text-muted mb-0">Bạn chưa có địa chỉ giao hàng nào.</p>
-        }
-    </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Bạn chưa có địa chỉ giao hàng nào.</p>
+            }
+        </div>
+    }
 </div>
 
 @section Scripts {
