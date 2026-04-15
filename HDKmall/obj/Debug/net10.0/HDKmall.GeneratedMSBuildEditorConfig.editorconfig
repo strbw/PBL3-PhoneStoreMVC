@@ -58,16 +58,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/runner/work/PBL3-PhoneStoreMVC/PBL3-PhoneStoreMVC/HDKmall/Views/Account/AccessDenied.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9BY2Nlc3NEZW5pZWQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/runner/work/PBL3-PhoneStoreMVC/PBL3-PhoneStoreMVC/HDKmall/Views/Account/Login.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9Mb2dpbi5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/runner/work/PBL3-PhoneStoreMVC/PBL3-PhoneStoreMVC/HDKmall/Views/Account/Profile.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9Qcm9maWxlLmNzaHRtbA==
+[/home/runner/work/PBL3-PhoneStoreMVC/PBL3-PhoneStoreMVC/HDKmall/Views/Account/login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWNjb3VudC9sb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/runner/work/PBL3-PhoneStoreMVC/PBL3-PhoneStoreMVC/HDKmall/Views/Account/Register.cshtml]
