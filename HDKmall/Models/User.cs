@@ -12,6 +12,7 @@ namespace HDKmall.Models
         
         public int RoleId { get; set; }
         public Role Role { get; set; }
+        public ICollection<UserAddress> Addresses { get; set; } = new List<UserAddress>();
 
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }

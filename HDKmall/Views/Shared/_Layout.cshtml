@@ -26,7 +26,19 @@
   <a href="/Product" class="mobile-nav-item">📱 Điện thoại</a>
   <a href="/Cart" class="mobile-nav-item">🛒 Giỏ hàng</a>
   <a href="/Order" class="mobile-nav-item">📦 Đơn hàng</a>
-  <a href="/Account/Login" class="mobile-nav-item">👤 Tài khoản</a>
+  @if (User.Identity!.IsAuthenticated)
+  {
+    <a href="/Account/Profile" class="mobile-nav-item">👤 Hồ sơ</a>
+    @if (User.IsInRole("Admin"))
+    {
+      <a href="/Admin/Dashboard" class="mobile-nav-item">🛠 Quản trị cửa hàng</a>
+    }
+    <a href="/Account/Logout" class="mobile-nav-item">⏻ Đăng xuất</a>
+  }
+  else
+  {
+    <a href="/Account/Login" class="mobile-nav-item">👤 Tài khoản</a>
+  }
 </nav>
 
 <!-- ========== HEADER ========== -->
@@ -56,6 +68,11 @@
             <div class="header-user-menu" style="display:flex; align-items:center; gap: 8px;">
               <span class="btn-icon">👤</span>
               <span class="user-name">@User.Identity.Name</span>
+              <a href="/Account/Profile" class="header-btn" title="Hồ sơ">Hồ sơ</a>
+              @if (User.IsInRole("Admin"))
+              {
+                <a href="/Admin/Dashboard" class="header-btn" title="Quản trị cửa hàng">Quản trị</a>
+              }
               <a href="/Account/Logout" class="header-btn logout-btn" title="Đăng xuất">⏻</a>
             </div>
         }

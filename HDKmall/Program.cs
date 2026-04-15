@@ -34,6 +34,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromDays(30);
     });
+builder.Services.AddAuthorization();
 
 // 3. Đăng ký Dependency Injection (DI)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
