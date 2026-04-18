@@ -69,7 +69,6 @@ namespace HDKmall.BLL.Services
                     };
                     _productRepository.AddImage(img);
 
-                    // Set product main image from first uploaded image
                     if (isFirst && img.IsMain)
                     {
                         product.ImageUrl = img.ImageUrl;
@@ -85,6 +84,16 @@ namespace HDKmall.BLL.Services
                 foreach (var v in vm.Variants)
                 {
                     if (string.IsNullOrWhiteSpace(v.Color) && string.IsNullOrWhiteSpace(v.Capacity)) continue;
+
+                    string? variantImageUrl = v.ImageUrl;
+
+                    if (v.ImageFile != null && v.ImageFile.Length > 0)
+                    {
+                        var upload = await _photoService.AddPhotoAsync(v.ImageFile);
+                        if (upload.Error == null)
+                            variantImageUrl = upload.SecureUrl.AbsoluteUri;
+                    }
+
                     var variant = new ProductVariant
                     {
                         ProductId = product.Id,
@@ -92,7 +101,7 @@ namespace HDKmall.BLL.Services
                         Capacity = v.Capacity,
                         Price = v.Price,
                         Stock = v.Stock,
-                        ImageUrl = v.ImageUrl
+                        ImageUrl = variantImageUrl
                     };
                     _productRepository.AddVariant(variant);
                 }
@@ -177,6 +186,16 @@ namespace HDKmall.BLL.Services
                 foreach (var v in vm.Variants)
                 {
                     if (string.IsNullOrWhiteSpace(v.Color) && string.IsNullOrWhiteSpace(v.Capacity)) continue;
+
+                    string? variantImageUrl = v.ImageUrl;
+
+                    if (v.ImageFile != null && v.ImageFile.Length > 0)
+                    {
+                        var upload = await _photoService.AddPhotoAsync(v.ImageFile);
+                        if (upload.Error == null)
+                            variantImageUrl = upload.SecureUrl.AbsoluteUri;
+                    }
+
                     var variant = new ProductVariant
                     {
                         ProductId = product.Id,
@@ -184,7 +203,7 @@ namespace HDKmall.BLL.Services
                         Capacity = v.Capacity,
                         Price = v.Price,
                         Stock = v.Stock,
-                        ImageUrl = v.ImageUrl
+                        ImageUrl = variantImageUrl
                     };
                     _productRepository.AddVariant(variant);
                 }
@@ -217,7 +236,6 @@ namespace HDKmall.BLL.Services
             var product = _productRepository.GetById(id);
             if (product == null) return false;
 
-            // Delete Cloudinary photos
             if (!string.IsNullOrEmpty(product.PublicId))
                 await _photoService.DeletePhotoAsync(product.PublicId);
 

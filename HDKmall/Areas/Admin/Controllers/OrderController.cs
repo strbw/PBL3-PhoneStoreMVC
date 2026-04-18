@@ -16,15 +16,27 @@ namespace HDKmall.Areas.Admin.Controllers
             _orderService = orderService;
         }
 
-        // GET: Admin/Order
-        public IActionResult Index()
+        public IActionResult Index(string? q)
         {
             ViewBag.ActiveTab = "orders";
             var orders = _orderService.GetAllOrders();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var key = q.Trim().ToLower();
+                orders = orders.Where(o =>
+                    o.Id.ToString().Contains(key) ||
+                    (o.User?.FullName ?? "").ToLower().Contains(key) ||
+                    (o.User?.Email ?? "").ToLower().Contains(key) ||
+                    (o.Address ?? "").ToLower().Contains(key) ||
+                    (o.Status ?? "").ToLower().Contains(key)
+                );
+            }
+
+            ViewBag.Search = q;
             return View(orders);
         }
 
-        // POST: Admin/Order/UpdateStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult UpdateStatus(int id, string status)

@@ -7,25 +7,43 @@
 <div class="admin-section" style="max-width:520px;">
     <h2 style="font-size:18px; font-weight:700; margin-bottom:20px;">Thêm banner mới</h2>
 
-    <form asp-area="Admin" asp-controller="Banner" asp-action="Create" method="post">
+    <form asp-area="Admin" asp-controller="Banner" asp-action="Create" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
 
         <div class="mb-3">
             <label asp-for="ImageUrl" class="form-label fw-medium">URL ảnh *</label>
-            <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+            <input asp-for="ImageUrl" class="form-control" id="bannerUrl" />
             <span asp-validation-for="ImageUrl" class="text-danger small"></span>
         </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-medium">Upload ảnh</label>
+            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" id="bannerFile" />
+        </div>
+
         <div class="mb-3">
             <label asp-for="Title" class="form-label fw-medium">Tiêu đề</label>
-            <input asp-for="Title" class="form-control" placeholder="Tiêu đề banner" />
+            <input asp-for="Title" class="form-control" id="bannerTitle" />
         </div>
+
         <div class="mb-3">
             <label asp-for="LinkUrl" class="form-label fw-medium">Đường dẫn khi click</label>
-            <input asp-for="LinkUrl" class="form-control" placeholder="/Product" />
+            <input asp-for="LinkUrl" class="form-control" id="bannerLink" />
         </div>
+
         <div class="mb-3 form-check">
             <input asp-for="IsActive" class="form-check-input" type="checkbox" />
             <label asp-for="IsActive" class="form-check-label fw-medium">Hiển thị banner</label>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header fw-bold">Preview</div>
+            <div class="card-body">
+                <img id="bannerPreviewImage" data-preview-src=""
+                     src="" style="max-height:140px;object-fit:cover;display:none" class="rounded" />
+                <div class="fw-bold mt-2" id="bannerPreviewTitle">(Tiêu đề)</div>
+                <div class="text-muted" id="bannerPreviewLink">(Link)</div>
+            </div>
         </div>
 
         <div class="d-flex gap-2 mt-4">
@@ -34,3 +52,39 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        function updateBannerPreview() {
+            const url = document.getElementById('bannerUrl').value;
+            const title = document.getElementById('bannerTitle').value;
+            const link = document.getElementById('bannerLink').value;
+
+            document.getElementById('bannerPreviewTitle').innerText = title || "(Tiêu đề)";
+            document.getElementById('bannerPreviewLink').innerText = link || "(Link)";
+
+            if (url) {
+                const img = document.getElementById('bannerPreviewImage');
+                img.src = url;
+                img.setAttribute('data-preview-src', url);
+                img.style.display = 'block';
+            }
+        }
+
+        document.getElementById('bannerUrl').addEventListener('input', updateBannerPreview);
+        document.getElementById('bannerTitle').addEventListener('input', updateBannerPreview);
+        document.getElementById('bannerLink').addEventListener('input', updateBannerPreview);
+
+        document.getElementById('bannerFile').addEventListener('change', function () {
+            const img = document.getElementById('bannerPreviewImage');
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    img.src = e.target.result;
+                img.setAttribute('data-preview-src', e.target.result);
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    </script>
+}

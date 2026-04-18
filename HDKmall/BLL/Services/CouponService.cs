@@ -18,10 +18,7 @@ namespace HDKmall.BLL.Services
             var coupon = _couponRepository.GetByCode(code);
             if (coupon == null) return null;
 
-            // Check if expired
             if (coupon.ExpiryDate < DateTime.Now) return null;
-
-            // Check if usage limit exceeded
             if (coupon.UsedCount >= coupon.UsageLimit) return null;
 
             return coupon;
@@ -48,6 +45,7 @@ namespace HDKmall.BLL.Services
 
         public void CreateCoupon(Coupon coupon)
         {
+            coupon.UsedCount = 0;
             _couponRepository.Add(coupon);
             _couponRepository.SaveChanges();
         }

@@ -30,14 +30,25 @@ namespace HDKmall.Areas.Admin.Controllers
             ViewBag.Brands = new SelectList(brands, "Id", "Name", selectedBrandId);
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string? q)
         {
             ViewBag.ActiveTab = "products";
             var products = _productService.GetAllProducts();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var key = q.Trim().ToLower();
+                products = products.Where(p =>
+                    (p.Name ?? "").ToLower().Contains(key) ||
+                    (p.Category?.Name ?? "").ToLower().Contains(key) ||
+                    (p.Brand?.Name ?? "").ToLower().Contains(key)
+                );
+            }
+
+            ViewBag.Search = q;
             return View(products);
         }
 
-        // GET: Admin/Product/Create
         public IActionResult Create()
         {
             ViewBag.ActiveTab = "products";
@@ -45,7 +56,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(new ProductVM());
         }
 
-        // POST: Admin/Product/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductVM vm)
@@ -70,7 +80,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(vm);
         }
 
-        // GET: Admin/Product/Edit/5
         public IActionResult Edit(int id)
         {
             ViewBag.ActiveTab = "products";
@@ -111,7 +120,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(vm);
         }
 
-        // POST: Admin/Product/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProductVM vm)
@@ -136,7 +144,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(vm);
         }
 
-        // GET: Admin/Product/Delete/5
         public IActionResult Delete(int id)
         {
             ViewBag.ActiveTab = "products";
@@ -145,7 +152,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(product);
         }
 
-        // POST: Admin/Product/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -160,4 +166,3 @@ namespace HDKmall.Areas.Admin.Controllers
         }
     }
 }
-

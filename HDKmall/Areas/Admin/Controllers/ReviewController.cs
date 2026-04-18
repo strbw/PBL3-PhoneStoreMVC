@@ -15,15 +15,25 @@ namespace HDKmall.Areas.Admin.Controllers
             _reviewService = reviewService;
         }
 
-        // GET: Admin/Review
-        public IActionResult Index()
+        public IActionResult Index(string? q)
         {
             ViewBag.ActiveTab = "reviews";
             var reviews = _reviewService.GetAllReviews();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var key = q.Trim().ToLower();
+                reviews = reviews.Where(r =>
+                    (r.Product?.Name ?? "").ToLower().Contains(key) ||
+                    (r.User?.FullName ?? "").ToLower().Contains(key) ||
+                    (r.Comment ?? "").ToLower().Contains(key)
+                );
+            }
+
+            ViewBag.Search = q;
             return View(reviews);
         }
 
-        // POST: Admin/Review/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id)

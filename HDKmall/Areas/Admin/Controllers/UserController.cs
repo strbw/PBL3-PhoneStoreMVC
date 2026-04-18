@@ -15,11 +15,22 @@ namespace HDKmall.Areas.Admin.Controllers
             _accountService = accountService;
         }
 
-        // GET: Admin/User
-        public IActionResult Index()
+        public IActionResult Index(string? q)
         {
             ViewBag.ActiveTab = "users";
             var users = _accountService.GetAllUsers();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var key = q.Trim().ToLower();
+                users = users.Where(u =>
+                    (u.FullName ?? "").ToLower().Contains(key) ||
+                    (u.Email ?? "").ToLower().Contains(key) ||
+                    (u.PhoneNumber ?? "").ToLower().Contains(key)
+                );
+            }
+
+            ViewBag.Search = q;
             return View(users);
         }
     }

@@ -16,22 +16,27 @@ namespace HDKmall.Areas.Admin.Controllers
             _couponService = couponService;
         }
 
-        // GET: Admin/Coupon
-        public IActionResult Index()
+        public IActionResult Index(string? q)
         {
             ViewBag.ActiveTab = "coupons";
             var coupons = _couponService.GetAllCoupons();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var key = q.Trim().ToLower();
+                coupons = coupons.Where(c => (c.Code ?? "").ToLower().Contains(key));
+            }
+
+            ViewBag.Search = q;
             return View(coupons);
         }
 
-        // GET: Admin/Coupon/Create
         public IActionResult Create()
         {
             ViewBag.ActiveTab = "coupons";
             return View(new Coupon { ExpiryDate = DateTime.Today.AddMonths(1), UsageLimit = 100 });
         }
 
-        // POST: Admin/Coupon/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Coupon coupon)
@@ -47,7 +52,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Admin/Coupon/Edit/5
         public IActionResult Edit(int id)
         {
             ViewBag.ActiveTab = "coupons";
@@ -56,7 +60,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(coupon);
         }
 
-        // POST: Admin/Coupon/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Coupon coupon)
@@ -72,7 +75,6 @@ namespace HDKmall.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Admin/Coupon/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id)
