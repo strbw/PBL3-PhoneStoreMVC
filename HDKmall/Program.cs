@@ -58,6 +58,8 @@ builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddScoped<IMoMoService, MoMoService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IBannerRepository, BannerRepository>();
+builder.Services.AddScoped<IBannerService, BannerService>();
 
 
 var app = builder.Build();

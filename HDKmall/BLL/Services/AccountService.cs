@@ -193,5 +193,10 @@ namespace HDKmall.BLL.Services
                 return false;
             }
         }
+
+        public IEnumerable<User> GetAllUsers()
+        {
+            return _userRepository.GetAllUsers();
+        }
     }
 }

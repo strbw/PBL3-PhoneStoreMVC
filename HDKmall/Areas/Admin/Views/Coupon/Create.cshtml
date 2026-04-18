@@ -1,0 +1,44 @@
+@model HDKmall.Models.Coupon
+@{
+    ViewData["Title"] = "Thêm mã giảm giá";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-section" style="max-width:520px;">
+    <h2 style="font-size:18px; font-weight:700; margin-bottom:20px;">Thêm mã giảm giá mới</h2>
+
+    <form asp-area="Admin" asp-controller="Coupon" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="alert alert-danger mb-3" style="display:none;"></div>
+
+        <div class="mb-3">
+            <label asp-for="Code" class="form-label fw-medium">Mã giảm giá *</label>
+            <input asp-for="Code" class="form-control" placeholder="VD: SALE50" />
+            <span asp-validation-for="Code" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="DiscountAmount" class="form-label fw-medium">Số tiền giảm (₫) *</label>
+            <input asp-for="DiscountAmount" class="form-control" type="number" min="0" placeholder="50000" />
+            <span asp-validation-for="DiscountAmount" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="ExpiryDate" class="form-label fw-medium">Ngày hết hạn *</label>
+            <input asp-for="ExpiryDate" class="form-control" type="date" />
+            <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="UsageLimit" class="form-label fw-medium">Giới hạn sử dụng</label>
+            <input asp-for="UsageLimit" class="form-control" type="number" min="1" />
+            <span asp-validation-for="UsageLimit" class="text-danger small"></span>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Lưu</button>
+            <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

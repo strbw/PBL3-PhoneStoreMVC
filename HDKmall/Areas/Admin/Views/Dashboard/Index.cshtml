@@ -1,38 +1,80 @@
 ﻿@{
     ViewData["Title"] = "Dashboard Admin";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var ordersByStatus = ViewBag.OrdersByStatus as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var recentOrders = ViewBag.RecentOrders as IEnumerable<HDKmall.Models.Order> ?? Enumerable.Empty<HDKmall.Models.Order>();
 }
 
 <div class="admin-dashboard">
-    
-    <div class="admin-meta-row" style="margin-bottom: 24px;">
-        <span class="admin-mode-badge mock" id="admin-mode-badge">Mock Data Mode</span>
-        <span class="admin-last-sync" id="admin-last-sync">Cập nhật lúc: --:--:--</span>
-        <button class="admin-btn admin-btn-ghost" id="admin-reset-data">Reset dữ liệu local</button>
+
+    <div class="admin-summary" style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+        <div class="admin-stat-card" style="flex:1; min-width:180px; background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+            <div style="font-size:13px; color:#888; margin-bottom:6px;">Tổng đơn hàng</div>
+            <div style="font-size:28px; font-weight:700; color:#333;">@ViewBag.TotalOrders</div>
+        </div>
+        <div class="admin-stat-card" style="flex:1; min-width:180px; background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+            <div style="font-size:13px; color:#888; margin-bottom:6px;">Doanh thu (đã xử lý)</div>
+            <div style="font-size:28px; font-weight:700; color:#d70018;">@((ViewBag.TotalRevenue as decimal? ?? 0).ToString("N0"))₫</div>
+        </div>
+        <div class="admin-stat-card" style="flex:1; min-width:180px; background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+            <div style="font-size:13px; color:#888; margin-bottom:6px;">Sản phẩm</div>
+            <div style="font-size:28px; font-weight:700; color:#333;">@ViewBag.TotalProducts</div>
+        </div>
+        <div class="admin-stat-card" style="flex:1; min-width:180px; background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+            <div style="font-size:13px; color:#888; margin-bottom:6px;">Người dùng</div>
+            <div style="font-size:28px; font-weight:700; color:#333;">@ViewBag.TotalUsers</div>
+        </div>
     </div>
 
-    <div class="admin-summary" id="admin-summary"></div>
-
-    <div class="admin-grid-3">
-        <div class="admin-section">
-            <div class="admin-section-header">
-                <h2>Top thương hiệu</h2>
+    <div class="admin-grid-3" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="admin-section" style="background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+            <div class="admin-section-header" style="margin-bottom:14px;">
+                <h2 style="font-size:16px; font-weight:700;">Trạng thái đơn hàng</h2>
             </div>
-            <div id="dashboard-top-brands"></div>
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>Trạng thái</th><th class="text-end">Số lượng</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ordersByStatus)
+                    {
+                        <tr>
+                            <td>@item.Status</td>
+                            <td class="text-end fw-bold">@item.Count</td>
+                        </tr>
+                    }
+                    @if (!ordersByStatus.Any())
+                    {
+                        <tr><td colspan="2" class="text-center text-muted">Chưa có đơn hàng</td></tr>
+                    }
+                </tbody>
+            </table>
         </div>
 
-        <div class="admin-section">
-            <div class="admin-section-header">
-                <h2>Trạng thái đơn hàng</h2>
+        <div class="admin-section" style="background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+            <div class="admin-section-header" style="margin-bottom:14px;">
+                <h2 style="font-size:16px; font-weight:700;">Đơn hàng gần đây</h2>
             </div>
-            <div id="dashboard-order-status"></div>
-        </div>
-
-        <div class="admin-section">
-            <div class="admin-section-header">
-                <h2>Sắp hết hàng</h2>
-            </div>
-            <div id="dashboard-low-stock"></div>
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>#</th><th>Ngày</th><th>Trạng thái</th><th class="text-end">Tổng</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in recentOrders)
+                    {
+                        <tr>
+                            <td><a href="/Admin/Order">#@order.Id</a></td>
+                            <td>@order.OrderDate.ToString("dd/MM/yy")</td>
+                            <td><span class="badge bg-secondary">@order.Status</span></td>
+                            <td class="text-end text-danger fw-bold">@order.TotalAmount.ToString("N0")₫</td>
+                        </tr>
+                    }
+                    @if (!recentOrders.Any())
+                    {
+                        <tr><td colspan="4" class="text-center text-muted">Chưa có đơn hàng</td></tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 

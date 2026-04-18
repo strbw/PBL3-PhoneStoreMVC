@@ -5,6 +5,7 @@ namespace HDKmall.DAL.Interfaces
     {
         User GetUserByEmail(string email);
         User GetUserById(int userId);
+        IEnumerable<User> GetAllUsers();
         void AddUser(User user);
         void UpdateUser(User user);
         void SaveChanges();
