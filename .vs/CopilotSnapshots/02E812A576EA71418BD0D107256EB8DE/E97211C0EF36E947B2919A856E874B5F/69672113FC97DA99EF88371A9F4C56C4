@@ -1,4 +1,0 @@
-﻿@using HDKmall
-@using HDKmall.Models
-@using HDKmall.ViewModels
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
