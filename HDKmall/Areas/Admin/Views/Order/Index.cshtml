@@ -1,0 +1,87 @@
+@model IEnumerable<HDKmall.Models.Order>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var statuses = new[] { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" };
+}
+
+<div class="admin-section">
+    <div class="admin-section-header d-flex justify-content-between align-items-center mb-3">
+        <h2 style="font-size:18px; font-weight:700;">Quản lý đơn hàng</h2>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="table-responsive bg-white rounded shadow-sm">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">#</th>
+                    <th>Người đặt</th>
+                    <th>Ngày đặt</th>
+                    <th>Địa chỉ</th>
+                    <th>Thanh toán</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th class="pe-3 text-center">Cập nhật</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                    {
+                        var statusClass = order.Status switch {
+                            "Pending" => "bg-warning text-dark",
+                            "Processing" => "bg-info text-dark",
+                            "Shipped" => "bg-primary",
+                            "Delivered" => "bg-success",
+                            "Cancelled" => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                        <tr>
+                            <td class="ps-3 fw-bold">#@order.Id</td>
+                            <td>@(order.User?.FullName ?? "-")</td>
+                            <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td style="max-width:180px; white-space:normal; font-size:13px;">@order.Address</td>
+                            <td>@order.PaymentMethod</td>
+                            <td class="text-end text-danger fw-bold">@order.TotalAmount.ToString("N0")₫</td>
+                            <td><span class="badge @statusClass">@order.Status</span></td>
+                            <td class="pe-3 text-center">
+                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" class="d-flex gap-1 align-items-center justify-content-center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@order.Id" />
+                                    <select name="status" class="form-select form-select-sm" style="width:130px;">
+                                        @foreach (var s in statuses)
+                                        {
+                                            if (order.Status == s)
+                                            {
+                                                <option value="@s" selected="selected">@s</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@s">@s</option>
+                                            }
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="8" class="text-center py-4 text-muted">Chưa có đơn hàng nào.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

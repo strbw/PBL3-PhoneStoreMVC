@@ -1,0 +1,64 @@
+@model IEnumerable<HDKmall.Models.Banner>
+@{
+    ViewData["Title"] = "Quản lý Banner";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-section">
+    <div class="admin-section-header d-flex justify-content-between align-items-center mb-3">
+        <h2 style="font-size:18px; font-weight:700;">Quản lý Banner</h2>
+        <a asp-area="Admin" asp-controller="Banner" asp-action="Create" class="btn btn-primary btn-sm">+ Thêm banner</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="row row-cols-1 row-cols-md-2 g-3">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var banner in Model)
+            {
+                <div class="col">
+                    <div class="card shadow-sm border-0 h-100">
+                        @if (!string.IsNullOrEmpty(banner.ImageUrl))
+                        {
+                            <img src="@banner.ImageUrl" class="card-img-top" alt="@banner.Title" style="height:180px; object-fit:cover;" />
+                        }
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="card-title fw-bold mb-1">@(banner.Title ?? "(Không có tiêu đề)")</h6>
+                                @if (banner.IsActive)
+                                {
+                                    <span class="badge bg-success">Hiển thị</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Ẩn</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(banner.LinkUrl))
+                            {
+                                <p class="text-muted small mb-0">Link: @banner.LinkUrl</p>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-flex gap-2">
+                            <a asp-area="Admin" asp-controller="Banner" asp-action="Edit" asp-route-id="@banner.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <form asp-area="Admin" asp-controller="Banner" asp-action="Delete" method="post" class="d-inline"
+                                  onsubmit="return confirm('Xóa banner này?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@banner.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-4 text-muted">Chưa có banner nào.</div>
+        }
+    </div>
+</div>

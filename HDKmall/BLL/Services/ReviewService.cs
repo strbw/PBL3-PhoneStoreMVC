@@ -66,5 +66,10 @@ namespace HDKmall.BLL.Services
             var userOrders = _orderRepository.GetOrdersByUserId(userId);
             return userOrders.Any(o => o.OrderDetails.Any(od => od.ProductId == productId));
         }
+
+        public IEnumerable<Review> GetAllReviews()
+        {
+            return _reviewRepository.GetAll();
+        }
     }
 }

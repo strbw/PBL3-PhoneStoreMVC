@@ -1,0 +1,69 @@
+@model IEnumerable<HDKmall.Models.Review>
+@{
+    ViewData["Title"] = "Quản lý đánh giá";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-section">
+    <div class="admin-section-header d-flex justify-content-between align-items-center mb-3">
+        <h2 style="font-size:18px; font-weight:700;">Quản lý đánh giá sản phẩm</h2>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="table-responsive bg-white rounded shadow-sm">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">#</th>
+                    <th>Sản phẩm</th>
+                    <th>Người dùng</th>
+                    <th>Số sao</th>
+                    <th>Nội dung</th>
+                    <th>Ngày</th>
+                    <th class="pe-3 text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var review in Model)
+                    {
+                        <tr>
+                            <td class="ps-3">@review.Id</td>
+                            <td>
+                                <a href="/Product/Detail/@review.ProductId" class="text-decoration-none">
+                                    @(review.Product?.Name ?? $"#{review.ProductId}")
+                                </a>
+                            </td>
+                            <td>@(review.User?.FullName ?? $"#{review.UserId}")</td>
+                            <td>
+                                @for (int s = 1; s <= 5; s++)
+                                {
+                                    <span style="color:@(s <= review.Rating ? "#ffc107" : "#ddd");">★</span>
+                                }
+                            </td>
+                            <td style="max-width:250px; white-space:normal; font-size:13px;">@review.Comment</td>
+                            <td>@review.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td class="pe-3 text-center">
+                                <form asp-area="Admin" asp-controller="Review" asp-action="Delete" method="post" class="d-inline"
+                                      onsubmit="return confirm('Xóa đánh giá này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@review.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Chưa có đánh giá nào.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

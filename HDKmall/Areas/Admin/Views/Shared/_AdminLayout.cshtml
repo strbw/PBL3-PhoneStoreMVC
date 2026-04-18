@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Quản trị PhoneStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/style.css" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>" />
 </head>
@@ -18,57 +20,61 @@
             </div>
             <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
         </div>
-        <a href="~/Admin/Home" class="mobile-nav-item">🏠 Trang chủ</a>
-        <a href="~/Admin/Product" class="mobile-nav-item">🛍️ Sản phẩm</a>
-        <a href="~/Admin/Order" class="mobile-nav-item">📦 Đơn hàng</a>
-        <a href="~/Admin/User" class="mobile-nav-item">👤 Tài khoản</a>
+        <a href="/Admin/Dashboard" class="mobile-nav-item">🏠 Tổng quan</a>
+        <a href="/Admin/Product" class="mobile-nav-item">🛍️ Sản phẩm</a>
+        <a href="/Admin/Order" class="mobile-nav-item">📦 Đơn hàng</a>
+        <a href="/Admin/User" class="mobile-nav-item">👤 Người dùng</a>
+        <a href="/Admin/Banner" class="mobile-nav-item">🖼 Banner</a>
+        <a href="/Admin/Coupon" class="mobile-nav-item">🏷 Coupons</a>
+        <a href="/Admin/Review" class="mobile-nav-item">⭐ Đánh giá</a>
     </nav>
 
     <header class="header">
         <div class="header-top">
             <div class="container">
                 <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
-                <a href="~/Admin" class="logo">
+                <a href="/Admin/Dashboard" class="logo">
                     <div class="logo-icon">📱</div>
                     <div class="logo-text">Phone<span>Store</span></div>
                 </a>
                 <div style="flex:1"></div>
                 <div class="header-actions">
-                    <div class="header-user-menu">
+                    <div class="header-user-menu" style="display:flex; align-items:center; gap:8px;">
                         <span class="btn-icon">👤</span>
-                        <span class="user-name">Admin</span>
-                        <a href="#" class="header-btn logout-btn" title="Đăng xuất">⏻</a>
+                        <span class="user-name">@User.Identity?.Name</span>
+                        <a href="/" class="header-btn" title="Về trang khách hàng">🏠</a>
+                        <a href="/Account/Logout" class="header-btn logout-btn" title="Đăng xuất">⏻</a>
                     </div>
                 </div>
             </div>
         </div>
         <nav class="header-nav">
             <div class="container">
-                <a href="~/Admin/Product" class="nav-item">🛍️ Sản phẩm</a>
-                <a href="~/Admin/Order" class="nav-item">📦 Đơn hàng</a>
+                <a href="/Admin/Product" class="nav-item">🛍️ Sản phẩm</a>
+                <a href="/Admin/Order" class="nav-item">📦 Đơn hàng</a>
             </div>
         </nav>
     </header>
 
     <main class="admin-page">
         <div class="container" style="padding:32px 0 60px">
-            
+
             <div class="admin-header">
                 <div>
                     <h1 class="admin-title">Bảng điều khiển quản trị</h1>
                     <p class="admin-subtitle">Hệ thống quản lý PhoneStore</p>
                 </div>
-                <div class="admin-user" id="admin-user">Admin</div>
+                <div class="admin-user">@User.Identity?.Name</div>
             </div>
 
             <div class="admin-tabs" id="admin-tabs">
-                <a href="~/Admin/Home" class="admin-tab @(ViewBag.ActiveTab == "dashboard" ? "active" : "")">Tổng quan</a>
-                <a href="~/Admin/Product" class="admin-tab @(ViewBag.ActiveTab == "products" ? "active" : "")">Sản phẩm</a>
-                <a href="~/Admin/Order" class="admin-tab @(ViewBag.ActiveTab == "orders" ? "active" : "")">Đơn hàng</a>
-                <a href="~/Admin/User" class="admin-tab @(ViewBag.ActiveTab == "users" ? "active" : "")">Người dùng</a>
-                <a href="~/Admin/Banner" class="admin-tab @(ViewBag.ActiveTab == "banners" ? "active" : "")">Banner</a>
-                <a href="~/Admin/Coupon" class="admin-tab @(ViewBag.ActiveTab == "coupons" ? "active" : "")">Coupons</a>
-                <a href="~/Admin/Review" class="admin-tab @(ViewBag.ActiveTab == "reviews" ? "active" : "")">Đánh giá</a>
+                <a href="/Admin/Dashboard" class="admin-tab @(ViewBag.ActiveTab == "dashboard" ? "active" : "")">Tổng quan</a>
+                <a href="/Admin/Product" class="admin-tab @(ViewBag.ActiveTab == "products" ? "active" : "")">Sản phẩm</a>
+                <a href="/Admin/Order" class="admin-tab @(ViewBag.ActiveTab == "orders" ? "active" : "")">Đơn hàng</a>
+                <a href="/Admin/User" class="admin-tab @(ViewBag.ActiveTab == "users" ? "active" : "")">Người dùng</a>
+                <a href="/Admin/Banner" class="admin-tab @(ViewBag.ActiveTab == "banners" ? "active" : "")">Banner</a>
+                <a href="/Admin/Coupon" class="admin-tab @(ViewBag.ActiveTab == "coupons" ? "active" : "")">Coupons</a>
+                <a href="/Admin/Review" class="admin-tab @(ViewBag.ActiveTab == "reviews" ? "active" : "")">Đánh giá</a>
             </div>
 
             @RenderBody()
@@ -84,11 +90,8 @@
         </div>
     </footer>
 
-    <script src="~/js/data.js"></script>
-    <script src="~/js/admin-store.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/main.js"></script>
-    <script src="~/js/admin.js"></script>
-    
     @RenderSection("Scripts", required: false)
 </body>
 </html>

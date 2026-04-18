@@ -13,5 +13,6 @@ namespace HDKmall.BLL.Interfaces
         bool AddAddress(int userId, ProfileVM model);
         bool DeleteAddress(int userId, int addressId);
         bool SetDefaultAddress(int userId, int addressId);
+        IEnumerable<User> GetAllUsers();
     }
 }

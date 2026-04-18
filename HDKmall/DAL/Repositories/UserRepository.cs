@@ -25,6 +25,11 @@ namespace HDKmall.DAL.Repositories
             return _context.Users.Include(u => u.Role).FirstOrDefault(u => u.UserId == userId);
         }
 
+        public IEnumerable<User> GetAllUsers()
+        {
+            return _context.Users.Include(u => u.Role).OrderByDescending(u => u.CreatedAt).ToList();
+        }
+
         public void AddUser(User user)
         {
             _context.Users.Add(user);
