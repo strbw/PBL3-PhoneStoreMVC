@@ -24,7 +24,6 @@
         <div class="card-header fw-bold">Preview</div>
         <div class="card-body">
             <div class="d-flex gap-3">
-
                 <img id="previewMainImage"
                      src="/img/Product_Default.jpg"
                      style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;opacity:0.5;" />
@@ -34,19 +33,59 @@
                     <div id="previewPrice">(Giá)</div>
                     <div id="previewDescTop">(Mô tả)</div>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Lưu</button>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <button type="button" class="btn btn-outline-secondary" onclick="openProductPreview()">👁 Xem trước như khách hàng</button>
+    </div>
 </form>
+
+<!-- ===== FULL PREVIEW MODAL (giống trang user, không có đánh giá) ===== -->
+<div id="productPreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; width:90%; max-width:1100px; max-height:90vh; overflow:auto; border-radius:12px; position:relative; padding:20px;">
+        <button onclick="closeProductPreview()" style="position:absolute; top:10px; right:10px; border:none; background:#eee; border-radius:50%; width:36px; height:36px; font-size:20px;">×</button>
+
+        <div class="row">
+            <div class="col-md-5">
+                <div style="border:1px solid #eee; border-radius:10px; padding:10px;">
+                    <div style="position:relative;">
+                        <button type="button" onclick="prevPreviewImg()" style="position:absolute; left:5px; top:45%; background:#0006; color:#fff; border:none; border-radius:50%; width:32px; height:32px;">‹</button>
+                        <img id="previewMainImg" src="" style="width:100%; aspect-ratio:1/1; object-fit:contain;">
+                        <button type="button" onclick="nextPreviewImg()" style="position:absolute; right:5px; top:45%; background:#0006; color:#fff; border:none; border-radius:50%; width:32px; height:32px;">›</button>
+                    </div>
+                    <div id="previewThumbs" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center;"></div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div style="padding:8px 4px;">
+                    <h3 id="previewTitle" style="font-weight:700;">(Tên sản phẩm)</h3>
+                    <div style="color:#d70018; font-size:28px; font-weight:700; margin:10px 0;" id="previewPriceFull">0₫</div>
+
+                    <div style="margin:12px 0;">
+                        <div style="font-weight:600;">Mô tả:</div>
+                        <div id="previewDesc" style="color:#444;"></div>
+                    </div>
+
+                    <button style="width:100%; background:#d70018; color:#fff; padding:12px; border:none; border-radius:8px; font-weight:700;">
+                        THÊM VÀO GIỎ HÀNG
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
+        let previewImages = [];
+        let previewIndex = 0;
+
         // ===== PREVIEW IMAGE =====
         document.getElementById('imageInput').addEventListener('change', function () {
-
             const preview = document.getElementById('imagePreview');
             const mainImg = document.getElementById('previewMainImage');
 
@@ -62,8 +101,6 @@
                 const reader = new FileReader();
 
                 reader.onload = function (e) {
-
-                    // tạo ảnh nhỏ
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.style.width = '100px';
@@ -72,14 +109,12 @@
                     img.style.borderRadius = '6px';
                     img.style.border = i === 0 ? '2px solid red' : '1px solid #ddd';
 
-                    // click đổi ảnh chính
                     img.onclick = function () {
                         mainImg.src = e.target.result;
                     };
 
                     preview.appendChild(img);
 
-                    // ảnh đầu làm ảnh chính
                     if (i === 0) {
                         mainImg.src = e.target.result;
                         mainImg.style.opacity = "1";
@@ -109,5 +144,70 @@
         });
 
         updatePreview();
+
+        // ===== FULL PREVIEW MODAL =====
+        function openProductPreview() {
+            const name = document.getElementById('pName')?.value || '(Tên sản phẩm)';
+            const price = document.getElementById('pPrice')?.value || 0;
+            const desc = document.getElementById('pDesc')?.value || '(Mô tả)';
+
+            document.getElementById('previewTitle').innerText = name;
+            document.getElementById('previewPriceFull').innerText = Number(price).toLocaleString('vi-VN') + '₫';
+            document.getElementById('previewDesc').innerText = desc;
+
+            previewImages = [];
+            const fileInput = document.getElementById('imageInput');
+
+            if (fileInput && fileInput.files.length > 0) {
+                const files = Array.from(fileInput.files);
+                let loaded = 0;
+                files.forEach(f => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        previewImages.push(e.target.result);
+                        loaded++;
+                        if (loaded === files.length) renderPreviewGallery();
+                    };
+                    reader.readAsDataURL(f);
+                });
+            } else {
+                previewImages = ["/img/Product_Default.jpg"];
+                renderPreviewGallery();
+            }
+
+            document.getElementById('productPreviewModal').style.display = 'flex';
+        }
+
+        function renderPreviewGallery() {
+            if (previewImages.length === 0) previewImages = ["/img/Product_Default.jpg"];
+            previewIndex = 0;
+            document.getElementById('previewMainImg').src = previewImages[0];
+
+            const thumbs = document.getElementById('previewThumbs');
+            thumbs.innerHTML = '';
+            previewImages.forEach((src, i) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.style.width = '60px';
+                img.style.height = '60px';
+                img.style.objectFit = 'cover';
+                img.style.border = i === 0 ? '2px solid #d70018' : '1px solid #ccc';
+                img.style.borderRadius = '6px';
+                img.style.cursor = 'pointer';
+                img.onclick = () => { previewIndex = i; updatePreviewMain(); };
+                thumbs.appendChild(img);
+            });
+        }
+
+        function updatePreviewMain() {
+            document.getElementById('previewMainImg').src = previewImages[previewIndex];
+            document.querySelectorAll('#previewThumbs img').forEach((t, i) => {
+                t.style.border = i === previewIndex ? '2px solid #d70018' : '1px solid #ccc';
+            });
+        }
+
+        function nextPreviewImg(){ previewIndex = (previewIndex+1) % previewImages.length; updatePreviewMain(); }
+        function prevPreviewImg(){ previewIndex = (previewIndex-1+previewImages.length) % previewImages.length; updatePreviewMain(); }
+        function closeProductPreview(){ document.getElementById('productPreviewModal').style.display='none'; }
     </script>
 }

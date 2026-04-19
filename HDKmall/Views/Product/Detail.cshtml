@@ -5,6 +5,7 @@
     var colors = Model.Variants.Select(v => v.Color).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
     var capacities = Model.Variants.Select(v => v.Capacity).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
     var totalStock = Model.Variants.Any() ? Model.Variants.Sum(v => v.Stock) : 1;
+
     // Build image gallery: prioritize ProductImages, fallback to variant images and product image
     var galleryImages = Model.Images.OrderBy(i => i.DisplayOrder).ToList();
     if (!galleryImages.Any() && !string.IsNullOrEmpty(Model.ImageUrl))
@@ -12,6 +13,27 @@
         galleryImages = new List<HDKmall.ViewModels.ProductImageVM> {
             new HDKmall.ViewModels.ProductImageVM { Id = 0, ImageUrl = Model.ImageUrl, IsMain = true, DisplayOrder = 0 }
         };
+    }
+
+    // ADD: include variant images into gallery (for thumbnails)
+    var variantImageUrls = Model.Variants
+        .Where(v => !string.IsNullOrEmpty(v.ImageUrl))
+        .Select(v => v.ImageUrl)
+        .Distinct()
+        .ToList();
+
+    foreach (var url in variantImageUrls)
+    {
+        if (!galleryImages.Any(i => i.ImageUrl == url))
+        {
+            galleryImages.Add(new HDKmall.ViewModels.ProductImageVM
+            {
+                Id = 0,
+                ImageUrl = url,
+                IsMain = false,
+                DisplayOrder = galleryImages.Count
+            });
+        }
     }
 }
 
@@ -427,4 +449,3 @@
     const firstCapBtn = document.querySelector('#capacityOptions .variant-btn:not(.out-stock)');
     if (firstCapBtn) firstCapBtn.click();
 </script>
-

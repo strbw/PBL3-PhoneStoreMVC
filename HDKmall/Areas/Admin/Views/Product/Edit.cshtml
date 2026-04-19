@@ -234,6 +234,23 @@
                 </div>
             </div>
         </div>
+
+        <!-- Description + Specs (like user, no reviews) -->
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <div style="border-top:1px solid #eee; padding-top:16px;">
+                    <h5 class="fw-bold mb-3">Mô tả sản phẩm</h5>
+                    <div id="previewDescFull" style="font-size:15px; color:#444; line-height:1.7;"></div>
+                </div>
+
+                <div class="mt-4">
+                    <h5 class="fw-bold mb-3">Thông số kỹ thuật</h5>
+                    <table class="table table-sm table-bordered" id="previewSpecTable">
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -274,7 +291,8 @@
                 <div class="col-md-2"><label class="form-label small">Dung lượng</label><input type="text" name="Variants[${idx}].Capacity" class="form-control form-control-sm" /></div>
                 <div class="col-md-2"><label class="form-label small">Giá (₫)</label><input type="number" name="Variants[${idx}].Price" class="form-control form-control-sm" min="0" /></div>
                 <div class="col-md-1"><label class="form-label small">Tồn kho</label><input type="number" name="Variants[${idx}].Stock" class="form-control form-control-sm" min="0" value="0" /></div>
-                <div class="col-md-3"><label class="form-label small">Ảnh variant</label><input type="file" name="Variants[${idx}].ImageFile" class="form-control form-control-sm" accept="image/*" onchange="previewVariantImage(this, 'variant_preview_${idx}')" /><img id="variant_preview_${idx}" class="mt-1 rounded" style="height:50px; display:none;" /></div>
+                <div class="col-md-3"><label class="form-label small">Ảnh variant</label><input type="file" name="Variants[${idx}].ImageFile" class="form-control form-control-sm" accept="image/*"
+                        onchange="previewVariantImage(this, 'variant_preview_${idx}')" /><img id="variant_preview_${idx}" class="mt-1 rounded" style="height:50px; display:none" /></div>
                 <div class="col-md-1"><label class="form-label small">URL ảnh</label><input type="text" name="Variants[${idx}].ImageUrl" class="form-control form-control-sm" /></div>
                 <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeRow('variant_${idx}')">✕</button></div>
             </div>`;
@@ -320,15 +338,43 @@
             const price = document.getElementById('pPrice')?.value || 0;
             const brand = document.getElementById('pBrand')?.selectedOptions[0]?.text || '(Thương hiệu)';
             const desc = document.getElementById('pDesc')?.value || '(Mô tả)';
-            const colors = [...document.querySelectorAll('input[name*=".Color"]')].map(i => i.value).filter(v => v);
-            const caps = [...document.querySelectorAll('input[name*=".Capacity"]')].map(i => i.value).filter(v => v);
+            const colors = [...document.querySelectorAll('input[name*=".Color"]')].map(i => i.value).filter(v => v && v.trim() !== '');
+            const caps = [...document.querySelectorAll('input[name*=".Capacity"]')].map(i => i.value).filter(v => v && v.trim() !== '');
 
             document.getElementById('previewTitle').innerText = name;
             document.getElementById('previewPrice').innerText = Number(price).toLocaleString('vi-VN') + '₫';
             document.getElementById('previewBrand').innerText = brand;
             document.getElementById('previewDesc').innerText = desc;
+            document.getElementById('previewDescFull').innerHTML = desc.replace(/\n/g, "<br/>");
+
+            // specs table
+            const specRows = [...document.querySelectorAll('input[name*=".SpecName"]')].map((el, idx) => {
+                const name = el.value?.trim();
+                const valInput = document.querySelectorAll('input[name*=".SpecValue"]')[idx];
+                const val = valInput?.value?.trim();
+                return (name && val) ? { name, val } : null;
+            }).filter(x => x);
+
+            const tbody = document.querySelector('#previewSpecTable tbody');
+            tbody.innerHTML = '';
+            if (specRows.length === 0) {
+                tbody.innerHTML = `<tr><td class="text-muted">Chưa có thông số.</td></tr>`;
+            } else {
+                specRows.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td style="width:40%" class="text-muted fw-semibold">${s.name}</td><td>${s.val}</td>`;
+                    tbody.appendChild(tr);
+                });
+            }
 
             previewImages = [];
+
+            const addIfValid = (url) => {
+                if (!url) return;
+                const u = url.trim();
+                if (!u || u === "null" || u === "undefined") return;
+                previewImages.push(u);
+            };
 
             const fileInput = document.getElementById('imageInput');
             if (fileInput && fileInput.files.length > 0) {
@@ -337,7 +383,7 @@
                 files.forEach(f => {
                     const reader = new FileReader();
                     reader.onload = e => {
-                        previewImages.push(e.target.result);
+                        addIfValid(e.target.result);
                         loaded++;
                         if (loaded === files.length) renderPreviewGallery();
                     };
@@ -345,9 +391,13 @@
                 });
             } else {
                 const mainImg = document.getElementById('previewMainImage')?.src;
-                if (mainImg) previewImages.push(mainImg);
-                const variantUrls = [...document.querySelectorAll('input[name*=".ImageUrl"]')].map(i => i.value).filter(v => v);
-                variantUrls.forEach(u => { if (!previewImages.includes(u)) previewImages.push(u); });
+                addIfValid(mainImg);
+
+                const variantUrls = [...document.querySelectorAll('input[name*=".ImageUrl"]')]
+                    .map(i => i.value)
+                    .filter(v => v && v.trim() !== '' && v.trim() !== "null" && v.trim() !== "undefined");
+
+                variantUrls.forEach(u => addIfValid(u));
                 renderPreviewGallery();
             }
 
@@ -378,11 +428,21 @@
 
         function renderPreviewGallery() {
             if (previewImages.length === 0) previewImages = ["/img/Product_Default.jpg"];
+
+            previewImages = [...new Set(previewImages)];
             previewIndex = 0;
             document.getElementById('previewMainImg').src = previewImages[0];
 
             const thumbs = document.getElementById('previewThumbs');
             thumbs.innerHTML = '';
+
+            if (previewImages.length <= 1) {
+                thumbs.style.display = 'none';
+                return;
+            } else {
+                thumbs.style.display = 'flex';
+            }
+
             previewImages.forEach((src, i) => {
                 const img = document.createElement('img');
                 img.src = src;
