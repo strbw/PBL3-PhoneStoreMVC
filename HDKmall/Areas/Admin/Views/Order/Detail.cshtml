@@ -1,0 +1,123 @@
+@model HDKmall.Models.Order
+@{
+    ViewData["Title"] = $"Đơn hàng #{Model.Id}";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled" };
+    var statusLabels = new Dictionary<string, string> {
+        { "Pending", "Chờ xử lý" }, { "Processing", "Đang xử lý" },
+        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" }
+    };
+    var statusClass = Model.Status switch {
+        "Pending" => "bg-warning text-dark",
+        "Processing" => "bg-info text-dark",
+        "Shipping" => "bg-primary",
+        "Delivered" => "bg-success",
+        "Cancelled" => "bg-danger",
+        _ => "bg-secondary"
+    };
+    var statusLbl = statusLabels.ContainsKey(Model.Status ?? "") ? statusLabels[Model.Status ?? "Pending"] : (Model.Status ?? "-");
+}
+
+<div class="admin-section">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            ← Danh sách đơn hàng
+        </a>
+        <h2 class="mb-0" style="font-size:18px; font-weight:700;">Chi tiết đơn hàng #@Model.Id</h2>
+        <span class="badge @statusClass ms-2">@statusLbl</span>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="row g-4">
+        <!-- Order Info -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h6 class="mb-0 fw-bold">📦 Sản phẩm đặt mua</h6>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end pe-4">Đơn giá</th>
+                                <th class="text-end pe-4">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                            {
+                                foreach (var detail in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-semibold">@(detail.Product?.Name ?? "Sản phẩm #" + detail.ProductId)</div>
+                                        </td>
+                                        <td class="text-center">@detail.Quantity</td>
+                                        <td class="text-end pe-4">@detail.UnitPrice.ToString("N0")₫</td>
+                                        <td class="text-end pe-4 fw-bold text-danger">@((detail.UnitPrice * detail.Quantity).ToString("N0"))₫</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold pe-4">Tổng cộng:</td>
+                                <td class="text-end pe-4 fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0")₫</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Customer + Update Status -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h6 class="mb-0 fw-bold">👤 Thông tin khách hàng</h6>
+                </div>
+                <div class="card-body px-4 py-3">
+                    <div class="mb-2"><span class="text-muted small">Tên:</span> <span class="fw-semibold">@(Model.User?.FullName ?? "-")</span></div>
+                    <div class="mb-2"><span class="text-muted small">Email:</span> <span>@(Model.User?.Email ?? "-")</span></div>
+                    <div class="mb-2"><span class="text-muted small">SĐT:</span> <span>@(Model.User?.PhoneNumber ?? "-")</span></div>
+                    <div class="mb-2"><span class="text-muted small">Địa chỉ:</span> <span>@(Model.Address ?? "-")</span></div>
+                    <div class="mb-2"><span class="text-muted small">Thanh toán:</span> <span class="badge bg-light text-dark border">@Model.PaymentMethod</span></div>
+                    <div class="mb-0"><span class="text-muted small">Ngày đặt:</span> <span>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span></div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h6 class="mb-0 fw-bold">🔄 Cập nhật trạng thái</h6>
+                </div>
+                <div class="card-body px-4 py-3">
+                    <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" class="d-flex flex-column gap-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <select name="status" class="form-select">
+                            @foreach (var s in statuses)
+                            {
+                                var lbl = statusLabels.ContainsKey(s) ? statusLabels[s] : s;
+                                if (Model.Status == s)
+                                {
+                                    <option value="@s" selected>@lbl</option>
+                                }
+                                else
+                                {
+                                    <option value="@s">@lbl</option>
+                                }
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

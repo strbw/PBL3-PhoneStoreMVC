@@ -9,6 +9,15 @@
             <h2 class="section-title mb-0">Chi tiết đơn hàng #@Model.Id</h2>
             <a href="/Order/History" class="btn btn-outline-secondary rounded-pill px-4"><i class="bi bi-arrow-left"></i> Lịch sử</a>
         </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show mb-3">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mb-3">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        }
         
         <div class="row gx-lg-5">
             <div class="col-lg-8">
@@ -75,7 +84,25 @@
                         <p class="text-muted mb-0">@Model.PaymentMethod</p>
                         
                         <h6 class="fw-bold mb-3 mt-4 pt-3 border-top d-flex align-items-center text-dark"><i class="bi bi-box-seam me-2 text-primary"></i> Trạng thái đơn hàng</h6>
-                        <p class="text-muted mb-0">@Model.Status</p>
+                        @{
+                            var detailStatusClass = Model.Status switch {
+                                "Pending" => "bg-warning text-dark",
+                                "Processing" => "bg-info text-dark",
+                                "Shipping" => "bg-primary",
+                                "Delivered" => "bg-success",
+                                "Cancelled" => "bg-danger",
+                                _ => "bg-secondary"
+                            };
+                            var detailStatusText = Model.Status switch {
+                                "Pending" => "Chờ xử lý",
+                                "Processing" => "Đang xử lý",
+                                "Shipping" => "Đang giao",
+                                "Delivered" => "Đã giao",
+                                "Cancelled" => "Đã hủy",
+                                _ => Model.Status
+                            };
+                        }
+                        <span class="badge @detailStatusClass rounded-pill px-3 py-2">@detailStatusText</span>
                     </div>
                 </div>
                 

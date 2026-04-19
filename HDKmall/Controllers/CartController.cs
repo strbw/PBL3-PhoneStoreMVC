@@ -43,10 +43,11 @@ namespace HDKmall.Controllers
             if (cart != null)
             {
                 _cartService.AddToCart(cart.Id, productId, variantId, quantity);
+                var count = _cartService.GetCartItemCount(userId, sessionId);
 
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    return Json(new { success = true, message = "Sản phẩm đã được thêm vào giỏ hàng" });
+                    return Json(new { success = true, message = "Sản phẩm đã được thêm vào giỏ hàng", cartCount = count });
                 }
 
                 return RedirectToAction(nameof(Index));
@@ -54,7 +55,7 @@ namespace HDKmall.Controllers
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                return Json(new { success = false, message = "Lỗi khi thêm sản phẩm" });
+                return Json(new { success = false, message = "Lỗi khi thêm sản phẩm", cartCount = 0 });
             }
 
             return RedirectToAction(nameof(Index));
@@ -65,6 +66,13 @@ namespace HDKmall.Controllers
         public IActionResult Remove(int cartItemId)
         {
             _cartService.RemoveFromCart(cartItemId);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                var userId = GetUserId();
+                var sessionId = GetSessionId();
+                var count = _cartService.GetCartItemCount(userId, sessionId);
+                return Json(new { success = true, cartCount = count });
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -79,6 +87,13 @@ namespace HDKmall.Controllers
             else
             {
                 _cartService.RemoveFromCart(cartItemId);
+            }
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                var userId = GetUserId();
+                var sessionId = GetSessionId();
+                var count = _cartService.GetCartItemCount(userId, sessionId);
+                return Json(new { success = true, cartCount = count });
             }
             return RedirectToAction(nameof(Index));
         }
@@ -97,6 +112,30 @@ namespace HDKmall.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Cart/Count - returns item count as JSON (for badge update)
+        [HttpGet]
+        public IActionResult Count()
+        {
+            var userId = GetUserId();
+            var sessionId = GetSessionId();
+            var count = _cartService.GetCartItemCount(userId, sessionId);
+            return Json(new { count });
+        }
+
+        // POST: Cart/ProceedToCheckout - stores selected item IDs and redirects
+        [HttpPost]
+        public IActionResult ProceedToCheckout(List<int> selectedItems)
+        {
+            if (selectedItems == null || !selectedItems.Any())
+            {
+                TempData["Error"] = "Vui lòng chọn ít nhất một sản phẩm để đặt hàng";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["SelectedCartItems"] = string.Join(",", selectedItems);
+            return RedirectToAction("Checkout", "Order");
         }
 
         private int? GetUserId()

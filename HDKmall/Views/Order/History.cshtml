@@ -46,7 +46,7 @@
                                                 var statusClass = order.Status switch {
                                                     "Pending" => "bg-warning text-dark",
                                                     "Processing" => "bg-info text-dark",
-                                                    "Shipped" => "bg-primary",
+                                                    "Shipping" => "bg-primary",
                                                     "Delivered" => "bg-success",
                                                     "Cancelled" => "bg-danger",
                                                     _ => "bg-secondary"
@@ -55,7 +55,7 @@
                                                 var statusText = order.Status switch {
                                                     "Pending" => "Chờ xử lý",
                                                     "Processing" => "Đang xử lý",
-                                                    "Shipped" => "Đang giao",
+                                                    "Shipping" => "Đang giao",
                                                     "Delivered" => "Đã giao",
                                                     "Cancelled" => "Đã hủy",
                                                     _ => order.Status

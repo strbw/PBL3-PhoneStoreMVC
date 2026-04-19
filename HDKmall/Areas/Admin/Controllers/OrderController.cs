@@ -37,6 +37,14 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(orders);
         }
 
+        public IActionResult Detail(int id)
+        {
+            ViewBag.ActiveTab = "orders";
+            var order = _orderService.GetOrderById(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult UpdateStatus(int id, string status)

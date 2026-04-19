@@ -23,13 +23,48 @@ namespace HDKmall.Controllers
         // GET: Order/Checkout
         public IActionResult Checkout()
         {
-            return View();
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0) return RedirectToAction("Login", "Account");
+
+            var cart = _cartService.GetOrCreateCart(userId, null);
+            if (cart == null || !cart.Items.Any())
+            {
+                TempData["Error"] = "Giỏ hàng trống";
+                return RedirectToAction("Index", "Cart");
+            }
+
+            // Get selected item IDs from TempData (set by Cart/ProceedToCheckout)
+            List<int> selectedIds = null;
+            if (TempData["SelectedCartItems"] is string selectedStr && !string.IsNullOrEmpty(selectedStr))
+            {
+                selectedIds = selectedStr.Split(',').Select(int.Parse).ToList();
+                // Keep TempData for the POST
+                TempData.Keep("SelectedCartItems");
+            }
+
+            // Filter to selected items, or use all items if none selected
+            ShoppingCart checkoutCart;
+            if (selectedIds != null && selectedIds.Any())
+            {
+                checkoutCart = new ShoppingCart
+                {
+                    Id = cart.Id,
+                    UserId = cart.UserId,
+                    Items = cart.Items.Where(i => selectedIds.Contains(i.Id)).ToList()
+                };
+            }
+            else
+            {
+                checkoutCart = cart;
+            }
+
+            return View(checkoutCart);
         }
 
         // POST: Order/CreateOrder
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CreateOrder(string address, string paymentMethod, string couponCode = null)
+        public IActionResult CreateOrder(string address, string city, string district, string paymentMethod, string couponCode = null, string note = null, decimal shippingFee = 0)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (userId == 0)
@@ -44,6 +79,23 @@ namespace HDKmall.Controllers
                 return RedirectToAction("Index", "Cart");
             }
 
+            // Get selected item IDs
+            List<int> selectedIds = null;
+            if (TempData["SelectedCartItems"] is string selectedStr && !string.IsNullOrEmpty(selectedStr))
+            {
+                selectedIds = selectedStr.Split(',').Select(int.Parse).ToList();
+            }
+
+            var itemsToOrder = selectedIds != null && selectedIds.Any()
+                ? cart.Items.Where(i => selectedIds.Contains(i.Id)).ToList()
+                : cart.Items.ToList();
+
+            if (!itemsToOrder.Any())
+            {
+                TempData["Error"] = "Không có sản phẩm nào được chọn";
+                return RedirectToAction("Index", "Cart");
+            }
+
             decimal discountAmount = 0;
             if (!string.IsNullOrEmpty(couponCode))
             {
@@ -54,15 +106,21 @@ namespace HDKmall.Controllers
                 }
             }
 
-            var totalAmount = cart.Items.Sum(i => i.Product.Price * i.Quantity);
-            var order = _orderService.CreateOrder(userId, cart.Items.ToList(), address, paymentMethod, totalAmount, discountAmount);
+            var fullAddress = string.IsNullOrEmpty(district)
+                ? $"{address}, {city}"
+                : $"{address}, {district}, {city}";
 
-            // Clear cart
-            _cartService.ClearCart(cart.Id);
+            var subTotal = itemsToOrder.Sum(i =>
+                (i.Variant != null ? i.Variant.Price : i.Product?.Price ?? 0) * i.Quantity);
+            var totalAmount = subTotal + shippingFee - discountAmount;
 
-            // Redirect to payment page
-            TempData["Success"] = "Đơn hàng được tạo thành công. Vui lòng chọn phương thức thanh toán.";
-            return RedirectToAction("Index", "Payment", new { orderId = order.Id });
+            var order = _orderService.CreateOrder(userId, itemsToOrder, fullAddress, paymentMethod, totalAmount, 0);
+
+            // Remove only the ordered items from cart
+            _cartService.RemoveFromCart(itemsToOrder.Select(i => i.Id).ToList());
+
+            TempData["Success"] = "Đơn hàng đã được tạo thành công!";
+            return RedirectToAction("Detail", new { id = order.Id });
         }
 
         // GET: Order/History

@@ -18,6 +18,8 @@ namespace HDKmall.DAL.Repositories
             return _context.ShoppingCarts
                 .Include(c => c.Items)
                 .ThenInclude(i => i.Product)
+                .Include(c => c.Items)
+                .ThenInclude(i => i.Variant)
                 .FirstOrDefault(c => c.UserId == userId);
         }
 
@@ -26,6 +28,8 @@ namespace HDKmall.DAL.Repositories
             return _context.ShoppingCarts
                 .Include(c => c.Items)
                 .ThenInclude(i => i.Product)
+                .Include(c => c.Items)
+                .ThenInclude(i => i.Variant)
                 .FirstOrDefault(c => c.SessionId == sessionId);
         }
 
@@ -34,7 +38,27 @@ namespace HDKmall.DAL.Repositories
             return _context.ShoppingCarts
                 .Include(c => c.Items)
                 .ThenInclude(i => i.Product)
+                .Include(c => c.Items)
+                .ThenInclude(i => i.Variant)
                 .FirstOrDefault(c => c.Id == id);
+        }
+
+        public CartItem GetCartItemById(int cartItemId)
+        {
+            return _context.CartItems
+                .Include(i => i.Product)
+                .Include(i => i.Variant)
+                .FirstOrDefault(i => i.Id == cartItemId);
+        }
+
+        public void UpdateCartItem(CartItem item)
+        {
+            _context.CartItems.Update(item);
+        }
+
+        public void RemoveCartItem(CartItem item)
+        {
+            _context.CartItems.Remove(item);
         }
 
         public IEnumerable<ShoppingCart> GetAll()

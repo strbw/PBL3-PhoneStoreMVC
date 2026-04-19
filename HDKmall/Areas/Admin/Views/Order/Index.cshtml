@@ -2,16 +2,19 @@
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
-    var statuses = new[] { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" };
+    var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled" };
+    var statusLabels = new Dictionary<string, string> {
+        { "Pending", "Chờ xử lý" }, { "Processing", "Đang xử lý" },
+        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" }
+    };
 }
 
 <div class="admin-section">
-    <div class="admin-section-header d-flex justify-content-between align-items-center mb-3">
+    <div class="admin-section-header d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h2 style="font-size:18px; font-weight:700;">Quản lý đơn hàng</h2>
-        
-        <form asp-controller="Order" asp-action="Index" method="get" class="d-flex">
-            <input type="text" name="q" class="form-control me-2" placeholder="Tìm đơn hàng..." />
-            <button type="submit" class="btn btn-outline-primary">Tìm </button>
+        <form asp-controller="Order" asp-action="Index" method="get" class="d-flex gap-2">
+            <input type="text" name="q" class="form-control" placeholder="Tìm đơn hàng..." value="@ViewBag.Search" style="min-width:200px;" />
+            <button type="submit" class="btn btn-outline-primary">Tìm</button>
         </form>
     </div>
 
@@ -46,19 +49,25 @@
                         var statusClass = order.Status switch {
                             "Pending" => "bg-warning text-dark",
                             "Processing" => "bg-info text-dark",
-                            "Shipped" => "bg-primary",
+                            "Shipping" => "bg-primary",
                             "Delivered" => "bg-success",
                             "Cancelled" => "bg-danger",
                             _ => "bg-secondary"
                         };
+                        var statusLbl = statusLabels.ContainsKey(order.Status ?? "") ? statusLabels[order.Status] : (order.Status ?? "-");
                         <tr>
-                            <td class="ps-3 fw-bold">#@order.Id</td>
-                            <td>@(order.User?.FullName ?? "-")</td>
-                            <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="ps-3 fw-bold">
+                                <a asp-area="Admin" asp-controller="Order" asp-action="Detail" asp-route-id="@order.Id" class="text-decoration-none">#@order.Id</a>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">@(order.User?.FullName ?? "-")</div>
+                                <div class="text-muted small">@(order.User?.Email ?? "")</div>
+                            </td>
+                            <td style="white-space:nowrap;">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                             <td style="max-width:180px; white-space:normal; font-size:13px;">@order.Address</td>
-                            <td>@order.PaymentMethod</td>
+                            <td><span class="badge bg-light text-dark border">@order.PaymentMethod</span></td>
                             <td class="text-end text-danger fw-bold">@order.TotalAmount.ToString("N0")₫</td>
-                            <td><span class="badge @statusClass">@order.Status</span></td>
+                            <td><span class="badge @statusClass">@statusLbl</span></td>
                             <td class="pe-3 text-center">
                                 <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" class="d-flex gap-1 align-items-center justify-content-center">
                                     @Html.AntiForgeryToken()
@@ -66,13 +75,14 @@
                                     <select name="status" class="form-select form-select-sm" style="width:130px;">
                                         @foreach (var s in statuses)
                                         {
+                                            var lbl = statusLabels.ContainsKey(s) ? statusLabels[s] : s;
                                             if (order.Status == s)
                                             {
-                                                <option value="@s" selected="selected">@s</option>
+                                                <option value="@s" selected>@lbl</option>
                                             }
                                             else
                                             {
-                                                <option value="@s">@s</option>
+                                                <option value="@s">@lbl</option>
                                             }
                                         }
                                     </select>
