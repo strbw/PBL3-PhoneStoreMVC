@@ -1,11 +1,12 @@
 @model HDKmall.Models.ShoppingCart
+@using HDKmall.Helpers
 @{
     ViewData["Title"] = "Giỏ hàng";
 }
 
 <style>
     .cps-bg { background-color: #f4f6f8; }
-    .cps-cart-container { max-width: 600px; margin: 0 auto; }
+    .cps-cart-container { max-width: 680px; margin: 0 auto; }
     .cps-title { font-size: 18px; font-weight: 700; color: #333; }
     .cps-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); border: none; }
     .cps-text-red { color: #d70018 !important; }
@@ -20,6 +21,9 @@
     .cps-btn-delete:hover { color: #d70018; }
     .cps-total-group { font-size: 15px; color: #444; }
     .cps-fixed-bottom { position: sticky; bottom: 0; background: #fff; z-index: 1000; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
+    .cps-checkbox { width: 20px; height: 20px; accent-color: #d70018; cursor: pointer; flex-shrink: 0; }
+    .cps-select-all-bar { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 10px 16px; }
+    .cps-item-subtotal { font-size: 14px; color: #d70018; font-weight: 600; white-space: nowrap; }
 </style>
 
 <div class="main-content cps-bg py-4 min-vh-100">
@@ -32,59 +36,88 @@
             <h1 class="cps-title m-0 flex-grow-1 text-center pe-4">Giỏ hàng của bạn</h1>
         </div>
 
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mb-3">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        }
+
         @if (Model != null && Model.Items.Any())
         {
-            <!-- List Items -->
-            <div class="d-flex flex-column gap-3 mb-4">
-                @foreach (var item in Model.Items)
-                {
-                    <div class="cps-card p-3 position-relative">
-                        <!-- Nút Xóa -->
-                        <form asp-action="Remove" asp-controller="Cart" method="post" class="position-absolute" style="top: 12px; right: 12px; z-index: 10;">
-                            <input type="hidden" name="cartItemId" value="@item.Id" />
-                            <button type="submit" class="cps-btn-delete" title="Xóa khỏi giỏ hàng">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
-                                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
-                                </svg>
-                            </button>
-                        </form>
+            <form id="checkout-form" asp-controller="Cart" asp-action="ProceedToCheckout" method="post">
+                @Html.AntiForgeryToken()
 
-                        <div class="d-flex">
-                            <div class="me-3" style="width: 100px; height: 100px; display:flex; align-items:center; justify-content:center;">
-                                <img src="@ImageHelper.GetImageUrl(item.Product.ImageUrl)" alt="@item.Product.Name" class="img-fluid" style="max-height: 100%; object-fit: contain;">
-                            </div>
-                            <div class="flex-grow-1 pe-4">
-                                <a asp-controller="Product" asp-action="Detail" asp-route-id="@item.ProductId" class="cps-product-name mb-1">@item.Product.Name</a>
-                                <div class="cps-text-red fw-bold fs-6 mb-2">@item.Product.Price.ToString("N0")₫</div>
+                <!-- Select All Bar -->
+                <div class="cps-select-all-bar mb-2 d-flex align-items-center gap-2">
+                    <input type="checkbox" id="select-all" class="cps-checkbox" checked />
+                    <label for="select-all" class="mb-0 fw-semibold" style="cursor:pointer; font-size:14px;">Chọn tất cả (@Model.Items.Count sản phẩm)</label>
+                </div>
 
-                                <form asp-action="Update" asp-controller="Cart" method="post" class="d-inline-flex">
-                                    <input type="hidden" name="cartItemId" value="@item.Id" />
-                                    <div class="d-flex rounded" style="overflow: hidden;">
-                                        <button class="cps-qty-btn rounded-start" type="submit" name="quantity" value="@(item.Quantity - 1)">-</button>
-                                        <input type="number" class="cps-qty-input fw-medium text-dark bg-white" name="quantity" value="@item.Quantity" readonly>
-                                        <button class="cps-qty-btn rounded-end" type="submit" name="quantity" value="@(item.Quantity + 1)">+</button>
+                <!-- List Items -->
+                <div class="d-flex flex-column gap-3 mb-4" id="cart-items-list">
+                    @foreach (var item in Model.Items)
+                    {
+                        var itemPrice = item.Variant != null ? item.Variant.Price : item.Product.Price;
+                        var variantLabel = (item.Variant != null)
+                            ? string.Join(" / ", new[] { item.Variant.Color, item.Variant.Capacity }.Where(v => !string.IsNullOrEmpty(v)))
+                            : "";
+                        <div class="cps-card p-3 cart-item-row" data-item-id="@item.Id" data-price="@itemPrice">
+                            <div class="d-flex align-items-start gap-2">
+                                <!-- Checkbox -->
+                                <input type="checkbox" name="selectedItems" value="@item.Id" class="cps-checkbox item-checkbox mt-1" checked />
+
+                                <!-- Product Image -->
+                                <div style="width: 90px; height: 90px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                                    <img src="@ImageHelper.GetImageUrl(item.Product.ImageUrl)" alt="@item.Product.Name" class="img-fluid" style="max-height: 100%; object-fit: contain;">
+                                </div>
+
+                                <!-- Product Info -->
+                                <div class="flex-grow-1 min-w-0">
+                                    <a asp-controller="Product" asp-action="Detail" asp-route-id="@item.ProductId" class="cps-product-name mb-1 d-block">@item.Product.Name</a>
+                                    @if (!string.IsNullOrEmpty(variantLabel))
+                                    {
+                                        <div class="text-muted" style="font-size:12px;">@variantLabel</div>
+                                    }
+                                    <div class="cps-text-red fw-bold fs-6 mb-2">@itemPrice.ToString("N0")₫</div>
+
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                        <!-- Quantity Stepper -->
+                                        <div class="d-flex rounded" style="overflow: hidden;">
+                                            <button class="cps-qty-btn rounded-start" type="button" onclick="updateQty(@item.Id, @(item.Quantity - 1))">−</button>
+                                            <input type="number" class="cps-qty-input fw-medium text-dark bg-white qty-input" id="qty-@item.Id" value="@item.Quantity" min="1" max="99" onchange="updateQty(@item.Id, this.value)">
+                                            <button class="cps-qty-btn rounded-end" type="button" onclick="updateQty(@item.Id, @(item.Quantity + 1))">+</button>
+                                        </div>
+
+                                        <!-- Item subtotal -->
+                                        <span class="cps-item-subtotal" id="subtotal-@item.Id">@((itemPrice * item.Quantity).ToString("N0"))₫</span>
+
+                                        <!-- Delete Button -->
+                                        <button type="button" class="cps-btn-delete" title="Xóa" onclick="removeItem(@item.Id)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                                            </svg>
+                                        </button>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
 
-            <!-- Total Bottom Bar -->
-            <div class="cps-card p-3 cps-fixed-bottom border-top-0 rounded-bottom-0 rounded-top-4">
-                <div class="d-flex justify-content-between align-items-center mb-2 cps-total-group">
-                    <span class="fw-medium">Tạm tính (@Model.Items.Sum(x => x.Quantity) sản phẩm)</span>
-                    <span class="fw-medium">@Model.Items.Sum(x => x.Product.Price * x.Quantity).ToString("N0")₫</span>
+                <!-- Total Bottom Bar -->
+                <div class="cps-card p-3 cps-fixed-bottom border-top-0 rounded-bottom-0 rounded-top-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2 cps-total-group">
+                        <span class="fw-medium">Đã chọn <span id="selected-count">@Model.Items.Count</span> sản phẩm</span>
+                        <span class="fw-medium" id="selected-qty-text">(@Model.Items.Sum(x => x.Quantity) sản phẩm)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold">Tổng tiền</span>
+                        <span class="fs-5 fw-bold cps-text-red" id="total-amount">@Model.Items.Sum(x => (x.Variant != null ? x.Variant.Price : x.Product.Price) * x.Quantity).ToString("N0")₫</span>
+                    </div>
+                    <button type="submit" class="btn w-100 py-3 fw-bold cps-bg-red text-uppercase rounded-3 shadow-sm d-block text-center" id="checkout-btn">
+                        Tiến hành đặt hàng
+                    </button>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fw-bold">Tổng tiền</span>
-                    <span class="fs-5 fw-bold cps-text-red">@Model.Items.Sum(x => x.Product.Price * x.Quantity).ToString("N0")₫</span>
-                </div>
-                <a asp-controller="Order" asp-action="Checkout" class="btn w-100 py-3 fw-bold cps-bg-red text-uppercase rounded-3 shadow-sm d-block text-center text-decoration-none">
-                    Tiến hành đặt hàng
-                </a>
-            </div>
+            </form>
         }
         else
         {
@@ -104,3 +137,115 @@
         }
     </div>
 </div>
+
+@section Scripts {
+<script>
+    // Cart item prices map
+    const itemPrices = {};
+    @foreach (var item in (Model?.Items ?? new List<HDKmall.Models.CartItem>()))
+    {
+        var price = item.Variant != null ? item.Variant.Price : item.Product.Price;
+        <text>itemPrices[@item.Id] = @price;</text>
+    }
+
+    // Select All toggle
+    const selectAllCb = document.getElementById('select-all');
+    if (selectAllCb) {
+        selectAllCb.addEventListener('change', function () {
+            document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = this.checked);
+            updateTotals();
+        });
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+            cb.addEventListener('change', function () {
+                const all = document.querySelectorAll('.item-checkbox');
+                const checked = document.querySelectorAll('.item-checkbox:checked');
+                selectAllCb.checked = all.length === checked.length;
+                updateTotals();
+            });
+        });
+    }
+
+    function updateTotals() {
+        const checked = document.querySelectorAll('.item-checkbox:checked');
+        let total = 0;
+        let totalQty = 0;
+        checked.forEach(cb => {
+            const itemId = parseInt(cb.value);
+            const qtyInput = document.getElementById('qty-' + itemId);
+            const qty = qtyInput ? parseInt(qtyInput.value) : 1;
+            total += (itemPrices[itemId] || 0) * qty;
+            totalQty += qty;
+        });
+        document.getElementById('selected-count').textContent = checked.length;
+        document.getElementById('selected-qty-text').textContent = '(' + totalQty + ' sản phẩm)';
+        document.getElementById('total-amount').textContent = total.toLocaleString('vi-VN') + '₫';
+    }
+
+    function updateQty(itemId, newQty) {
+        newQty = parseInt(newQty);
+        if (isNaN(newQty) || newQty < 1) newQty = 1;
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        fetch('/Cart/Update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': token || ''
+            },
+            body: 'cartItemId=' + itemId + '&quantity=' + newQty
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const input = document.getElementById('qty-' + itemId);
+                if (input) input.value = newQty;
+                const subtotalEl = document.getElementById('subtotal-' + itemId);
+                if (subtotalEl) {
+                    const price = itemPrices[itemId] || 0;
+                    subtotalEl.textContent = (price * newQty).toLocaleString('vi-VN') + '₫';
+                }
+                updateCartBadge(data.cartCount);
+                updateTotals();
+            }
+        });
+    }
+
+    function removeItem(itemId) {
+        if (!confirm('Xóa sản phẩm này khỏi giỏ hàng?')) return;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        fetch('/Cart/Remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': token || ''
+            },
+            body: 'cartItemId=' + itemId
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector('.cart-item-row[data-item-id="' + itemId + '"]');
+                if (row) row.remove();
+                delete itemPrices[itemId];
+                updateCartBadge(data.cartCount);
+                updateTotals();
+                // If no items left, reload
+                if (document.querySelectorAll('.cart-item-row').length === 0) {
+                    location.reload();
+                }
+            }
+        });
+    }
+
+    function updateCartBadge(count) {
+        const badge = document.getElementById('cart-badge');
+        if (badge) {
+            badge.textContent = count;
+            badge.classList.toggle('d-none', count <= 0);
+        }
+    }
+</script>
+}
+

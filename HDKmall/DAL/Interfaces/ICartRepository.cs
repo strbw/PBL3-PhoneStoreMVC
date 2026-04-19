@@ -7,6 +7,9 @@ namespace HDKmall.DAL.Interfaces
         ShoppingCart GetCartByUserId(int userId);
         ShoppingCart GetCartBySessionId(string sessionId);
         ShoppingCart GetCartById(int id);
+        CartItem GetCartItemById(int cartItemId);
+        void UpdateCartItem(CartItem item);
+        void RemoveCartItem(CartItem item);
         IEnumerable<ShoppingCart> GetAll();
         void Add(ShoppingCart cart);
         void Update(ShoppingCart cart);

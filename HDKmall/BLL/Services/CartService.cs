@@ -48,29 +48,61 @@ namespace HDKmall.BLL.Services
             var cart = _cartRepository.GetCartById(cartId);
             if (cart == null) return;
 
-            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            int? nullableVariantId = variantId > 0 ? variantId : (int?)null;
+
+            var existingItem = cart.Items.FirstOrDefault(i =>
+                i.ProductId == productId && i.VariantId == nullableVariantId);
+
             if (existingItem != null)
             {
                 existingItem.Quantity += quantity;
+                _cartRepository.UpdateCartItem(existingItem);
             }
             else
             {
-                cart.Items.Add(new CartItem { ProductId = productId, Quantity = quantity });
+                cart.Items.Add(new CartItem
+                {
+                    ProductId = productId,
+                    VariantId = nullableVariantId,
+                    Quantity = quantity,
+                    ShoppingCartId = cartId
+                });
+                _cartRepository.Update(cart);
             }
 
-            _cartRepository.Update(cart);
             _cartRepository.SaveChanges();
         }
 
         public void UpdateCartItem(int cartItemId, int quantity)
         {
-            // This would need CartItem repository or context access
-            // For now, this is a simplified version
+            var item = _cartRepository.GetCartItemById(cartItemId);
+            if (item == null) return;
+
+            item.Quantity = quantity;
+            _cartRepository.UpdateCartItem(item);
+            _cartRepository.SaveChanges();
         }
 
         public void RemoveFromCart(int cartItemId)
         {
-            // This would need CartItem repository or context access
+            var item = _cartRepository.GetCartItemById(cartItemId);
+            if (item == null) return;
+
+            _cartRepository.RemoveCartItem(item);
+            _cartRepository.SaveChanges();
+        }
+
+        public void RemoveFromCart(List<int> cartItemIds)
+        {
+            foreach (var id in cartItemIds)
+            {
+                var item = _cartRepository.GetCartItemById(id);
+                if (item != null)
+                {
+                    _cartRepository.RemoveCartItem(item);
+                }
+            }
+            _cartRepository.SaveChanges();
         }
 
         public void ClearCart(int cartId)
@@ -78,8 +110,10 @@ namespace HDKmall.BLL.Services
             var cart = _cartRepository.GetCartById(cartId);
             if (cart != null)
             {
-                cart.Items.Clear();
-                _cartRepository.Update(cart);
+                foreach (var item in cart.Items.ToList())
+                {
+                    _cartRepository.RemoveCartItem(item);
+                }
                 _cartRepository.SaveChanges();
             }
         }
@@ -87,6 +121,20 @@ namespace HDKmall.BLL.Services
         public ShoppingCart GetCartById(int cartId)
         {
             return _cartRepository.GetCartById(cartId);
+        }
+
+        public int GetCartItemCount(int? userId, string sessionId)
+        {
+            ShoppingCart cart = null;
+            if (userId.HasValue)
+            {
+                cart = _cartRepository.GetCartByUserId(userId.Value);
+            }
+            else if (!string.IsNullOrEmpty(sessionId))
+            {
+                cart = _cartRepository.GetCartBySessionId(sessionId);
+            }
+            return cart?.Items?.Sum(i => i.Quantity) ?? 0;
         }
     }
 }

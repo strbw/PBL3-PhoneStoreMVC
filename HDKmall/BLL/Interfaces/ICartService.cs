@@ -9,7 +9,9 @@ namespace HDKmall.BLL.Interfaces
         void AddToCart(int cartId, int productId, int variantId, int quantity);
         void UpdateCartItem(int cartItemId, int quantity);
         void RemoveFromCart(int cartItemId);
+        void RemoveFromCart(List<int> cartItemIds);
         void ClearCart(int cartId);
         ShoppingCart GetCartById(int cartId);
+        int GetCartItemCount(int? userId, string sessionId);
     }
 }
