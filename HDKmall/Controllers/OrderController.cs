@@ -134,7 +134,7 @@ namespace HDKmall.Controllers
 
             var orders = _orderService.GetUserOrders(userId);
 
-            // Normalise the active tab key
+            // Normalize the active tab key
             var activeTab = status?.ToLower() switch
             {
                 "shipping" => "shipping",
