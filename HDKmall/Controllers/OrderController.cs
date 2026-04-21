@@ -124,7 +124,7 @@ namespace HDKmall.Controllers
         }
 
         // GET: Order/History
-        public IActionResult History()
+        public IActionResult History(string? status)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (userId == 0)
@@ -133,7 +133,32 @@ namespace HDKmall.Controllers
             }
 
             var orders = _orderService.GetUserOrders(userId);
-            return View(orders);
+
+            // Normalise the active tab key
+            var activeTab = status?.ToLower() switch
+            {
+                "shipping" => "shipping",
+                "delivered" => "delivered",
+                "cancelled" => "cancelled",
+                _ => "pending"
+            };
+
+            var filtered = activeTab switch
+            {
+                "shipping"  => orders.Where(o => o.Status == "Shipping"),
+                "delivered" => orders.Where(o => o.Status == "Delivered"),
+                "cancelled" => orders.Where(o => o.Status == "Cancelled" || o.Status == "Failed"),
+                _           => orders.Where(o => o.Status == "Pending" || o.Status == "Processing")
+            };
+
+            // Counts for badge display
+            ViewBag.CountPending   = orders.Count(o => o.Status == "Pending" || o.Status == "Processing");
+            ViewBag.CountShipping  = orders.Count(o => o.Status == "Shipping");
+            ViewBag.CountDelivered = orders.Count(o => o.Status == "Delivered");
+            ViewBag.CountCancelled = orders.Count(o => o.Status == "Cancelled" || o.Status == "Failed");
+            ViewBag.ActiveTab      = activeTab;
+
+            return View(filtered);
         }
 
         // GET: Order/Detail/5

@@ -62,9 +62,11 @@ namespace HDKmall.BLL.Services
 
         public bool UserCanReview(int userId, int productId)
         {
-            // Check if user has purchased this product
+            // Only allow reviews for products in Delivered orders
             var userOrders = _orderRepository.GetOrdersByUserId(userId);
-            return userOrders.Any(o => o.OrderDetails.Any(od => od.ProductId == productId));
+            return userOrders.Any(o =>
+                o.Status == "Delivered" &&
+                o.OrderDetails.Any(od => od.ProductId == productId));
         }
 
         public IEnumerable<Review> GetAllReviews()
