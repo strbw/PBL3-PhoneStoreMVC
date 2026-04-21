@@ -1,4 +1,4 @@
-﻿@using HDKmall.BLL.Interfaces
+@using HDKmall.BLL.Interfaces
 @using System.Security.Claims
 @inject ICartService CartService
 @{
@@ -37,7 +37,7 @@
   <a href="/" class="mobile-nav-item">🏠 Trang chủ</a>
   <a href="/Product" class="mobile-nav-item">📱 Điện thoại</a>
   <a href="/Cart" class="mobile-nav-item">🛒 Giỏ hàng</a>
-  <a href="/Order" class="mobile-nav-item">📦 Đơn hàng</a>
+  <a href="/Order/History" class="mobile-nav-item">📦 Tra cứu đơn hàng</a>
   @if (User.Identity!.IsAuthenticated)
   {
     <a href="/Account/Profile" class="mobile-nav-item">👤 Hồ sơ</a>
@@ -75,8 +75,14 @@
           <span class="cart-badge @(cartItemCount > 0 ? "" : "d-none")" id="cart-badge">@cartItemCount</span>
         </a>
 
+        <a href="/Order/History" class="header-btn" title="Tra cứu đơn hàng">
+          <span class="btn-icon">📦</span>
+          <span>Đơn hàng</span>
+        </a>
+
         @if (User.Identity!.IsAuthenticated)
         {
+
             <div class="header-user-menu" style="display:flex; align-items:center; gap: 8px;">
               <span class="btn-icon">👤</span>
               <span class="user-name">@User.Identity.Name</span>
@@ -95,6 +101,7 @@
               <span>Đăng nhập</span>
             </a>
         }
+
       </div>
     </div>
   </div>

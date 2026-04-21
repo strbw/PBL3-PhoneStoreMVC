@@ -120,6 +120,9 @@
     .product-card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; border-color: rgba(13, 110, 253, 0.25) !important; }
 </style>
 
+@* Hidden form for CSRF token (used by AJAX add-to-cart) *@
+<form id="csrf-form" style="display:none">@Html.AntiForgeryToken()</form>
+
 <!-- Featured Products -->
 <div class="container mb-5">
     <div class="d-flex justify-content-between align-items-end mb-4">
@@ -146,12 +149,9 @@
                             </h5>
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <div class="text-danger fw-bolder fs-5">@item.Price.ToString("N0")₫</div>
-                                <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
-                                    <input type="hidden" name="productId" value="@item.Id" />
-                                    <button class="btn btn-outline-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:35px; height:35px;" title="Thêm vào giỏ">
-                                        <i class="bi bi-cart-plus"></i>
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:35px; height:35px;" title="Thêm vào giỏ" onclick="addToCartFromHome(@item.Id, this)">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -187,12 +187,9 @@
                             </h5>
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <div class="text-danger fw-bolder fs-5">@item.Price.ToString("N0")₫</div>
-                                <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
-                                    <input type="hidden" name="productId" value="@item.Id" />
-                                    <button class="btn btn-outline-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:35px; height:35px;" title="Thêm vào giỏ">
-                                        <i class="bi bi-cart-plus"></i>
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:35px; height:35px;" title="Thêm vào giỏ" onclick="addToCartFromHome(@item.Id, this)">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -201,3 +198,58 @@
         }
     </div>
 </div>
+
+<!-- Toast thông báo giỏ hàng -->
+<div id="home-cart-toast" style="display:none; position:fixed; bottom:24px; right:24px; z-index:9999; min-width:280px; border-radius:10px; font-size:15px; box-shadow:0 4px 20px rgba(0,0,0,.15); padding:14px 18px;" class="alert"></div>
+
+@section Scripts {
+<script>
+    function addToCartFromHome(productId, btn) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        
+        btn.disabled = true;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '⏳';
+
+        fetch('/Cart/Add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': token
+            },
+            body: 'productId=' + productId + '&variantId=0&quantity=1'
+        })
+        .then(r => r.json())
+        .then(data => {
+            showHomeToast(data.message || (data.success ? 'Đã thêm vào giỏ hàng!' : 'Lỗi thêm sản phẩm'), data.success ? 'success' : 'danger');
+            if (data.success) {
+                const badge = document.getElementById('cart-badge');
+                if (badge) {
+                    badge.textContent = data.cartCount;
+                    badge.classList.remove('d-none');
+                }
+                btn.innerHTML = '✅';
+                setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; }, 1500);
+            } else {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        })
+        .catch(() => {
+            showHomeToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    }
+
+    function showHomeToast(msg, type) {
+        const toast = document.getElementById('home-cart-toast');
+        toast.className = 'alert alert-' + type;
+        toast.style.display = 'block';
+        toast.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + msg;
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+</script>
+}

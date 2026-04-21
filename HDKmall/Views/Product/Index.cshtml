@@ -40,6 +40,9 @@
     .sidebar-section-title { font-size:14px; font-weight:700; color:#222; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #d70018; display:inline-block; }
 </style>
 
+@* Hidden form for CSRF token (used by AJAX add-to-cart) *@
+<form id="csrf-form" style="display:none">@Html.AntiForgeryToken()</form>
+
 <div style="background:#f4f6f8; min-height:80vh; padding:20px 0 40px;">
   <div class="container">
 
@@ -162,10 +165,7 @@
                                     <!-- Price -->
                                     <div class="text-danger fw-bolder mb-3" style="font-size:16px;">@item.Price.ToString("N0")₫</div>
                                     <!-- Add to cart -->
-                                    <form asp-controller="Cart" asp-action="Add" method="post">
-                                        <input type="hidden" name="productId" value="@item.Id" />
-                                        <button type="submit" class="pl-buy-btn">🛒 Thêm vào giỏ</button>
-                                    </form>
+                                    <button type="button" class="pl-buy-btn" onclick="addToCartFromList(@item.Id, this)">🛒 Thêm vào giỏ</button>
                                 </div>
                             </div>
                         </div>
@@ -209,3 +209,59 @@
     </div>
   </div>
 </div>
+
+<!-- Toast thông báo giỏ hàng -->
+<div id="pl-cart-toast" style="display:none; position:fixed; bottom:24px; right:24px; z-index:9999; min-width:280px; border-radius:10px; font-size:15px; box-shadow:0 4px 20px rgba(0,0,0,.15); padding:14px 18px;" class="alert"></div>
+
+@section Scripts {
+<script>
+    function addToCartFromList(productId, btn) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            || document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳ Đang thêm...';
+
+        fetch('/Cart/Add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': token
+            },
+            body: 'productId=' + productId + '&variantId=0&quantity=1'
+        })
+        .then(r => r.json())
+        .then(data => {
+            showPlToast(data.message || (data.success ? 'Đã thêm vào giỏ hàng!' : 'Lỗi thêm sản phẩm'), data.success ? 'success' : 'danger');
+            if (data.success) {
+                const badge = document.getElementById('cart-badge');
+                if (badge) {
+                    badge.textContent = data.cartCount;
+                    badge.classList.remove('d-none');
+                }
+                btn.innerHTML = '✅ Đã thêm!';
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 1500);
+            } else {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(() => {
+            showPlToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    function showPlToast(msg, type) {
+        const toast = document.getElementById('pl-cart-toast');
+        toast.className = 'alert alert-' + type;
+        toast.style.display = 'block';
+        toast.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + msg;
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+</script>
+}
