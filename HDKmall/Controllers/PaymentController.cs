@@ -94,16 +94,17 @@ namespace HDKmall.Controllers
 
                 case "MoMo":
                     // Dùng endpoint riêng /payment/momo-return để xử lý kết quả
-                    // Không đặt orderId trong URL vì MoMo cũng gửi orderId riêng;
                     // ta sẽ parse orderId từ OrderCode khi callback
                     var momoReturnUrl = Url.Action("MoMoReturn", "Payment", null, Request.Scheme);
+                    var momoIpnUrl = Url.Action("MoMoIPN", "Payment", null, Request.Scheme) ?? momoReturnUrl;
                     var momoModel = new PaymentVM
                     {
                         OrderId = orderId,
                         TotalAmount = order.TotalAmount,
                         PaymentMethod = paymentMethod,
                         OrderCode = $"ORDER-{orderId}-{DateTime.Now.Ticks}",
-                        ReturnUrl = momoReturnUrl
+                        ReturnUrl = momoReturnUrl,
+                        IpnUrl = momoIpnUrl
                     };
                     try
                     {
@@ -308,6 +309,39 @@ namespace HDKmall.Controllers
 
             _logger.LogWarning("VNPay IPN: update failed for orderId={OrderId}", response.OrderId);
             return Json(new { RspCode = "01", Message = "Lỗi cập nhật" });
+        }
+
+        // POST: Payment/MoMoIPN (MoMo IPN/notify endpoint – server-to-server)
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> MoMoIPN()
+        {
+            _logger.LogInformation("MoMo IPN received");
+            var response = await _moMoService.PaymentExecute(Request.Query);
+
+            if (!response.Success)
+            {
+                _logger.LogWarning("MoMo IPN: signature invalid or payment failed");
+                return Json(new { message = "Lỗi xác thực" });
+            }
+
+            var momoOrderId = Request.Query["orderId"].ToString();
+            int orderId = 0;
+            var parts = momoOrderId.Split('-');
+            if (parts.Length >= 2) int.TryParse(parts[1], out orderId);
+
+            if (orderId > 0)
+            {
+                var order = _orderService.GetOrderById(orderId);
+                if (order != null && order.Status == "Pending")
+                {
+                    _orderService.UpdateOrderStatus(orderId, "Processing");
+                    _paymentService.UpdatePaymentStatus(orderId, "Success", response.TransactionId);
+                    _logger.LogInformation("MoMo IPN: order {OrderId} updated to Processing", orderId);
+                }
+            }
+
+            return Json(new { message = "OK" });
         }
 
         // GET: Payment/History
