@@ -27,7 +27,7 @@ namespace HDKmall.BLL.Services
             var tick = DateTime.Now.Ticks.ToString();
             var requestId = Random.Shared.Next(100000).ToString();
 
-            var vnpayData = new SortedDictionary<string, string>
+            var vnpayData = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "vnp_Version", "2.1.0" },
                 { "vnp_Command", "pay" },
@@ -38,7 +38,7 @@ namespace HDKmall.BLL.Services
                 { "vnp_IpAddr", GetIpAddress(context) },
                 { "vnp_Locale", "vn" },
                 { "vnp_OrderInfo", $"Thanh toan HD {model.OrderId}" },
-                { "vnp_OrderType", "order" },
+                { "vnp_OrderType", "other" },
                 { "vnp_ReturnUrl", model.ReturnUrl },
                 { "vnp_TxnRef", model.OrderCode },
                 { "vnp_ExpireDate", DateTime.Now.AddHours(1).ToString("yyyyMMddHHmmss") }
@@ -51,7 +51,11 @@ namespace HDKmall.BLL.Services
             }
 
             var queryString = queryBuilder.ToString();
-            var secureHash = HmacSHA512(_hashSecret, queryString.Substring(1));
+            if (queryString.Length > 0 && queryString.StartsWith("&"))
+            {
+                queryString = queryString.Substring(1);
+            }
+            var secureHash = HmacSHA512(_hashSecret, queryString);
             var paymentUrl = $"{_vnPayUrl}?{queryString}&vnp_SecureHash={secureHash}";
 
             _logger.LogInformation("VNPay payment URL created for order {OrderId}, txnRef={TxnRef}", model.OrderId, model.OrderCode);
@@ -60,7 +64,7 @@ namespace HDKmall.BLL.Services
 
         public VNPaymentResponseVM PaymentExecute(IQueryCollection collections)
         {
-            var vnpayData = new SortedDictionary<string, string>();
+            var vnpayData = new SortedDictionary<string, string>(StringComparer.Ordinal);
             var responseCode = "";
             var amount = 0L;
             var transactionNo = "";
@@ -91,8 +95,13 @@ namespace HDKmall.BLL.Services
                 queryString += "&" + Uri.EscapeDataString(item.Key) + "=" + Uri.EscapeDataString(item.Value);
             }
 
+            if (queryString.Length > 0 && queryString.StartsWith("&"))
+            {
+                queryString = queryString.Substring(1);
+            }
+
             // Verify HMAC SHA512 chữ ký
-            var computedHash = HmacSHA512(_hashSecret, queryString.Substring(1));
+            var computedHash = HmacSHA512(_hashSecret, queryString);
             var signatureValid = string.Equals(computedHash, receivedHash, StringComparison.OrdinalIgnoreCase);
             var isSuccess = signatureValid && responseCode == "00";
 

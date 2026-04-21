@@ -29,29 +29,28 @@ namespace HDKmall.BLL.Services
         {
             var timeStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             var requestId = Guid.NewGuid().ToString();
+            var ipnUrl = model.ReturnUrl; // fallback
 
             var rawData = $"accessKey={_accessKey}&amount={((long)model.TotalAmount * 1000)}" +
-                         $"&extraData=&ipAddress={GetIpAddress(context)}&lang=vi" +
-                         $"&orderId={model.OrderCode}&orderInfo=Thanh+toan+don+hang+{model.OrderId}" +
+                         $"&extraData=&ipnUrl={ipnUrl}&orderId={model.OrderCode}" +
+                         $"&orderInfo=Thanh toan don hang {model.OrderId}" +
                          $"&partnerCode={_partnerCode}&redirectUrl={model.ReturnUrl}" +
-                         $"&requestId={requestId}&requestType=captureWallet&timestamp={timeStamp}";
+                         $"&requestId={requestId}&requestType=captureWallet";
 
             var signature = ComputeHmacSHA256(rawData, _secretKey);
 
             var momoRequest = new
             {
-                accessKey = _accessKey,
                 partnerCode = _partnerCode,
                 requestId = requestId,
-                amount = ((long)model.TotalAmount * 1000).ToString(),
+                amount = ((long)model.TotalAmount * 1000),
                 orderId = model.OrderCode,
                 orderInfo = $"Thanh toan don hang {model.OrderId}",
                 redirectUrl = model.ReturnUrl,
-                ipAddress = GetIpAddress(context),
+                ipnUrl = ipnUrl,
                 requestType = "captureWallet",
                 extraData = "",
                 lang = "vi",
-                timestamp = timeStamp,
                 signature = signature
             };
 
@@ -63,9 +62,11 @@ namespace HDKmall.BLL.Services
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
                     var response = await client.PostAsync(_momoUrl, content);
 
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation("MoMo API response: {Response}", responseContent);
+
                     if (response.IsSuccessStatusCode)
                     {
-                        var responseContent = await response.Content.ReadAsStringAsync();
                         var jsonDoc = JsonDocument.Parse(responseContent);
                         var root = jsonDoc.RootElement;
 
@@ -74,6 +75,11 @@ namespace HDKmall.BLL.Services
                             _logger.LogInformation("MoMo payment URL created for order {OrderId}, orderId={OrderCode}", model.OrderId, model.OrderCode);
                             return payUrl.GetString();
                         }
+                        throw new Exception($"MoMo request failed. Response: {responseContent}");
+                    }
+                    else
+                    {
+                        throw new Exception($"MoMo API error ({response.StatusCode}): {responseContent}");
                     }
                 }
                 catch (Exception ex)
