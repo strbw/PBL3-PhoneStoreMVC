@@ -21,6 +21,9 @@ namespace HDKmall.Models
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<ReviewImage> ReviewImages { get; set; }
+        public DbSet<ReviewTag> ReviewTags { get; set; }
+        public DbSet<ReviewTagMapping> ReviewTagMappings { get; set; }
         public DbSet<Banner> Banners { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<ProductSpecification> ProductSpecifications { get; set; }
@@ -35,6 +38,37 @@ namespace HDKmall.Models
                 .WithMany(u => u.Addresses)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Review relationships
+            modelBuilder.Entity<ReviewImage>()
+                .HasOne(ri => ri.Review)
+                .WithMany(r => r.Images)
+                .HasForeignKey(ri => ri.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ReviewTagMapping>()
+                .HasOne(rtm => rtm.Review)
+                .WithMany(r => r.TagMappings)
+                .HasForeignKey(rtm => rtm.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ReviewTagMapping>()
+                .HasOne(rtm => rtm.Tag)
+                .WithMany(t => t.ReviewMappings)
+                .HasForeignKey(rtm => rtm.ReviewTagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ==================== REVIEW PRESET TAGS ====================
+            modelBuilder.Entity<ReviewTag>().HasData(
+                new ReviewTag { Id = 1, Name = "Giao hàng nhanh", Emoji = "🚀", DisplayOrder = 1 },
+                new ReviewTag { Id = 2, Name = "Đóng gói cẩn thận", Emoji = "📦", DisplayOrder = 2 },
+                new ReviewTag { Id = 3, Name = "Sản phẩm đẹp", Emoji = "👍", DisplayOrder = 3 },
+                new ReviewTag { Id = 4, Name = "Chất lượng tốt", Emoji = "💎", DisplayOrder = 4 },
+                new ReviewTag { Id = 5, Name = "Đúng mô tả", Emoji = "✔️", DisplayOrder = 5 },
+                new ReviewTag { Id = 6, Name = "Giá hợp lý", Emoji = "💰", DisplayOrder = 6 },
+                new ReviewTag { Id = 7, Name = "Nhân viên hỗ trợ tốt", Emoji = "🤝", DisplayOrder = 7 },
+                new ReviewTag { Id = 8, Name = "Sẽ mua lại", Emoji = "🔁", DisplayOrder = 8 }
+            );
 
             // ==================== ROLES ====================
             modelBuilder.Entity<Role>().HasData(

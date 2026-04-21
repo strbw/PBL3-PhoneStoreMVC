@@ -141,6 +141,9 @@ namespace HDKmall.BLL.Services
             var product = _productRepository.GetById(id);
             if (product == null) return null;
 
+            var approvedReviews = _reviewRepository.GetApprovedByProductId(id).ToList();
+            var allTags = _reviewRepository.GetAllTags().ToList();
+
             return new ProductDetailVM
             {
                 Id = product.Id,
@@ -162,7 +165,7 @@ namespace HDKmall.BLL.Services
                     Stock = v.Stock,
                     ImageUrl = v.ImageUrl
                 }).ToList(),
-                Reviews = product.Reviews.Select(r => new ReviewVM
+                Reviews = approvedReviews.Select(r => new ReviewVM
                 {
                     Id = r.Id,
                     ProductId = r.ProductId,
@@ -170,10 +173,14 @@ namespace HDKmall.BLL.Services
                     UserName = r.User?.FullName ?? "Anonymous",
                     Rating = r.Rating,
                     Comment = r.Comment,
-                    CreatedAt = r.CreatedAt
+                    CreatedAt = r.CreatedAt,
+                    IsApproved = r.IsApproved,
+                    IsHidden = r.IsHidden,
+                    Images = r.Images.OrderBy(i => i.DisplayOrder).Select(i => i.ImageUrl).ToList(),
+                    Tags = r.TagMappings.Select(tm => (tm.Tag?.Emoji ?? "") + " " + (tm.Tag?.Name ?? "")).ToList()
                 }).ToList(),
-                AverageRating = product.Reviews.Any() ? product.Reviews.Average(r => r.Rating) : 0,
-                TotalReviews = product.Reviews.Count,
+                AverageRating = approvedReviews.Any() ? approvedReviews.Average(r => r.Rating) : 0,
+                TotalReviews = approvedReviews.Count,
                 Images = (product.Images ?? new List<ProductImage>())
                     .OrderBy(i => i.DisplayOrder)
                     .Select(i => new ProductImageVM
@@ -191,7 +198,8 @@ namespace HDKmall.BLL.Services
                         SpecName = s.SpecName,
                         SpecValue = s.SpecValue,
                         DisplayOrder = s.DisplayOrder
-                    }).ToList()
+                    }).ToList(),
+                ReviewTags = allTags
             };
         }
 

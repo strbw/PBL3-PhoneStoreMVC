@@ -1,44 +1,80 @@
 @model HDKmall.Models.Coupon
 @{
-    ViewData["Title"] = "Thêm mã giảm giá";
+    ViewData["Title"] = "Thêm Mã Giảm Giá";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="admin-section" style="max-width:520px;">
-    <h2 style="font-size:18px; font-weight:700; margin-bottom:20px;">Thêm mã giảm giá mới</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">🎟️ Thêm Mã Giảm Giá Mới</h2>
+    <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn btn-light shadow-sm border rounded-pill px-4 fw-bold">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
 
-    <form asp-area="Admin" asp-controller="Coupon" asp-action="Create" method="post">
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="All" class="alert alert-danger mb-3" style="display:none;"></div>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger shadow-sm border-0 rounded-3">
+        <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> Vui lòng kiểm tra lại:</div>
+        <ul class="mb-0">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
 
-        <div class="mb-3">
-            <label asp-for="Code" class="form-label fw-medium">Mã giảm giá *</label>
-            <input asp-for="Code" class="form-control" placeholder="VD: SALE50" />
-            <span asp-validation-for="Code" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="DiscountAmount" class="form-label fw-medium">Số tiền giảm (₫) *</label>
-            <input asp-for="DiscountAmount" class="form-control" type="number" min="0" placeholder="50000" />
-            <span asp-validation-for="DiscountAmount" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="ExpiryDate" class="form-label fw-medium">Ngày hết hạn *</label>
-            <input asp-for="ExpiryDate" class="form-control" type="date" />
-            <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="UsageLimit" class="form-label fw-medium">Giới hạn sử dụng</label>
-            <input asp-for="UsageLimit" class="form-control" type="number" min="1" />
-            <span asp-validation-for="UsageLimit" class="text-danger small"></span>
-        </div>
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <form asp-area="Admin" asp-controller="Coupon" asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
 
-        <div class="d-flex gap-2 mt-4">
-            <button type="submit" class="btn btn-primary">Lưu</button>
-            <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
-        </div>
-    </form>
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                    <h5 class="fw-bold mb-0 text-secondary"><i class="bi bi-info-circle me-2"></i>Thông tin mã giảm giá</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Code" class="form-label fw-bold text-muted small">Mã giảm giá <span class="text-danger">*</span></label>
+                            <input asp-for="Code" class="form-control bg-light border-0" placeholder="VD: SALE50" style="text-transform:uppercase;" />
+                            <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DiscountAmount" class="form-label fw-bold text-muted small">Số tiền giảm (₫) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input asp-for="DiscountAmount" class="form-control bg-light border-0" type="number" min="0" placeholder="50000" />
+                                <span class="input-group-text bg-light border-0 text-muted">₫</span>
+                            </div>
+                            <span asp-validation-for="DiscountAmount" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ExpiryDate" class="form-label fw-bold text-muted small">Ngày hết hạn <span class="text-danger">*</span></label>
+                            <input asp-for="ExpiryDate" class="form-control bg-light border-0" type="date" />
+                            <span asp-validation-for="ExpiryDate" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="UsageLimit" class="form-label fw-bold text-muted small">Giới hạn sử dụng</label>
+                            <input asp-for="UsageLimit" class="form-control bg-light border-0" type="number" min="1" />
+                            <span asp-validation-for="UsageLimit" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 d-flex gap-3">
+                    <button type="submit" class="btn btn-danger text-white fw-bold flex-fill rounded-pill">
+                        <i class="bi bi-check-circle me-1"></i> Lưu Mã Giảm Giá
+                    </button>
+                    <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn btn-light border flex-fill rounded-pill">Hủy</a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+

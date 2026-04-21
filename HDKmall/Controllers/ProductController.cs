@@ -4,6 +4,7 @@ using System.Globalization;
 using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HDKmall.Controllers
 {
@@ -12,12 +13,14 @@ namespace HDKmall.Controllers
         private readonly IProductSearchService _searchService;
         private readonly ICategoryService _categoryService;
         private readonly IBrandService _brandService;
+        private readonly IReviewService _reviewService;
 
-        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService)
+        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService)
         {
             _searchService = searchService;
             _categoryService = categoryService;
             _brandService = brandService;
+            _reviewService = reviewService;
         }
 
         private string RemoveDiacritics(string text)
@@ -84,6 +87,17 @@ namespace HDKmall.Controllers
             if (product == null)
             {
                 return NotFound();
+            }
+
+            // Check if user can review
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                if (userId > 0)
+                {
+                    product.CanReview = _reviewService.UserCanReview(userId, id);
+                }
+                product.UserIsAuthenticated = true;
             }
 
             return View(product);

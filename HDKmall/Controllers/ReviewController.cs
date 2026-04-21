@@ -19,7 +19,7 @@ namespace HDKmall.Controllers
         // POST: Review/Add
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Add(int productId, int rating, string comment)
+        public async Task<IActionResult> Add(int productId, int rating, string comment, List<IFormFile> images, List<int> tagIds)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (userId == 0)
@@ -27,22 +27,28 @@ namespace HDKmall.Controllers
                 return Unauthorized();
             }
 
-            // Check if user can review
+            // Check if user can review (must have purchased with Paid status)
             if (!_reviewService.UserCanReview(userId, productId))
             {
-                return Json(new { success = false, message = "Bạn chỉ có thể đánh giá sản phẩm đã mua" });
+                TempData["ReviewError"] = "Bạn chỉ có thể đánh giá sản phẩm đã mua và đơn hàng đã thanh toán.";
+                return Redirect($"/Product/Detail/{productId}");
             }
 
-            var review = _reviewService.AddReview(productId, userId, rating, comment);
-            return Json(new { success = true, message = "Đánh giá được thêm thành công" });
+            if (rating < 1 || rating > 5)
+            {
+                TempData["ReviewError"] = "Vui lòng chọn số sao (1-5).";
+                return Redirect($"/Product/Detail/{productId}");
+            }
+
+            await _reviewService.AddReviewAsync(productId, userId, rating, comment, images, tagIds);
+            TempData["ReviewSuccess"] = "Đánh giá của bạn đã được gửi và đang chờ duyệt.";
+            return Redirect($"/Product/Detail/{productId}");
         }
 
         // POST: Review/Delete
         [HttpPost]
         public IActionResult Delete(int id)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            
             _reviewService.DeleteReview(id);
             TempData["Success"] = "Đánh giá đã được xoá";
             return RedirectToRequest();

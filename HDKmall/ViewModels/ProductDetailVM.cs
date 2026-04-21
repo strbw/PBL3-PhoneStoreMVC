@@ -19,5 +19,8 @@ namespace HDKmall.ViewModels
         public int TotalReviews { get; set; }
         public List<ProductImageVM> Images { get; set; } = new List<ProductImageVM>();
         public List<ProductSpecVM> Specifications { get; set; } = new List<ProductSpecVM>();
+        public List<ReviewTag> ReviewTags { get; set; } = new List<ReviewTag>();
+        public bool CanReview { get; set; } = false;
+        public bool UserIsAuthenticated { get; set; } = false;
     }
 }

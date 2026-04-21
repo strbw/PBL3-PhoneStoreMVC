@@ -7,6 +7,8 @@ namespace HDKmall.ViewModels
         public int ProductId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
+        public List<IFormFile> Images { get; set; } = new List<IFormFile>();
+        public List<int> TagIds { get; set; } = new List<int>();
     }
 
     public class ReviewListVM

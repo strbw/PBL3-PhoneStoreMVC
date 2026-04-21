@@ -18,6 +18,8 @@ namespace HDKmall.DAL.Repositories
             return _context.Reviews
                 .Include(r => r.User)
                 .Include(r => r.Product)
+                .Include(r => r.Images)
+                .Include(r => r.TagMappings).ThenInclude(tm => tm.Tag)
                 .FirstOrDefault(r => r.Id == id);
         }
 
@@ -25,7 +27,20 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.Reviews
                 .Include(r => r.User)
+                .Include(r => r.Images)
+                .Include(r => r.TagMappings).ThenInclude(tm => tm.Tag)
                 .Where(r => r.ProductId == productId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
+        }
+
+        public IEnumerable<Review> GetApprovedByProductId(int productId)
+        {
+            return _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Images)
+                .Include(r => r.TagMappings).ThenInclude(tm => tm.Tag)
+                .Where(r => r.ProductId == productId && r.IsApproved && !r.IsHidden)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
         }
@@ -34,6 +49,8 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.Reviews
                 .Include(r => r.Product)
+                .Include(r => r.Images)
+                .Include(r => r.TagMappings).ThenInclude(tm => tm.Tag)
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
@@ -44,6 +61,8 @@ namespace HDKmall.DAL.Repositories
             return _context.Reviews
                 .Include(r => r.User)
                 .Include(r => r.Product)
+                .Include(r => r.Images)
+                .Include(r => r.TagMappings).ThenInclude(tm => tm.Tag)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
         }
@@ -70,6 +89,11 @@ namespace HDKmall.DAL.Repositories
         public void SaveChanges()
         {
             _context.SaveChanges();
+        }
+
+        public IEnumerable<ReviewTag> GetAllTags()
+        {
+            return _context.ReviewTags.OrderBy(t => t.DisplayOrder).ToList();
         }
     }
 }
