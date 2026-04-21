@@ -2,10 +2,11 @@
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
-    var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled" };
+    var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled", "Failed" };
     var statusLabels = new Dictionary<string, string> {
         { "Pending", "Chờ xử lý" }, { "Processing", "Đang xử lý" },
-        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" }
+        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" },
+        { "Failed", "Thanh toán thất bại" }
     };
 }
 
@@ -52,6 +53,7 @@
                             "Shipping" => "bg-primary",
                             "Delivered" => "bg-success",
                             "Cancelled" => "bg-danger",
+                            "Failed" => "bg-dark",
                             _ => "bg-secondary"
                         };
                         var statusLbl = statusLabels.ContainsKey(order.Status ?? "") ? statusLabels[order.Status] : (order.Status ?? "-");

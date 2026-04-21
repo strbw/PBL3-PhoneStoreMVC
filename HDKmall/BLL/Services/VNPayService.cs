@@ -8,13 +8,15 @@ namespace HDKmall.BLL.Services
     public class VNPayService : IVNPayService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<VNPayService> _logger;
         private readonly string _vnPayUrl;
         private readonly string _tmnCode;
         private readonly string _hashSecret;
 
-        public VNPayService(IConfiguration configuration)
+        public VNPayService(IConfiguration configuration, ILogger<VNPayService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
             _vnPayUrl = _configuration["VNPay:Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
             _tmnCode = _configuration["VNPay:TmnCode"] ?? "TESTMERCHANT";
             _hashSecret = _configuration["VNPay:HashSecret"] ?? "TESTSECRET";
@@ -52,6 +54,7 @@ namespace HDKmall.BLL.Services
             var secureHash = HmacSHA512(_hashSecret, queryString.Substring(1));
             var paymentUrl = $"{_vnPayUrl}?{queryString}&vnp_SecureHash={secureHash}";
 
+            _logger.LogInformation("VNPay payment URL created for order {OrderId}, txnRef={TxnRef}", model.OrderId, model.OrderCode);
             return paymentUrl;
         }
 
@@ -59,11 +62,8 @@ namespace HDKmall.BLL.Services
         {
             var vnpayData = new SortedDictionary<string, string>();
             var responseCode = "";
-            var orderId = "";
             var amount = 0L;
-            var transactionId = "";
             var transactionNo = "";
-            var responseDescription = "";
 
             foreach (var key in collections.Keys)
             {
@@ -75,18 +75,15 @@ namespace HDKmall.BLL.Services
 
             if (vnpayData.ContainsKey("vnp_ResponseCode"))
                 responseCode = vnpayData["vnp_ResponseCode"];
-            if (vnpayData.ContainsKey("vnp_TxnRef"))
-                orderId = vnpayData["vnp_TxnRef"];
             if (vnpayData.ContainsKey("vnp_Amount"))
                 long.TryParse(vnpayData["vnp_Amount"], out amount);
             if (vnpayData.ContainsKey("vnp_TransactionNo"))
                 transactionNo = vnpayData["vnp_TransactionNo"];
-            if (vnpayData.ContainsKey("vnp_TransactionStatus"))
-                transactionId = vnpayData["vnp_TransactionStatus"];
-            if (vnpayData.ContainsKey("vnp_SecureHash"))
-                vnpayData.Remove("vnp_SecureHash");
-            if (vnpayData.ContainsKey("vnp_SecureHashType"))
-                vnpayData.Remove("vnp_SecureHashType");
+
+            // Lấy chữ ký nhận được rồi xoá khỏi data trước khi tính lại
+            var receivedHash = collections["vnp_SecureHash"].ToString();
+            vnpayData.Remove("vnp_SecureHash");
+            vnpayData.Remove("vnp_SecureHashType");
 
             var queryString = "";
             foreach (var item in vnpayData)
@@ -94,16 +91,31 @@ namespace HDKmall.BLL.Services
                 queryString += "&" + Uri.EscapeDataString(item.Key) + "=" + Uri.EscapeDataString(item.Value);
             }
 
-            var secureHash = HmacSHA512(_hashSecret, queryString.Substring(1));
-            var vnp_SecureHash = collections["vnp_SecureHash"].ToString();
+            // Verify HMAC SHA512 chữ ký
+            var computedHash = HmacSHA512(_hashSecret, queryString.Substring(1));
+            var signatureValid = string.Equals(computedHash, receivedHash, StringComparison.OrdinalIgnoreCase);
+            var isSuccess = signatureValid && responseCode == "00";
 
-            var isValid = secureHash == vnp_SecureHash && responseCode == "00";
+            if (!signatureValid)
+            {
+                _logger.LogWarning("VNPay signature mismatch. Computed={Computed}, Received={Received}", computedHash, receivedHash);
+            }
+            else if (responseCode != "00")
+            {
+                _logger.LogWarning("VNPay response code indicates failure: {ResponseCode}", responseCode);
+            }
+            else
+            {
+                _logger.LogInformation("VNPay signature valid, responseCode=00, transactionNo={TransactionNo}", transactionNo);
+            }
 
             return new VNPaymentResponseVM
             {
-                Success = isValid,
-                Message = isValid ? "Thanh toán thành công" : "Thanh toán thất bại",
-                OrderId = int.TryParse(orderId, out var id) ? id : 0,
+                Success = isSuccess,
+                Message = isSuccess ? "Thanh toán thành công" : $"Thanh toán thất bại (mã {responseCode})",
+                // OrderId trong TxnRef có dạng "ORDER-{id}-{ticks}", không parse trực tiếp được;
+                // VnPayReturn sẽ lấy orderId từ URL query param thay vì từ đây
+                OrderId = 0,
                 TransactionId = transactionNo,
                 Amount = amount / 100m,
                 TransactionDate = DateTime.Now

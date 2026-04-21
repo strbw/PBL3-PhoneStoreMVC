@@ -119,6 +119,12 @@ namespace HDKmall.Controllers
             // Remove only the ordered items from cart
             _cartService.RemoveFromCart(itemsToOrder.Select(i => i.Id).ToList());
 
+            // For online payment methods, redirect to payment page immediately
+            if (paymentMethod == "VNPay" || paymentMethod == "MoMo")
+            {
+                return RedirectToAction("Index", "Payment", new { orderId = order.Id });
+            }
+
             TempData["Success"] = "Đơn hàng đã được tạo thành công!";
             return RedirectToAction("Detail", new { id = order.Id });
         }

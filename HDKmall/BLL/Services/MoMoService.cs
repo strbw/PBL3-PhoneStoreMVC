@@ -9,14 +9,16 @@ namespace HDKmall.BLL.Services
     public class MoMoService : IMoMoService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<MoMoService> _logger;
         private readonly string _momoUrl;
         private readonly string _partnerCode;
         private readonly string _accessKey;
         private readonly string _secretKey;
 
-        public MoMoService(IConfiguration configuration)
+        public MoMoService(IConfiguration configuration, ILogger<MoMoService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
             _momoUrl = _configuration["MoMo:Url"] ?? "https://test-payment.momo.vn/v3/gateway/api/create";
             _partnerCode = _configuration["MoMo:PartnerCode"] ?? "MOMERCHANT";
             _accessKey = _configuration["MoMo:AccessKey"] ?? "F8591820140105";
@@ -69,6 +71,7 @@ namespace HDKmall.BLL.Services
 
                         if (root.TryGetProperty("payUrl", out var payUrl))
                         {
+                            _logger.LogInformation("MoMo payment URL created for order {OrderId}, orderId={OrderCode}", model.OrderId, model.OrderCode);
                             return payUrl.GetString();
                         }
                     }
@@ -88,17 +91,71 @@ namespace HDKmall.BLL.Services
             var message = collections["message"].ToString();
             var responseCode = collections["resultCode"].ToString();
             var requestId = collections["requestId"].ToString();
-            var amount = collections["amount"].ToString();
+            var amountStr = collections["amount"].ToString();
+            var partnerCode = collections["partnerCode"].ToString();
+            var orderInfo = collections["orderInfo"].ToString();
+            var orderType = collections["orderType"].ToString();
+            var transId = collections["transId"].ToString();
+            var payType = collections["payType"].ToString();
+            var responseTime = collections["responseTime"].ToString();
+            var extraData = collections["extraData"].ToString();
+            var receivedSignature = collections["signature"].ToString();
+
+            // Kiểm tra chữ ký MoMo (HMAC SHA256)
+            // Raw string theo thứ tự alphabet theo quy định của MoMo
+            var rawSignature =
+                $"accessKey={_accessKey}" +
+                $"&amount={amountStr}" +
+                $"&extraData={extraData}" +
+                $"&message={message}" +
+                $"&orderId={orderId}" +
+                $"&orderInfo={orderInfo}" +
+                $"&orderType={orderType}" +
+                $"&partnerCode={partnerCode}" +
+                $"&payType={payType}" +
+                $"&requestId={requestId}" +
+                $"&responseTime={responseTime}" +
+                $"&resultCode={responseCode}" +
+                $"&transId={transId}";
+
+            var computedSignature = ComputeHmacSHA256(rawSignature, _secretKey);
+            var signatureValid = string.Equals(computedSignature, receivedSignature, StringComparison.OrdinalIgnoreCase);
+
+            if (!signatureValid)
+            {
+                _logger.LogWarning(
+                    "MoMo signature mismatch for orderId={OrderId}. Computed={Computed}, Received={Received}",
+                    orderId, computedSignature, receivedSignature);
+                return new VNPaymentResponseVM
+                {
+                    Success = false,
+                    Message = "Chữ ký MoMo không hợp lệ.",
+                    OrderId = 0,
+                    TransactionId = transId,
+                    Amount = 0,
+                    TransactionDate = DateTime.Now
+                };
+            }
 
             var isSuccess = responseCode == "0";
+
+            if (!isSuccess)
+            {
+                _logger.LogWarning("MoMo payment failed for orderId={OrderId}, resultCode={ResultCode}, message={Message}",
+                    orderId, responseCode, message);
+            }
+            else
+            {
+                _logger.LogInformation("MoMo payment successful for orderId={OrderId}, transId={TransId}", orderId, transId);
+            }
 
             return new VNPaymentResponseVM
             {
                 Success = isSuccess,
                 Message = isSuccess ? "Thanh toán thành công" : $"Thanh toán thất bại: {message}",
-                OrderId = int.TryParse(orderId, out var id) ? id : 0,
-                TransactionId = requestId,
-                Amount = string.IsNullOrEmpty(amount) ? 0 : decimal.Parse(amount) / 1000,
+                OrderId = 0, // sẽ được parse từ OrderCode trong MoMoReturn
+                TransactionId = transId,
+                Amount = string.IsNullOrEmpty(amountStr) ? 0 : decimal.Parse(amountStr) / 1000,
                 TransactionDate = DateTime.Now
             };
         }

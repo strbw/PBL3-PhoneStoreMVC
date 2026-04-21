@@ -2,10 +2,11 @@
 @{
     ViewData["Title"] = $"Đơn hàng #{Model.Id}";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
-    var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled" };
+    var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled", "Failed" };
     var statusLabels = new Dictionary<string, string> {
         { "Pending", "Chờ xử lý" }, { "Processing", "Đang xử lý" },
-        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" }
+        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" },
+        { "Failed", "Thanh toán thất bại" }
     };
     var statusClass = Model.Status switch {
         "Pending" => "bg-warning text-dark",
@@ -13,6 +14,7 @@
         "Shipping" => "bg-primary",
         "Delivered" => "bg-success",
         "Cancelled" => "bg-danger",
+        "Failed" => "bg-dark",
         _ => "bg-secondary"
     };
     var statusLbl = statusLabels.ContainsKey(Model.Status ?? "") ? statusLabels[Model.Status ?? "Pending"] : (Model.Status ?? "-");
