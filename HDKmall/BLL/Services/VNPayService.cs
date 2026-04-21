@@ -47,7 +47,7 @@ namespace HDKmall.BLL.Services
             var queryBuilder = new StringBuilder();
             foreach (var item in vnpayData)
             {
-                queryBuilder.AppendFormat("&{0}={1}", Uri.EscapeDataString(item.Key), Uri.EscapeDataString(item.Value));
+                queryBuilder.AppendFormat("&{0}={1}", System.Net.WebUtility.UrlEncode(item.Key), System.Net.WebUtility.UrlEncode(item.Value));
             }
 
             var queryString = queryBuilder.ToString();
@@ -92,7 +92,7 @@ namespace HDKmall.BLL.Services
             var queryString = "";
             foreach (var item in vnpayData)
             {
-                queryString += "&" + Uri.EscapeDataString(item.Key) + "=" + Uri.EscapeDataString(item.Value);
+                queryString += "&" + System.Net.WebUtility.UrlEncode(item.Key) + "=" + System.Net.WebUtility.UrlEncode(item.Value);
             }
 
             if (queryString.Length > 0 && queryString.StartsWith("&"))
