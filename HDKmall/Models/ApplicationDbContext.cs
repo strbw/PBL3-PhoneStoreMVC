@@ -79,11 +79,7 @@ namespace HDKmall.Models
                 new Category { Id = 3, Name = "Laptop", Description = "Máy tính xách tay" },
                 new Category { Id = 4, Name = "Tai nghe", Description = "Tai nghe Bluetooth, có dây" },
                 new Category { Id = 5, Name = "Phụ kiện", Description = "Cáp, bộ sạc, ốp lưng" },
-                new Category { Id = 6, Name = "Đồng hồ thông minh", Description = "Smart watch" },
-                new Category { Id = 7, Name = "Camera", Description = "Máy ảnh, webcam" },
-                new Category { Id = 8, Name = "Loa", Description = "Loa Bluetooth, loa để bàn" },
-                new Category { Id = 9, Name = "Pin sạc", Description = "Power bank, sạc dự phòng" },
-                new Category { Id = 10, Name = "Game & Toy", Description = "Bộ chơi game, đồ chơi công nghệ" }
+                new Category { Id = 6, Name = "Đồng hồ thông minh", Description = "Smart watch" }
             };
             modelBuilder.Entity<Category>().HasData(categories);
 
@@ -98,8 +94,7 @@ namespace HDKmall.Models
                 new Brand { Id = 6, Name = "Sony", Description = "Sản phẩm từ Sony" },
                 new Brand { Id = 7, Name = "Anker", Description = "Sản phẩm từ Anker" },
                 new Brand { Id = 8, Name = "JBL", Description = "Sản phẩm từ JBL" },
-                new Brand { Id = 9, Name = "Soundcore", Description = "Sản phẩm từ Soundcore" },
-                new Brand { Id = 10, Name = "Realme", Description = "Sản phẩm từ Realme" }
+                new Brand { Id = 9, Name = "Realme", Description = "Sản phẩm từ Realme" }
             };
             modelBuilder.Entity<Brand>().HasData(brands);
 
@@ -160,21 +155,11 @@ namespace HDKmall.Models
                 new Product { Id = 37, Name = "Apple Watch Series 9", Price = 8999000, Description = "Standard smartwatch", ImageUrl = "/images/watchs9.jpg", CategoryId = 6, BrandId = 1 },
                 new Product { Id = 38, Name = "Samsung Galaxy Watch6 Pro", Price = 8999000, Description = "Premium Android watch", ImageUrl = "/images/watch6pro.jpg", CategoryId = 6, BrandId = 2 },
                 new Product { Id = 39, Name = "Xiaomi Watch S3", Price = 4999000, Description = "Budget smartwatch", ImageUrl = "/images/watchs3.jpg", CategoryId = 6, BrandId = 3 },
-                new Product { Id = 40, Name = "Realme Watch 3", Price = 3999000, Description = "Entry smartwatch", ImageUrl = "/images/watch3.jpg", CategoryId = 6, BrandId = 10 },
+                new Product { Id = 40, Name = "Realme Watch 3", Price = 3999000, Description = "Entry smartwatch", ImageUrl = "/images/watch3.jpg", CategoryId = 6, BrandId = 9 },
 
                 // Cameras
-                new Product { Id = 41, Name = "Sony A7R V", Price = 54999000, Description = "Professional camera", ImageUrl = "/images/a7rv.jpg", CategoryId = 7, BrandId = 6 },
-                new Product { Id = 42, Name = "Sony A6700", Price = 24999000, Description = "Mirrorless camera", ImageUrl = "/images/a6700.jpg", CategoryId = 7, BrandId = 6 },
                 new Product { Id = 43, Name = "Samsung Galaxy S24 Camera", Price = 22999000, Description = "Excellent camera phone", ImageUrl = "/images/s24cam.jpg", CategoryId = 1, BrandId = 2 },
-                new Product { Id = 44, Name = "DJI Mini 4 Pro", Price = 18999000, Description = "Professional drone", ImageUrl = "/images/djimini4pro.jpg", CategoryId = 7, BrandId = 6 },
-                new Product { Id = 45, Name = "iPhone 15 Pro Max Camera", Price = 29999000, Description = "Amazing camera phone", ImageUrl = "/images/ip15cam.jpg", CategoryId = 1, BrandId = 1 },
-
-                // Speakers
-                new Product { Id = 46, Name = "JBL Boombox 3", Price = 8999000, Description = "Portable speaker", ImageUrl = "/images/jblbb3.jpg", CategoryId = 8, BrandId = 8 },
-                new Product { Id = 47, Name = "Sony ULT Power Sound", Price = 4999000, Description = "Good Bluetooth speaker", ImageUrl = "/images/sonyultpower.jpg", CategoryId = 8, BrandId = 6 },
-                new Product { Id = 48, Name = "Soundcore Motion 300", Price = 3999000, Description = "Excellent portable speaker", ImageUrl = "/images/scmotion300.jpg", CategoryId = 8, BrandId = 9 },
-                new Product { Id = 49, Name = "Apple HomePod Mini", Price = 1999000, Description = "Smart speaker", ImageUrl = "/images/homepadmini.jpg", CategoryId = 8, BrandId = 1 },
-                new Product { Id = 50, Name = "Samsung Galaxy Home", Price = 2999000, Description = "Smart speaker", ImageUrl = "/images/galaxyhome.jpg", CategoryId = 8, BrandId = 2 }
+                new Product { Id = 45, Name = "iPhone 15 Pro Max Camera", Price = 29999000, Description = "Amazing camera phone", ImageUrl = "/images/ip15cam.jpg", CategoryId = 1, BrandId = 1 }
             };
             modelBuilder.Entity<Product>().HasData(products);
 
@@ -263,12 +248,11 @@ namespace HDKmall.Models
             });
 
             // Add more variants for other products (rest use base price)
-            for (int i = 3; i <= 50; i++)
+            foreach (var product in products)
             {
-                if (i != 1 && i != 2 && i != 6 && i != 11 && i != 26 && i != 28 && i != 31 && i != 34 && i != 36) // Skip already done
+                if (product.Id != 1 && product.Id != 2 && product.Id != 6 && product.Id != 11 && product.Id != 26 && product.Id != 28 && product.Id != 31 && product.Id != 34 && product.Id != 36) // Skip already done
                 {
-                    var product = products.First(p => p.Id == i);
-                    variants.Add(new ProductVariant { Id = variantId++, ProductId = i, Color = "Standard", Capacity = "Default", Price = product.Price, Stock = 20 + (i % 10), ImageUrl = product.ImageUrl });
+                    variants.Add(new ProductVariant { Id = variantId++, ProductId = product.Id, Color = "Standard", Capacity = "Default", Price = product.Price, Stock = 20 + (product.Id % 10), ImageUrl = product.ImageUrl });
                 }
             }
 

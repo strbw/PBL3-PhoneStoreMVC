@@ -1618,3 +1618,4 @@ F:\pbl3\PBL3-PhoneStoreMVC\HDKmall\obj\Debug\net10.0\refint\HDKmall.dll
 F:\pbl3\PBL3-PhoneStoreMVC\HDKmall\obj\Debug\net10.0\HDKmall.pdb
 F:\pbl3\PBL3-PhoneStoreMVC\HDKmall\obj\Debug\net10.0\HDKmall.genruntimeconfig.cache
 F:\pbl3\PBL3-PhoneStoreMVC\HDKmall\obj\Debug\net10.0\ref\HDKmall.dll
+F:\pbl3\PBL3-PhoneStoreMVC\HDKmall\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

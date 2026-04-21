@@ -62,30 +62,15 @@
                                     <label class="form-label text-muted small fw-medium">Tỉnh/Thành phố <span class="text-danger">*</span></label>
                                     <select class="form-select border" name="city" id="citySelect" required onchange="onCityChange()">
                                         <option value="" selected disabled>Chọn Tỉnh/Thành phố</option>
-                                        <option value="Đà Nẵng">Đà Nẵng</option>
-                                        <option value="Hà Nội">Hà Nội</option>
-                                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                                        <option value="Cần Thơ">Cần Thơ</option>
-                                        <option value="Huế">Huế</option>
-                                        <option value="Quảng Nam">Quảng Nam</option>
-                                        <option value="Bình Dương">Bình Dương</option>
-                                        <option value="Đồng Nai">Đồng Nai</option>
-                                        <option value="Khác">Khác</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6" id="districtCol" style="display:none;">
-                                    <label class="form-label text-muted small fw-medium">Quận/Huyện</label>
+                                    <label class="form-label text-muted small fw-medium">Quận/Huyện <span class="text-danger">*</span></label>
                                     <select class="form-select border" name="district" id="districtSelect" onchange="onDistrictChange()">
                                         <option value="">Chọn Quận/Huyện</option>
-                                        <option value="Hải Châu">Hải Châu</option>
-                                        <option value="Thanh Khê">Thanh Khê</option>
-                                        <option value="Sơn Trà">Sơn Trà</option>
-                                        <option value="Ngũ Hành Sơn">Ngũ Hành Sơn</option>
-                                        <option value="Liên Chiểu">Liên Chiểu</option>
-                                        <option value="Cẩm Lệ">Cẩm Lệ</option>
-                                        <option value="Hòa Vang">Hòa Vang</option>
-                                        <option value="Hoàng Sa">Hoàng Sa</option>
                                     </select>
+                                    <input type="hidden" name="cityName" id="cityNameInput" />
+                                    <input type="hidden" name="districtName" id="districtNameInput" />
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label text-muted small fw-medium">Địa chỉ cụ thể <span class="text-danger">*</span></label>
@@ -124,7 +109,7 @@
                     </div>
 
                     <!-- Payment Method -->
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                         <div class="card-header bg-white py-3 px-4 border-bottom">
                             <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
                                 <span class="fs-4">💳</span> Phương thức thanh toán
@@ -284,29 +269,71 @@
     const subTotal = @((Model?.Items?.Sum(i => (i.Variant != null ? i.Variant.Price : i.Product?.Price ?? 0) * i.Quantity) ?? 0));
     const innerDistricts = ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu', 'Cẩm Lệ'];
     const outerDistricts = ['Hòa Vang', 'Hoàng Sa'];
-    let currentShipping = 20000;
+    let currentShipping = 30000;
     let currentDiscount = 0;
+    let provincesData = [];
+
+    // Load provinces on page load
+    fetch('https://provinces.open-api.vn/api/?depth=2')
+        .then(response => response.json())
+        .then(data => {
+            provincesData = data;
+            const citySelect = document.getElementById('citySelect');
+            data.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.code;
+                option.text = province.name;
+                citySelect.appendChild(option);
+            });
+        });
 
     function onCityChange() {
-        const city = document.getElementById('citySelect').value;
+        const cityCode = document.getElementById('citySelect').value;
         const districtCol = document.getElementById('districtCol');
-        if (city === 'Đà Nẵng') {
+        const districtSelect = document.getElementById('districtSelect');
+        const cityNameInput = document.getElementById('cityNameInput');
+        
+        const selectedProvince = provincesData.find(p => p.code == cityCode);
+        if (selectedProvince) {
+            cityNameInput.value = selectedProvince.name;
             districtCol.style.display = 'block';
-            currentShipping = 20000; // default inner
+            districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+            selectedProvince.districts.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district.name;
+                option.text = district.name;
+                districtSelect.appendChild(option);
+            });
+            districtSelect.required = true;
+            
+            if (selectedProvince.name.includes('Đà Nẵng')) {
+                currentShipping = 20000;
+            } else {
+                currentShipping = 45000;
+            }
         } else {
             districtCol.style.display = 'none';
-            document.getElementById('districtSelect').value = '';
+            districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+            districtSelect.required = false;
+            cityNameInput.value = '';
             currentShipping = 45000;
         }
+        document.getElementById('districtNameInput').value = '';
         updateShippingDisplay();
     }
 
     function onDistrictChange() {
-        const district = document.getElementById('districtSelect').value;
-        if (!district) { currentShipping = 20000; }
-        else if (innerDistricts.includes(district)) { currentShipping = 20000; }
-        else if (outerDistricts.includes(district)) { currentShipping = 35000; }
-        else { currentShipping = 35000; }
+        const districtName = document.getElementById('districtSelect').value;
+        document.getElementById('districtNameInput').value = districtName;
+        const cityCode = document.getElementById('citySelect').value;
+        const selectedProvince = provincesData.find(p => p.code == cityCode);
+        
+        if (selectedProvince && selectedProvince.name.includes('Đà Nẵng')) {
+            if (!districtName) { currentShipping = 20000; }
+            else if (innerDistricts.some(d => districtName.includes(d))) { currentShipping = 20000; }
+            else if (outerDistricts.some(d => districtName.includes(d))) { currentShipping = 35000; }
+            else { currentShipping = 35000; }
+        }
         updateShippingDisplay();
     }
 

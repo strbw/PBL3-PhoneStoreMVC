@@ -64,7 +64,7 @@ namespace HDKmall.Controllers
         // POST: Order/CreateOrder
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CreateOrder(string address, string city, string district, string paymentMethod, string couponCode = null, string note = null, decimal shippingFee = 0)
+        public IActionResult CreateOrder(string address, string cityName, string districtName, string paymentMethod, string couponCode = null, string note = null, decimal shippingFee = 0)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (userId == 0)
@@ -106,9 +106,9 @@ namespace HDKmall.Controllers
                 }
             }
 
-            var fullAddress = string.IsNullOrEmpty(district)
-                ? $"{address}, {city}"
-                : $"{address}, {district}, {city}";
+            var fullAddress = string.IsNullOrEmpty(districtName)
+                ? $"{address}, {cityName}"
+                : $"{address}, {districtName}, {cityName}";
 
             var subTotal = itemsToOrder.Sum(i =>
                 (i.Variant != null ? i.Variant.Price : i.Product?.Price ?? 0) * i.Quantity);
@@ -119,14 +119,8 @@ namespace HDKmall.Controllers
             // Remove only the ordered items from cart
             _cartService.RemoveFromCart(itemsToOrder.Select(i => i.Id).ToList());
 
-            // For online payment methods, redirect to payment page immediately
-            if (paymentMethod == "VNPay" || paymentMethod == "MoMo")
-            {
-                return RedirectToAction("Index", "Payment", new { orderId = order.Id });
-            }
-
-            TempData["Success"] = "Đơn hàng đã được tạo thành công!";
-            return RedirectToAction("Detail", new { id = order.Id });
+            // Always redirect to ProcessPayment which will handle COD or redirect to MoMo/VNPay directly
+            return RedirectToAction("ProcessPayment", "Payment", new { orderId = order.Id, paymentMethod = paymentMethod });
         }
 
         // GET: Order/History

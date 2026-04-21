@@ -48,8 +48,8 @@ namespace HDKmall.Controllers
         }
 
         // POST: Payment/ProcessPayment
+        [HttpGet]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessPayment(int orderId, string paymentMethod)
         {
             var order = _orderService.GetOrderById(orderId);
