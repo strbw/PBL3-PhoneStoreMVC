@@ -1,13 +1,63 @@
 @model IEnumerable<HDKmall.Models.Order>
 @{
-    ViewData["Title"] = "Lịch sử đơn hàng";
+    ViewData["Title"] = "Đơn hàng của tôi";
+    var activeTab      = (string)(ViewBag.ActiveTab ?? "pending");
+    var countPending   = (int)(ViewBag.CountPending ?? 0);
+    var countShipping  = (int)(ViewBag.CountShipping ?? 0);
+    var countDelivered = (int)(ViewBag.CountDelivered ?? 0);
+    var countCancelled = (int)(ViewBag.CountCancelled ?? 0);
 }
 
 <div class="main-content bg-light py-5">
     <div class="container">
-        <h2 class="section-title mb-4">Lịch sử đơn hàng</h2>
-        
-        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <h2 class="section-title mb-4">Đơn hàng của tôi</h2>
+
+        <!-- Status tabs -->
+        <ul class="nav nav-tabs border-0 mb-0" id="orderTabs" style="border-bottom:2px solid #dee2e6 !important;">
+            <li class="nav-item">
+                <a class="nav-link fw-semibold @(activeTab == "pending" ? "active" : "")"
+                   href="@Url.Action("History", "Order", new { status = "pending" })">
+                    Chờ xử lý
+                    @if (countPending > 0)
+                    {
+                        <span class="badge bg-warning text-dark ms-1">@countPending</span>
+                    }
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-semibold @(activeTab == "shipping" ? "active" : "")"
+                   href="@Url.Action("History", "Order", new { status = "shipping" })">
+                    Đang giao
+                    @if (countShipping > 0)
+                    {
+                        <span class="badge bg-primary ms-1">@countShipping</span>
+                    }
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-semibold @(activeTab == "delivered" ? "active" : "")"
+                   href="@Url.Action("History", "Order", new { status = "delivered" })">
+                    Đã nhận
+                    @if (countDelivered > 0)
+                    {
+                        <span class="badge bg-success ms-1">@countDelivered</span>
+                    }
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-semibold @(activeTab == "cancelled" ? "active" : "")"
+                   href="@Url.Action("History", "Order", new { status = "cancelled" })">
+                    Đã hủy
+                    @if (countCancelled > 0)
+                    {
+                        <span class="badge bg-danger ms-1">@countCancelled</span>
+                    }
+                </a>
+            </li>
+        </ul>
+
+        <!-- Orders for active tab -->
+        <div class="card shadow-sm border-0 rounded-bottom-4 overflow-hidden">
             <div class="card-body p-0">
                 @if (Model != null && Model.Any())
                 {
@@ -26,11 +76,29 @@
                             <tbody>
                                 @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
                                 {
+                                    var statusClass = order.Status switch {
+                                        "Pending"    => "bg-warning text-dark",
+                                        "Processing" => "bg-info text-dark",
+                                        "Shipping"   => "bg-primary",
+                                        "Delivered"  => "bg-success",
+                                        "Cancelled"  => "bg-danger",
+                                        "Failed"     => "bg-dark",
+                                        _            => "bg-secondary"
+                                    };
+                                    var statusText = order.Status switch {
+                                        "Pending"    => "Chờ xử lý",
+                                        "Processing" => "Đang xử lý",
+                                        "Shipping"   => "Đang giao",
+                                        "Delivered"  => "Đã nhận",
+                                        "Cancelled"  => "Đã hủy",
+                                        "Failed"     => "Thanh toán thất bại",
+                                        _            => order.Status
+                                    };
                                     <tr>
                                         <td class="ps-4 fw-bold">#@order.Id</td>
                                         <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td>
-                                            @if(order.OrderDetails != null && order.OrderDetails.Any())
+                                            @if (order.OrderDetails != null && order.OrderDetails.Any())
                                             {
                                                 var firstItem = order.OrderDetails.First();
                                                 <div>@firstItem.Product?.Name <span class="text-muted text-nowrap">x @firstItem.Quantity</span></div>
@@ -42,25 +110,6 @@
                                         </td>
                                         <td class="text-danger fw-bold">@order.TotalAmount.ToString("N0")₫</td>
                                         <td>
-                                            @{
-                                                var statusClass = order.Status switch {
-                                                    "Pending" => "bg-warning text-dark",
-                                                    "Processing" => "bg-info text-dark",
-                                                    "Shipping" => "bg-primary",
-                                                    "Delivered" => "bg-success",
-                                                    "Cancelled" => "bg-danger",
-                                                    _ => "bg-secondary"
-                                                };
-                                                
-                                                var statusText = order.Status switch {
-                                                    "Pending" => "Chờ xử lý",
-                                                    "Processing" => "Đang xử lý",
-                                                    "Shipping" => "Đang giao",
-                                                    "Delivered" => "Đã giao",
-                                                    "Cancelled" => "Đã hủy",
-                                                    _ => order.Status
-                                                };
-                                            }
                                             <span class="badge @statusClass rounded-pill px-3 py-2">@statusText</span>
                                         </td>
                                         <td class="pe-4 text-end">
@@ -76,9 +125,20 @@
                 {
                     <div class="text-center py-5">
                         <div style="font-size: 4rem; color: #ccc;" class="mb-3">📦</div>
-                        <h4>Bạn chưa có đơn hàng nào</h4>
-                        <p class="text-muted">Hãy khám phá các sản phẩm của chúng tôi và đặt đơn hàng đầu tiên nhé!</p>
-                        <a href="/Product" class="btn btn-primary px-4 py-2 mt-2 rounded-pill">Tiếp tục mua sắm</a>
+                        @{
+                            var emptyMsg = activeTab switch {
+                                "shipping"  => "Không có đơn hàng nào đang giao.",
+                                "delivered" => "Bạn chưa có đơn hàng nào đã nhận.",
+                                "cancelled" => "Không có đơn hàng nào đã hủy.",
+                                _           => "Không có đơn hàng nào đang chờ xử lý."
+                            };
+                        }
+                        <h4>@emptyMsg</h4>
+                        @if (activeTab == "pending")
+                        {
+                            <p class="text-muted">Hãy khám phá các sản phẩm của chúng tôi và đặt đơn hàng đầu tiên nhé!</p>
+                            <a href="/Product" class="btn btn-primary px-4 py-2 mt-2 rounded-pill">Tiếp tục mua sắm</a>
+                        }
                     </div>
                 }
             </div>

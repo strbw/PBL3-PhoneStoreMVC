@@ -307,7 +307,7 @@
                     </div>
                 </div>
 
-                @if (User.Identity!.IsAuthenticated)
+                @if ((bool)(ViewBag.CanReview ?? false))
                 {
                     <div class="mb-4 p-3" style="background:#f8f9fa; border-radius:10px; border:1px solid #eee;">
                         <h6 class="fw-bold mb-3">Viết đánh giá của bạn</h6>
@@ -327,6 +327,13 @@
                             </div>
                             <button type="submit" class="btn fw-bold px-4" style="background:#d70018; color:#fff; border-radius:8px;">Gửi đánh giá</button>
                         </form>
+                    </div>
+                }
+                else if (User.Identity!.IsAuthenticated)
+                {
+                    <div class="alert alert-light border mb-4" style="border-radius:10px;">
+                        <i class="bi bi-bag-x me-1 text-muted"></i> Chỉ khách hàng đã mua và nhận sản phẩm mới có thể đánh giá.
+                        <a href="@Url.Action("History", "Order", new { status = "delivered" })" class="text-danger fw-bold ms-1">Xem đơn hàng đã nhận</a>
                     </div>
                 }
                 else
