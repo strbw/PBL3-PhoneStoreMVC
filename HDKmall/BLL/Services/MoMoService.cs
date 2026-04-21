@@ -29,13 +29,13 @@ namespace HDKmall.BLL.Services
         {
             var timeStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             var requestId = Guid.NewGuid().ToString();
-            var ipnUrl = model.ReturnUrl; // fallback
+            var ipnUrl = model.IpnUrl ?? model.ReturnUrl; // fallback
 
-            var rawData = $"accessKey={_accessKey}&amount={((long)model.TotalAmount * 1000)}" +
+            var rawData = $"accessKey={_accessKey}&amount={(long)model.TotalAmount}" +
                          $"&extraData=&ipnUrl={ipnUrl}&orderId={model.OrderCode}" +
                          $"&orderInfo=Thanh toan don hang {model.OrderId}" +
                          $"&partnerCode={_partnerCode}&redirectUrl={model.ReturnUrl}" +
-                         $"&requestId={requestId}&requestType=captureWallet";
+                         $"&requestId={requestId}&requestType=payWithMethod";
 
             var signature = ComputeHmacSHA256(rawData, _secretKey);
 
@@ -43,12 +43,12 @@ namespace HDKmall.BLL.Services
             {
                 partnerCode = _partnerCode,
                 requestId = requestId,
-                amount = ((long)model.TotalAmount * 1000),
+                amount = (long)model.TotalAmount,
                 orderId = model.OrderCode,
                 orderInfo = $"Thanh toan don hang {model.OrderId}",
                 redirectUrl = model.ReturnUrl,
                 ipnUrl = ipnUrl,
-                requestType = "captureWallet",
+                requestType = "payWithMethod",
                 extraData = "",
                 lang = "vi",
                 signature = signature
@@ -161,7 +161,7 @@ namespace HDKmall.BLL.Services
                 Message = isSuccess ? "Thanh toán thành công" : $"Thanh toán thất bại: {message}",
                 OrderId = 0, // sẽ được parse từ OrderCode trong MoMoReturn
                 TransactionId = transId,
-                Amount = string.IsNullOrEmpty(amountStr) ? 0 : decimal.Parse(amountStr) / 1000,
+                Amount = string.IsNullOrEmpty(amountStr) ? 0 : decimal.Parse(amountStr),
                 TransactionDate = DateTime.Now
             };
         }

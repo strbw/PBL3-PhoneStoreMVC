@@ -97,13 +97,15 @@ namespace HDKmall.Controllers
                     // Không đặt orderId trong URL vì MoMo cũng gửi orderId riêng;
                     // ta sẽ parse orderId từ OrderCode khi callback
                     var momoReturnUrl = Url.Action("MoMoReturn", "Payment", null, Request.Scheme);
+                    var momoIpnUrl = Url.Action("MoMoIPN", "Payment", null, Request.Scheme);
                     var momoModel = new PaymentVM
                     {
                         OrderId = orderId,
                         TotalAmount = order.TotalAmount,
                         PaymentMethod = paymentMethod,
                         OrderCode = $"ORDER-{orderId}-{DateTime.Now.Ticks}",
-                        ReturnUrl = momoReturnUrl
+                        ReturnUrl = momoReturnUrl,
+                        IpnUrl = momoIpnUrl ?? momoReturnUrl
                     };
                     try
                     {
