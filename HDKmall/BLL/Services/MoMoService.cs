@@ -19,7 +19,7 @@ namespace HDKmall.BLL.Services
         {
             _configuration = configuration;
             _logger = logger;
-            _momoUrl = _configuration["MoMo:Url"] ?? "https://test-payment.momo.vn/v3/gateway/api/create";
+            _momoUrl = _configuration["MoMo:Url"] ?? "https://test-payment.momo.vn/v2/gateway/api/create";
             _partnerCode = _configuration["MoMo:PartnerCode"] ?? "MOMERCHANT";
             _accessKey = _configuration["MoMo:AccessKey"] ?? "F8591820140105";
             _secretKey = _configuration["MoMo:SecretKey"] ?? "bJisuQtDXiVD7VQ3Dij05sDHxGT205fW";
@@ -29,28 +29,33 @@ namespace HDKmall.BLL.Services
         {
             var timeStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             var requestId = Guid.NewGuid().ToString();
-            var ipnUrl = model.ReturnUrl; // fallback
+            var ipnUrl = !string.IsNullOrEmpty(model.IpnUrl) ? model.IpnUrl : model.ReturnUrl;
 
-            var rawData = $"accessKey={_accessKey}&amount={((long)model.TotalAmount * 1000)}" +
-                         $"&extraData=&ipnUrl={ipnUrl}&orderId={model.OrderCode}" +
+            // MoMo v2: amount đơn vị VND nguyên, không nhân thêm
+            var amount = (long)model.TotalAmount;
+
+            // rawData theo đúng thứ tự alphabet của MoMo v2
+            var rawData = $"accessKey={_accessKey}&amount={amount}" +
+                         $"&extraData=&notifyUrl={ipnUrl}&orderId={model.OrderCode}" +
                          $"&orderInfo=Thanh toan don hang {model.OrderId}" +
-                         $"&partnerCode={_partnerCode}&redirectUrl={model.ReturnUrl}" +
-                         $"&requestId={requestId}&requestType=captureWallet";
+                         $"&partnerCode={_partnerCode}&requestId={requestId}" +
+                         $"&requestType=captureWallet&returnUrl={model.ReturnUrl}";
 
             var signature = ComputeHmacSHA256(rawData, _secretKey);
 
+            // MoMo v2 request body: dùng returnUrl/notifyUrl, thêm accessKey
             var momoRequest = new
             {
                 partnerCode = _partnerCode,
+                accessKey = _accessKey,
                 requestId = requestId,
-                amount = ((long)model.TotalAmount * 1000),
+                amount = amount,
                 orderId = model.OrderCode,
                 orderInfo = $"Thanh toan don hang {model.OrderId}",
-                redirectUrl = model.ReturnUrl,
-                ipnUrl = ipnUrl,
+                returnUrl = model.ReturnUrl,
+                notifyUrl = ipnUrl,
                 requestType = "captureWallet",
                 extraData = "",
-                lang = "vi",
                 signature = signature
             };
 
@@ -161,7 +166,7 @@ namespace HDKmall.BLL.Services
                 Message = isSuccess ? "Thanh toán thành công" : $"Thanh toán thất bại: {message}",
                 OrderId = 0, // sẽ được parse từ OrderCode trong MoMoReturn
                 TransactionId = transId,
-                Amount = string.IsNullOrEmpty(amountStr) ? 0 : decimal.Parse(amountStr) / 1000,
+                Amount = string.IsNullOrEmpty(amountStr) ? 0 : decimal.Parse(amountStr),
                 TransactionDate = DateTime.Now
             };
         }
