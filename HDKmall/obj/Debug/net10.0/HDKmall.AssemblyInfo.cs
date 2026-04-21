@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HDKmall")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fcc6737c82ad5d558f03af157920921be558d2fd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6fa5b3864df9d436ad3e01f2856629d6b49d568c")]
 [assembly: System.Reflection.AssemblyProductAttribute("HDKmall")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HDKmall")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
