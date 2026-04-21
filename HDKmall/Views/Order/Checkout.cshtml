@@ -148,7 +148,7 @@
                                     </div>
                                 </label>
                                 <label class="payment-option position-relative" style="cursor:pointer;">
-                                    <input type="radio" name="payment_method_display" value="VNPAY" class="position-absolute opacity-0" onchange="document.getElementById('paymentMethodInput').value = this.value;">
+                                    <input type="radio" name="payment_method_display" value="VNPay" class="position-absolute opacity-0" onchange="document.getElementById('paymentMethodInput').value = this.value;">
                                     <div class="card border-2 rounded-3 p-3 option-content">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="radio-custom border rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; flex-shrink:0;">
@@ -156,8 +156,23 @@
                                             </div>
                                             <span style="font-size: 22px;">🏦</span>
                                             <div>
-                                                <div class="fw-bold">Chuyển khoản ngân hàng</div>
-                                                <div class="text-muted small">Thẻ ATM nội địa, thẻ quốc tế</div>
+                                                <div class="fw-bold">VNPay</div>
+                                                <div class="text-muted small">Thẻ ATM nội địa, thẻ quốc tế, QR Code</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="payment-option position-relative" style="cursor:pointer;">
+                                    <input type="radio" name="payment_method_display" value="MoMo" class="position-absolute opacity-0" onchange="document.getElementById('paymentMethodInput').value = this.value;">
+                                    <div class="card border-2 rounded-3 p-3 option-content">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="radio-custom border rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; flex-shrink:0;">
+                                                <div class="radio-inner rounded-circle bg-primary" style="width:12px; height:12px; transform: scale(0); transition: transform 0.2s;"></div>
+                                            </div>
+                                            <span style="font-size: 22px;">📱</span>
+                                            <div>
+                                                <div class="fw-bold">MoMo</div>
+                                                <div class="text-muted small">Thanh toán qua ví điện tử MoMo</div>
                                             </div>
                                         </div>
                                     </div>

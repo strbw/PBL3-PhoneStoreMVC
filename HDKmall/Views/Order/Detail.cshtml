@@ -91,6 +91,7 @@
                                 "Shipping" => "bg-primary",
                                 "Delivered" => "bg-success",
                                 "Cancelled" => "bg-danger",
+                                "Failed" => "bg-dark",
                                 _ => "bg-secondary"
                             };
                             var detailStatusText = Model.Status switch {
@@ -99,6 +100,7 @@
                                 "Shipping" => "Đang giao",
                                 "Delivered" => "Đã giao",
                                 "Cancelled" => "Đã hủy",
+                                "Failed" => "Thanh toán thất bại",
                                 _ => Model.Status
                             };
                         }
@@ -114,6 +116,21 @@
                             Hủy đơn hàng
                         </button>
                     </form>
+                }
+                @if (Model.Status == "Pending" && (Model.PaymentMethod == "VNPay" || Model.PaymentMethod == "MoMo"))
+                {
+                    <a href="@Url.Action("Index", "Payment", new { orderId = Model.Id })" class="btn btn-primary w-100 rounded-pill py-3 fw-bold mt-2">
+                        💳 Thanh toán ngay
+                    </a>
+                }
+                @if (Model.Status == "Failed" && (Model.PaymentMethod == "VNPay" || Model.PaymentMethod == "MoMo"))
+                {
+                    <div class="alert alert-danger mt-3 small">
+                        <strong>⚠️ Thanh toán thất bại.</strong> Vui lòng thử lại hoặc chọn phương thức khác.
+                    </div>
+                    <a href="@Url.Action("Index", "Payment", new { orderId = Model.Id })" class="btn btn-warning w-100 rounded-pill py-3 fw-bold mt-1">
+                        🔄 Thử thanh toán lại
+                    </a>
                 }
             </div>
         </div>
