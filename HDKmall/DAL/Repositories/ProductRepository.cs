@@ -20,6 +20,7 @@ namespace HDKmall.DAL.Repositories
                 .Include(p => p.Brand)
                 .Include(p => p.Variants)
                 .Include(p => p.Images)
+                .Include(p => p.Reviews)
                 .ToList();
         }
 
@@ -31,6 +32,8 @@ namespace HDKmall.DAL.Repositories
                 .Include(p => p.Variants)
                 .Include(p => p.Images)
                 .Include(p => p.Specifications)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.User)
                 .FirstOrDefault(p => p.Id == id);
         }
 

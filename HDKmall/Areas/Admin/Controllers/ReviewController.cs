@@ -1,6 +1,7 @@
 using HDKmall.BLL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq; 
 
 namespace HDKmall.Areas.Admin.Controllers
 {
@@ -15,24 +16,32 @@ namespace HDKmall.Areas.Admin.Controllers
             _reviewService = reviewService;
         }
 
-        public IActionResult Index(string? q)
-        {
-            ViewBag.ActiveTab = "reviews";
-            var reviews = _reviewService.GetAllReviews();
+        public IActionResult Index(string? q, string? status) // Thêm tham số status
+{
+    ViewBag.ActiveTab = "reviews";
+    var reviews = _reviewService.GetAllReviews();
 
-            if (!string.IsNullOrWhiteSpace(q))
-            {
-                var key = q.Trim().ToLower();
-                reviews = reviews.Where(r =>
-                    (r.Product?.Name ?? "").ToLower().Contains(key) ||
-                    (r.User?.FullName ?? "").ToLower().Contains(key) ||
-                    (r.Comment ?? "").ToLower().Contains(key)
-                );
-            }
+    // 1. Lọc theo trạng thái
+    if (!string.IsNullOrEmpty(status) && status != "All")
+    {
+        reviews = reviews.Where(r => r.Status == status);
+    }
 
-            ViewBag.Search = q;
-            return View(reviews);
-        }
+    // 2. Lọc theo từ khóa tìm kiếm
+    if (!string.IsNullOrWhiteSpace(q))
+    {
+        var key = q.Trim().ToLower();
+        reviews = reviews.Where(r =>
+            (r.Product?.Name ?? "").ToLower().Contains(key) ||
+            (r.User?.FullName ?? "").ToLower().Contains(key) ||
+            (r.Comment ?? "").ToLower().Contains(key)
+        );
+    }
+
+    ViewBag.Search = q;
+    ViewBag.Status = status ?? "All"; // Gửi trạng thái hiện tại xuống View
+    return View(reviews);
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -42,5 +51,24 @@ namespace HDKmall.Areas.Admin.Controllers
             TempData["Success"] = "Đã xóa đánh giá.";
             return RedirectToAction(nameof(Index));
         }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken] // Thêm bảo mật giống hàm Delete của bạn
+        public IActionResult Approve(int id)
+        {
+            _reviewService.ApproveReview(id);
+            TempData["Success"] = "Đã duyệt đánh giá. Đánh giá này sẽ được hiển thị với khách hàng.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken] // Thêm bảo mật giống hàm Delete của bạn
+        public IActionResult Hide(int id)
+        {
+            _reviewService.HideReview(id);
+            TempData["Success"] = "Đã ẩn đánh giá. Đánh giá này không còn hiển thị với khách hàng.";
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

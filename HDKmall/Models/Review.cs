@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace HDKmall.Models
 {
@@ -14,5 +14,9 @@ namespace HDKmall.Models
         public int Rating { get; set; }
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public string? Tags { get; set; }        // JSON array string
+         public string? ImageUrl { get; set; }    // Cloudinary URL
+         public string Status { get; set; } = "Pending"; // Pending/Approved/Hidden
     }
 }

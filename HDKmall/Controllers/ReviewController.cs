@@ -1,8 +1,9 @@
+using System.Security.Claims;
+using System.Threading.Tasks;
 using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HDKmall.Controllers
 {
@@ -16,25 +17,36 @@ namespace HDKmall.Controllers
             _reviewService = reviewService;
         }
 
-        // POST: Review/Add
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Add(int productId, int rating, string comment)
+        public async Task<IActionResult> Add(AddReviewVM vm)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            if (userId == 0)
+            if (!ModelState.IsValid)
             {
-                return Unauthorized();
+                // Nếu dữ liệu form không hợp lệ, đẩy về lại trang Chi tiết sản phẩm
+                TempData["Error"] = "Vui lòng nhập đầy đủ thông tin đánh giá.";
+                return RedirectToAction("Detail", "Product", new { id = vm.ProductId });
             }
 
-            // Check if user can review
-            if (!_reviewService.UserCanReview(userId, productId))
+            // Lấy UserId của người đang đăng nhập. 
+            // Lưu ý: Tùy vào cách nhóm bạn cấu hình đăng nhập, cách lấy ID có thể khác.
+            // Nếu bạn dùng Session, hãy sửa lại thành: int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (int.TryParse(userIdClaim, out int userId))
             {
-                return Json(new { success = false, message = "Bạn chỉ có thể đánh giá sản phẩm đã mua" });
+                // Kiểm tra lại quyền đánh giá (đã mua hàng & chưa đánh giá sản phẩm này)
+                if (!_reviewService.UserCanReview(userId, vm.ProductId))
+                {
+                    TempData["Error"] = "Bạn không thể đánh giá sản phẩm này (có thể bạn chưa mua hoặc đã đánh giá rồi).";
+                    return RedirectToAction("Detail", "Product", new { id = vm.ProductId });
+                }
+
+                // Chuyển toàn bộ dữ liệu (bao gồm cả ảnh) xuống Service xử lý
+                await _reviewService.AddReviewAsync(vm, userId);
+                TempData["Success"] = "Cảm ơn bạn! Đánh giá của bạn đã được hiển thị trên hệ thống.";
             }
 
-            var review = _reviewService.AddReview(productId, userId, rating, comment);
-            return Json(new { success = true, message = "Đánh giá được thêm thành công" });
+            return RedirectToAction("Detail", "Product", new { id = vm.ProductId });
         }
 
         // POST: Review/Delete

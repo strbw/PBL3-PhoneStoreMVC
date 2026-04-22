@@ -12,5 +12,7 @@ namespace HDKmall.DAL.Interfaces
         void Update(Review review);
         void Delete(int id);
         void SaveChanges();
+        IEnumerable<Review> GetApprovedByProductId(int productId);
+        void UpdateStatus(int id, string status);
     }
 }

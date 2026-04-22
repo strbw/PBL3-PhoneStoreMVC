@@ -26,12 +26,27 @@
 <div class="card shadow-sm border-0 rounded-4 mb-4">
     <div class="card-header bg-white border-bottom-0 pt-4 pb-3 px-4 d-flex justify-content-between align-items-center">
         <h5 class="mb-0 fw-bold text-secondary">Tất cả đánh giá</h5>
-        <form asp-area="Admin" asp-controller="Review" asp-action="Index" method="get" class="d-flex" style="width: 320px;">
-            <div class="input-group">
-                <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" name="q" class="form-control bg-light border-start-0 rounded-end-pill focus-ring focus-ring-danger" placeholder="Tìm đánh giá..." />
-            </div>
-        </form>
+        <div class="d-flex gap-2">
+            <!-- Status Filter -->
+            <form asp-area="Admin" asp-controller="Review" asp-action="Index" method="get" class="d-flex align-items-center">
+                <input type="hidden" name="q" value="@ViewBag.Search" />
+                <select name="status" class="form-select form-select-sm bg-light border-0 rounded-pill px-3 focus-ring focus-ring-danger" onchange="this.form.submit()" style="width: 180px;">
+                    <option value="All" selected="@(ViewBag.Status == "All")">Tất cả trạng thái</option>
+                    <option value="Pending" selected="@(ViewBag.Status == "Pending")">Chờ duyệt</option>
+                    <option value="Approved" selected="@(ViewBag.Status == "Approved")">Đã duyệt</option>
+                    <option value="Hidden" selected="@(ViewBag.Status == "Hidden")">Đã ẩn</option>
+                </select>
+            </form>
+
+            <!-- Search -->
+            <form asp-area="Admin" asp-controller="Review" asp-action="Index" method="get" class="d-flex" style="width: 320px;">
+                <input type="hidden" name="status" value="@ViewBag.Status" />
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control bg-light border-start-0 rounded-end-pill focus-ring focus-ring-danger" placeholder="Tìm đánh giá..." value="@ViewBag.Search" />
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="card-body p-0">
@@ -43,7 +58,8 @@
                         <th class="py-3 border-0">Sản Phẩm</th>
                         <th class="py-3 border-0">Người Dùng</th>
                         <th class="py-3 border-0">Đánh Giá</th>
-                        <th class="py-3 border-0">Nội Dung</th>
+                        <th class="py-3 border-0">Ảnh / Tags</th>
+                        <th class="py-3 border-0">Trạng Thái</th>
                         <th class="py-3 border-0">Ngày</th>
                         <th class="px-4 py-3 border-0 text-end">Thao Tác</th>
                     </tr>
@@ -63,7 +79,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold"
+                                        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center fw-bold"
                                              style="width:32px; height:32px; font-size:13px; flex-shrink:0;">
                                             @((review.User?.FullName ?? "?").Substring(0, 1).ToUpper())
                                         </div>
@@ -71,24 +87,58 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="d-flex align-items-center gap-1">
+                                    <div class="mb-1">
                                         @for (int s = 1; s <= 5; s++)
                                         {
-                                            <span style="color:@(s <= review.Rating ? "#ffc107" : "#e0e0e0"); font-size:16px;">★</span>
+                                            <span style="color:@(s <= review.Rating ? "#ffc107" : "#e0e0e0"); font-size:14px;">★</span>
                                         }
-                                        <span class="ms-1 text-muted small fw-medium">(@review.Rating)</span>
                                     </div>
-                                </td>
-                                <td style="max-width:220px;">
                                     @if (!string.IsNullOrEmpty(review.Comment))
                                     {
-                                        <p class="mb-0 small text-dark" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                                        <p class="mb-0 small text-muted" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; max-width: 200px;">
                                             @review.Comment
                                         </p>
                                     }
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        @if (!string.IsNullOrEmpty(review.ImageUrl))
+                                        {
+                                            <a href="@review.ImageUrl" target="_blank" class="d-block">
+                                                <img src="@review.ImageUrl" class="rounded border shadow-sm" style="width: 40px; height: 40px; object-fit: cover;" />
+                                            </a>
+                                        }
+                                        @if (!string.IsNullOrEmpty(review.Tags))
+                                        {
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @{
+                                                    try {
+                                                        var tags = System.Text.Json.JsonSerializer.Deserialize<List<string>>(review.Tags);
+                                                        if (tags != null)
+                                                        {
+                                                            foreach (var tag in tags)
+                                                            {
+                                                                <span class="badge bg-info bg-opacity-10 text-info fw-normal" style="font-size: 10px;">@tag</span>
+                                                            }
+                                                        }
+                                                    } catch {}
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (review.Status == "Pending")
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3">Chờ duyệt</span>
+                                    }
+                                    else if (review.Status == "Approved")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Đã duyệt</span>
+                                    }
                                     else
                                     {
-                                        <span class="text-muted small fst-italic">Không có nội dung</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">Đã ẩn</span>
                                     }
                                 </td>
                                 <td>
@@ -98,14 +148,36 @@
                                     </div>
                                 </td>
                                 <td class="px-4 text-end">
-                                    <form asp-area="Admin" asp-controller="Review" asp-action="Delete" method="post" class="d-inline"
-                                          onsubmit="return confirm('Bạn có chắc muốn xóa đánh giá này?');">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@review.Id" />
-                                        <button type="submit" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3" title="Xóa">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        @if (review.Status != "Approved")
+                                        {
+                                            <form asp-area="Admin" asp-controller="Review" asp-action="Approve" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@review.Id" />
+                                                <button type="submit" class="btn btn-sm btn-light text-success border shadow-sm rounded-3" title="Duyệt">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (review.Status != "Hidden")
+                                        {
+                                            <form asp-area="Admin" asp-controller="Review" asp-action="Hide" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@review.Id" />
+                                                <button type="submit" class="btn btn-sm btn-light text-secondary border shadow-sm rounded-3" title="Ẩn">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        <form asp-area="Admin" asp-controller="Review" asp-action="Delete" method="post"
+                                              onsubmit="return confirm('Bạn có chắc muốn xóa đánh giá này?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@review.Id" />
+                                            <button type="submit" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -113,7 +185,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <div class="fs-1 mb-3">⭐</div>
                                 <h5>Chưa có đánh giá nào</h5>
                                 <p>Các đánh giá từ khách hàng sẽ xuất hiện tại đây.</p>

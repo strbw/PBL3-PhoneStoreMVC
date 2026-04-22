@@ -80,15 +80,32 @@
 
     /* Review stars */
     .star-display { color: #ffc107; font-size: 15px; }
-    .review-card { border: 1px solid #f0f0f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+    .review-card { border: 1px solid #f0f0f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; background: #fff; transition: transform .15s; }
+    .review-card:hover { border-color: #eee; box-shadow: 0 4px 12px rgba(0,0,0,.05); }
 
     /* Rating selector */
-    .rating-stars label { font-size: 28px; color: #ddd; cursor: pointer; transition: color .1s; }
-    .rating-stars input:checked ~ label,
-    .rating-stars label:hover,
-    .rating-stars label:hover ~ label { color: #ffc107; }
-    .rating-stars { display: flex; flex-direction: row-reverse; width: fit-content; }
+    .rating-stars { display: flex; flex-direction: row-reverse; width: fit-content; gap: 4px; }
     .rating-stars input { display: none; }
+    .rating-stars label { font-size: 32px; color: #ddd; cursor: pointer; transition: color .15s, transform .1s; }
+    .rating-stars label:hover,
+    .rating-stars label:hover ~ label,
+    .rating-stars input:checked ~ label { color: #ffc107; transform: scale(1.1); }
+    .rating-stars label:active { transform: scale(0.9); }
+
+    /* Tags & Images */
+    .review-tag { font-size: 11px; padding: 4px 10px; border-radius: 50px; background: #f8f9fa; color: #666; border: 1px solid #eee; }
+    .review-img-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #eee; transition: opacity .15s; }
+    .review-img-thumb:hover { opacity: 0.8; }
+    
+    /* Preset Tags Checkbox */
+    .preset-tag-btn { cursor: pointer; border: 1px solid #ddd; border-radius: 20px; padding: 5px 15px; font-size: 13px; transition: all .15s; display: inline-block; margin: 0 5px 5px 0; background: #fff; color: #555; }
+    .preset-tag-check:checked + .preset-tag-btn { background: #d70018; border-color: #d70018; color: #fff; }
+    .preset-tag-check { display: none; }
+
+    /* Filter buttons */
+    .filter-btn { border: 1px solid #eee; background: #fff; color: #555; padding: 6px 16px; border-radius: 50px; font-size: 13px; transition: all .15s; }
+    .filter-btn:hover { border-color: #d70018; color: #d70018; }
+    .filter-btn.active { background: #fff5f5; border-color: #d70018; color: #d70018; font-weight: 600; }
 
     /* Spec table */
     .spec-table td { padding: 8px 12px; font-size: 14px; }
@@ -297,35 +314,108 @@
                 <h5 class="fw-bold mb-4 section-title">Đánh giá từ khách hàng</h5>
 
                 <!-- Rating summary -->
-                <div class="d-flex align-items-center gap-4 mb-4 p-3" style="background:#fafafa; border-radius:10px;">
-                    <div class="text-center">
-                        <div class="text-danger fw-bolder" style="font-size:3rem; line-height:1;">@Model.AverageRating.ToString("F1")</div>
-                        <div class="star-display">
+                <div class="row align-items-center mb-4 p-4" style="background:#fafafa; border-radius:15px; border: 1px solid #eee;">
+                    <div class="col-md-4 text-center border-end">
+                        <div class="text-danger fw-bolder" style="font-size:3.5rem; line-height:1;">@Model.AverageRating.ToString("F1")</div>
+                        <div class="star-display fs-5 mb-2">
                             @for (int s = 1; s <= 5; s++) { <span>@(s <= Math.Round(Model.AverageRating) ? "★" : "☆")</span> }
                         </div>
-                        <div class="text-muted small mt-1">@Model.TotalReviews đánh giá</div>
+                        <div class="text-muted">@Model.TotalReviews đánh giá</div>
+                    </div>
+                    <div class="col-md-8 ps-md-4">
+                        @for (int i = 5; i >= 1; i--)
+                        {
+                            var count = Model.Reviews.Count(r => r.Rating == i);
+                            var percent = Model.TotalReviews > 0 ? (count * 100 / Model.TotalReviews) : 0;
+                            <div class="d-flex align-items-center gap-2 mb-1" style="font-size:13px;">
+                                <div style="width:10px;">@i</div>
+                                <div class="text-warning" style="width:12px;">★</div>
+                                <div class="progress flex-grow-1" style="height:6px; background:#eee;">
+                                    <div class="progress-bar bg-warning" style="width:@percent%"></div>
+                                </div>
+                                <div class="text-muted" style="width:30px;">@percent%</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Review Filter & Sort -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-3 bg-light rounded-3">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="text-muted small fw-bold me-2">Lọc theo:</span>
+                        <button type="button" class="filter-btn active" onclick="filterReviews(0, this)">Tất cả</button>
+                        <button type="button" class="filter-btn" onclick="filterReviews(5, this)">5 ★</button>
+                        <button type="button" class="filter-btn" onclick="filterReviews(4, this)">4 ★</button>
+                        <button type="button" class="filter-btn" onclick="filterReviews(3, this)">3 ★</button>
+                        <button type="button" class="filter-btn" onclick="filterReviews(2, this)">2 ★</button>
+                        <button type="button" class="filter-btn" onclick="filterReviews(1, this)">1 ★</button>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small fw-bold">Sắp xếp:</span>
+                        <select class="form-select form-select-sm border-0 rounded-pill px-3 shadow-sm" onchange="sortReviews(this.value)" style="width:140px;">
+                            <option value="newest">Mới nhất</option>
+                            <option value="highest">Đánh giá cao</option>
+                            <option value="lowest">Đánh giá thấp</option>
+                        </select>
                     </div>
                 </div>
 
                 @if ((bool)(ViewBag.CanReview ?? false))
                 {
-                    <div class="mb-4 p-3" style="background:#f8f9fa; border-radius:10px; border:1px solid #eee;">
-                        <h6 class="fw-bold mb-3">Viết đánh giá của bạn</h6>
-                        <form method="post" asp-controller="Review" asp-action="Add">
+                    <div class="mb-4 p-4 shadow-sm border" style="background:#fff; border-radius:15px;">
+                        <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <span class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; font-size:12px;"><i class="bi bi-pencil-fill"></i></span>
+                            Viết đánh giá của bạn
+                        </h6>
+                        <form method="post" asp-controller="Review" asp-action="Add" enctype="multipart/form-data">
                             <input type="hidden" name="productId" value="@Model.Id" />
+                            
                             <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted mb-1">Mức độ hài lòng</label>
                                 <div class="rating-stars">
                                     @for (int ri = 5; ri >= 1; ri--)
                                     {
-                                        <input type="radio" name="rating" value="@ri" id="r_@ri" />
+                                        <input type="radio" name="rating" value="@ri" id="r_@ri" required />
                                         <label for="r_@ri">★</label>
                                     }
                                 </div>
                             </div>
+
                             <div class="mb-3">
-                                <textarea class="form-control" name="comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..." required style="border-radius:8px;"></textarea>
+                                <label class="form-label small fw-bold text-muted mb-1">Cảm nhận của bạn</label>
+                                <textarea class="form-control" name="comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..." required style="border-radius:10px; font-size:14px; border-color:#eee;"></textarea>
                             </div>
-                            <button type="submit" class="btn fw-bold px-4" style="background:#d70018; color:#fff; border-radius:8px;">Gửi đánh giá</button>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted mb-2">Thêm thẻ (Tùy chọn)</label>
+                                <div class="d-flex flex-wrap">
+                                    @foreach (var tag in new[] { "Sản phẩm tốt", "Giao hàng nhanh", "Đóng gói kỹ", "Đúng mô tả", "Giá hợp lý" })
+                                    {
+                                        <label class="preset-tag">
+                                            <input type="checkbox" name="tags" value="@tag" class="preset-tag-check" />
+                                            <span class="preset-tag-btn">@tag</span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted mb-2">Đính kèm ảnh thực tế</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <label class="border rounded-3 d-flex flex-column align-items-center justify-content-center" style="width:80px; height:80px; cursor:pointer; background:#f8f9fa; border-style:dashed !important;">
+                                        <input type="file" name="ImageFile" class="d-none" accept="image/*" onchange="previewReviewImg(this)" />
+                                        <i class="bi bi-camera text-muted fs-4"></i>
+                                        <span style="font-size:10px;" class="text-muted">Thêm ảnh</span>
+                                    </label>
+                                    <div id="reviewImgPreview" class="d-none">
+                                        <img src="" class="rounded" style="width:80px; height:80px; object-fit:cover; border:1px solid #eee;" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-danger fw-bold px-5 py-2" style="border-radius:30px;">Gửi đánh giá ngay</button>
+                            </div>
                         </form>
                     </div>
                 }
@@ -344,26 +434,65 @@
                 }
 
                 <!-- Review list -->
-                @if (Model.Reviews.Any())
-                {
-                    @foreach (var review in Model.Reviews)
+                <div id="reviewList">
+                    @if (Model.Reviews.Any())
                     {
-                        <div class="review-card">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span class="fw-bold">@review.UserName</span>
-                                <small class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy")</small>
+                        @foreach (var review in Model.Reviews)
+                        {
+                            <div class="review-card" data-rating="@review.Rating" data-date="@review.CreatedAt.Ticks">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px; font-size:14px;">
+                                            @review.UserName.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark" style="font-size:14px;">@review.UserName</div>
+                                            <div class="star-display" style="font-size:12px;">
+                                                @for (int s = 1; s <= 5; s++) { <span class="me-1">@(s <= review.Rating ? "★" : "☆")</span> }
+                                                <span class="text-success ms-2 small"><i class="bi bi-check-circle-fill"></i> Đã mua tại HDKmall</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted" style="font-size:12px;">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+                                
+                                <p class="mb-3" style="font-size:14px; color:#444; line-height:1.6;">@review.Comment</p>
+
+                                @if (!string.IsNullOrEmpty(review.Tags))
+                                {
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        @{
+                                            try {
+                                                var tags = System.Text.Json.JsonSerializer.Deserialize<List<string>>(review.Tags);
+                                                if (tags != null)
+                                                {
+                                                    foreach (var tag in tags)
+                                                    {
+                                                        <span class="review-tag">#@tag</span>
+                                                    }
+                                                }
+                                            } catch {}
+                                        }
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(review.ImageUrl))
+                                {
+                                    <div class="mb-2">
+                                        <img src="@review.ImageUrl" class="review-img-thumb" onclick="window.open(this.src)" />
+                                    </div>
+                                }
                             </div>
-                            <div class="star-display mb-2">
-                                @for (int s = 1; s <= 5; s++) { <span>@(s <= review.Rating ? "★" : "☆")</span> }
-                            </div>
-                            <p class="mb-0" style="font-size:14px; color:#444;">@review.Comment</p>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
+                            <p>Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
                         </div>
                     }
-                }
-                else
-                {
-                    <p class="text-muted">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
-                }
+                </div>
             </div>
         </div>
 
@@ -535,6 +664,54 @@
         toast.style.display = 'block';
         clearTimeout(toast._timer);
         toast._timer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    // Review logic
+    function previewReviewImg(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('reviewImgPreview');
+                preview.querySelector('img').src = e.target.result;
+                preview.classList.remove('d-none');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function filterReviews(stars, btn) {
+        // Toggle active class
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Filter elements
+        const cards = document.querySelectorAll('.review-card');
+        cards.forEach(card => {
+            const rating = parseInt(card.dataset.rating);
+            if (stars === 0 || rating === stars) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function sortReviews(type) {
+        const list = document.getElementById('reviewList');
+        const cards = Array.from(list.querySelectorAll('.review-card'));
+
+        cards.sort((a, b) => {
+            if (type === 'newest') {
+                return b.dataset.date - a.dataset.date;
+            } else if (type === 'highest') {
+                return b.dataset.rating - a.dataset.rating;
+            } else if (type === 'lowest') {
+                return a.dataset.rating - b.dataset.rating;
+            }
+            return 0;
+        });
+
+        cards.forEach(card => list.appendChild(card));
     }
 
     // Auto-select first available variants

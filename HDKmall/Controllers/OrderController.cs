@@ -64,7 +64,7 @@ namespace HDKmall.Controllers
         // POST: Order/CreateOrder
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CreateOrder(string address, string cityName, string districtName, string paymentMethod, string couponCode = null, string note = null, decimal shippingFee = 0)
+        public IActionResult CreateOrder(string address, string cityName, string districtName, string paymentMethod, string? couponCode = null, string? note = null, decimal shippingFee = 0)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             if (userId == 0)

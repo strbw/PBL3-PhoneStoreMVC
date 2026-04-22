@@ -1,4 +1,5 @@
 using HDKmall.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace HDKmall.ViewModels
 {
@@ -7,6 +8,8 @@ namespace HDKmall.ViewModels
         public int ProductId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
+        public List<string>? Tags { get; set; } 
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class ReviewListVM

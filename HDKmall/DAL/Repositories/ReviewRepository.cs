@@ -1,3 +1,4 @@
+using System.Linq;
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +71,23 @@ namespace HDKmall.DAL.Repositories
         public void SaveChanges()
         {
             _context.SaveChanges();
+        }
+        public IEnumerable<Review> GetApprovedByProductId(int productId)
+        {
+            return _context.Reviews
+                           .Where(r => r.ProductId == productId && r.Status == "Approved").ToList();
+        }
+
+        // Hàm 2: Cập nhật trạng thái duyệt/ẩn của một review
+        public void UpdateStatus(int id, string status)
+        {
+            var review = _context.Reviews.FirstOrDefault(r => r.Id == id);
+            if (review != null)
+            {
+                review.Status = status;
+                _context.Reviews.Update(review);
+                _context.SaveChanges();
+            }
         }
     }
 }

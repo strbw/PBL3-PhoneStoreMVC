@@ -85,8 +85,8 @@ namespace HDKmall.BLL.Services
                 CategoryName = p.Category?.Name,
                 BrandId = p.BrandId,
                 BrandName = p.Brand?.Name,
-                AverageRating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0,
-                ReviewCount = p.Reviews.Count
+                AverageRating = p.Reviews.Any(r => r.Status == "Approved") ? p.Reviews.Where(r => r.Status == "Approved").Average(r => r.Rating) : 0,
+                ReviewCount = p.Reviews.Count(r => r.Status == "Approved")
             }).ToList();
 
             return new PaginationVM
@@ -162,18 +162,24 @@ namespace HDKmall.BLL.Services
                     Stock = v.Stock,
                     ImageUrl = v.ImageUrl
                 }).ToList(),
-                Reviews = product.Reviews.Select(r => new ReviewVM
-                {
-                    Id = r.Id,
-                    ProductId = r.ProductId,
-                    UserId = r.UserId,
-                    UserName = r.User?.FullName ?? "Anonymous",
-                    Rating = r.Rating,
-                    Comment = r.Comment,
-                    CreatedAt = r.CreatedAt
-                }).ToList(),
-                AverageRating = product.Reviews.Any() ? product.Reviews.Average(r => r.Rating) : 0,
-                TotalReviews = product.Reviews.Count,
+                Reviews = product.Reviews
+                    .Where(r => r.Status == "Approved")
+                    .Select(r => new ReviewVM
+                    {
+                        Id = r.Id,
+                        ProductId = r.ProductId,
+                        UserId = r.UserId,
+                        UserName = r.User?.FullName ?? "Anonymous",
+                        Rating = r.Rating,
+                        Comment = r.Comment,
+                        CreatedAt = r.CreatedAt,
+                        Tags = r.Tags,
+                        ImageUrl = r.ImageUrl
+                    }).ToList(),
+                AverageRating = product.Reviews.Any(r => r.Status == "Approved") 
+                    ? product.Reviews.Where(r => r.Status == "Approved").Average(r => r.Rating) 
+                    : 0,
+                TotalReviews = product.Reviews.Count(r => r.Status == "Approved"),
                 Images = (product.Images ?? new List<ProductImage>())
                     .OrderBy(i => i.DisplayOrder)
                     .Select(i => new ProductImageVM
