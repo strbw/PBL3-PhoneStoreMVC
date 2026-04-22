@@ -5,100 +5,209 @@
     var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled", "Failed" };
     var statusLabels = new Dictionary<string, string> {
         { "Pending", "Chờ xử lý" }, { "Processing", "Đang xử lý" },
-        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" },
-        { "Failed", "Thanh toán thất bại" }
+        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" },
+        { "Cancelled", "Đã hủy" }, { "Failed", "Thanh toán lỗi" }
     };
 }
 
-<div class="admin-section">
-    <div class="admin-section-header d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h2 style="font-size:18px; font-weight:700;">Quản lý đơn hàng</h2>
-        <form asp-controller="Order" asp-action="Index" method="get" class="d-flex gap-2">
-            <input type="text" name="q" class="form-control" placeholder="Tìm đơn hàng..." value="@ViewBag.Search" style="min-width:200px;" />
-            <button type="submit" class="btn btn-outline-primary">Tìm</button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">📦 Quản lý Đơn Hàng</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Summary Stats -->
+@if (Model != null && Model.Any())
+{
+    var totalOrders   = Model.Count();
+    var pendingCount  = Model.Count(o => o.Status == "Pending");
+    var shippingCount = Model.Count(o => o.Status == "Shipping");
+    var doneCount     = Model.Count(o => o.Status == "Delivered");
+    var totalRevenue  = Model.Where(o => o.Status == "Delivered").Sum(o => o.TotalAmount);
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div class="rounded-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:46px;height:46px;flex-shrink:0;">
+                        <i class="bi bi-bag-check text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Tổng đơn</div>
+                        <div class="fw-bold fs-5">@totalOrders</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div class="rounded-3 bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width:46px;height:46px;flex-shrink:0;">
+                        <i class="bi bi-hourglass-split text-warning fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Chờ xử lý</div>
+                        <div class="fw-bold fs-5">@pendingCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div class="rounded-3 bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="width:46px;height:46px;flex-shrink:0;">
+                        <i class="bi bi-truck text-info fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Đang giao</div>
+                        <div class="fw-bold fs-5">@shippingCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3 py-3">
+                    <div class="rounded-3 bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width:46px;height:46px;flex-shrink:0;">
+                        <i class="bi bi-currency-dollar text-success fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Doanh thu</div>
+                        <div class="fw-bold" style="font-size:15px;">@totalRevenue.ToString("N0")₫</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-header bg-white border-bottom-0 pt-4 pb-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold text-secondary">Tất cả đơn hàng</h5>
+        <form asp-area="Admin" asp-controller="Order" asp-action="Index" method="get" class="d-flex" style="width:320px;">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="q" value="@ViewBag.Search" class="form-control bg-light border-start-0 rounded-end-pill focus-ring focus-ring-danger" placeholder="Tìm theo tên, email..." />
+            </div>
         </form>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-
-    <div class="table-responsive bg-white rounded shadow-sm">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th class="ps-3">#</th>
-                    <th>Người đặt</th>
-                    <th>Ngày đặt</th>
-                    <th>Địa chỉ</th>
-                    <th>Thanh toán</th>
-                    <th class="text-end">Tổng tiền</th>
-                    <th>Trạng thái</th>
-                    <th class="pe-3 text-center">Cập nhật</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="px-4 py-3 border-0">Đơn hàng</th>
+                        <th class="py-3 border-0">Khách hàng</th>
+                        <th class="py-3 border-0">Ngày đặt</th>
+                        <th class="py-3 border-0">Thanh toán</th>
+                        <th class="py-3 border-0 text-end">Tổng tiền</th>
+                        <th class="py-3 border-0">Trạng thái</th>
+                        <th class="px-4 py-3 border-0 text-center">Cập nhật</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    @if (Model != null && Model.Any())
                     {
-                        var statusClass = order.Status switch {
-                            "Pending" => "bg-warning text-dark",
-                            "Processing" => "bg-info text-dark",
-                            "Shipping" => "bg-primary",
-                            "Delivered" => "bg-success",
-                            "Cancelled" => "bg-danger",
-                            "Failed" => "bg-dark",
-                            _ => "bg-secondary"
-                        };
-                        var statusLbl = statusLabels.ContainsKey(order.Status ?? "") ? statusLabels[order.Status] : (order.Status ?? "-");
+                        foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                        {
+                            string badgeClass, badgeText, badgeIcon;
+                            switch (order.Status) {
+                                case "Pending":    badgeClass = "bg-warning bg-opacity-15 text-warning border-warning-subtle";    badgeText = "Chờ xử lý";      badgeIcon = "bi-hourglass-split"; break;
+                                case "Processing": badgeClass = "bg-info bg-opacity-15 text-info border-info-subtle";            badgeText = "Đang xử lý";     badgeIcon = "bi-gear"; break;
+                                case "Shipping":   badgeClass = "bg-primary bg-opacity-15 text-primary border-primary-subtle";   badgeText = "Đang giao";      badgeIcon = "bi-truck"; break;
+                                case "Delivered":  badgeClass = "bg-success bg-opacity-15 text-success border-success-subtle";   badgeText = "Đã giao";        badgeIcon = "bi-check-circle"; break;
+                                case "Cancelled":  badgeClass = "bg-danger bg-opacity-15 text-danger border-danger-subtle";      badgeText = "Đã hủy";         badgeIcon = "bi-x-circle"; break;
+                                case "Failed":     badgeClass = "bg-dark bg-opacity-10 text-dark border-secondary-subtle";       badgeText = "Thanh toán lỗi"; badgeIcon = "bi-exclamation-circle"; break;
+                                default:           badgeClass = "bg-secondary bg-opacity-10 text-secondary border-secondary-subtle"; badgeText = order.Status ?? "-"; badgeIcon = "bi-circle"; break;
+                            }
+                            <tr>
+                                <td class="px-4">
+                                    <a asp-area="Admin" asp-controller="Order" asp-action="Detail" asp-route-id="@order.Id"
+                                       class="fw-bold text-danger text-decoration-none">#@order.Id</a>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold"
+                                             style="width:34px;height:34px;font-size:13px;flex-shrink:0;">
+                                            @((order.User?.FullName ?? "?").Substring(0, 1).ToUpper())
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark" style="font-size:14px;">@(order.User?.FullName ?? "-")</div>
+                                            <div class="text-muted" style="font-size:12px;">@(order.User?.Email ?? "")</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium small">@order.OrderDate.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted" style="font-size:11px;">@order.OrderDate.ToString("HH:mm")</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border rounded-pill px-2 py-1">
+                                        <i class="bi bi-credit-card me-1" style="font-size:10px;"></i>@order.PaymentMethod
+                                    </span>
+                                </td>
+                                <td class="text-end fw-bold text-danger">@order.TotalAmount.ToString("N0")₫</td>
+                                <td>
+                                    <span class="badge border px-2 py-1 rounded-pill @badgeClass">
+                                        <i class="bi @badgeIcon me-1" style="font-size:10px;"></i>@badgeText
+                                    </span>
+                                </td>
+                                <td class="px-4 text-center">
+                                    <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post"
+                                          class="d-flex gap-1 align-items-center justify-content-center">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@order.Id" />
+                                        <select name="status" class="form-select form-select-sm rounded-3 border-0 bg-light" style="width:130px;">
+                                            @foreach (var s in statuses)
+                                            {
+                                                var lbl = statusLabels.ContainsKey(s) ? statusLabels[s] : s;
+                                                if (order.Status == s)
+                                                {
+                                                    <option value="@s" selected>@lbl</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@s">@lbl</option>
+                                                }
+                                            }
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-danger rounded-3 shadow-sm px-2">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
                         <tr>
-                            <td class="ps-3 fw-bold">
-                                <a asp-area="Admin" asp-controller="Order" asp-action="Detail" asp-route-id="@order.Id" class="text-decoration-none">#@order.Id</a>
-                            </td>
-                            <td>
-                                <div class="fw-semibold">@(order.User?.FullName ?? "-")</div>
-                                <div class="text-muted small">@(order.User?.Email ?? "")</div>
-                            </td>
-                            <td style="white-space:nowrap;">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td style="max-width:180px; white-space:normal; font-size:13px;">@order.Address</td>
-                            <td><span class="badge bg-light text-dark border">@order.PaymentMethod</span></td>
-                            <td class="text-end text-danger fw-bold">@order.TotalAmount.ToString("N0")₫</td>
-                            <td><span class="badge @statusClass">@statusLbl</span></td>
-                            <td class="pe-3 text-center">
-                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" class="d-flex gap-1 align-items-center justify-content-center">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@order.Id" />
-                                    <select name="status" class="form-select form-select-sm" style="width:130px;">
-                                        @foreach (var s in statuses)
-                                        {
-                                            var lbl = statusLabels.ContainsKey(s) ? statusLabels[s] : s;
-                                            if (order.Status == s)
-                                            {
-                                                <option value="@s" selected>@lbl</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@s">@lbl</option>
-                                            }
-                                        }
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
-                                </form>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <div class="fs-1 mb-3">📦</div>
+                                <h5>Chưa có đơn hàng nào</h5>
+                                <p>Các đơn hàng sẽ xuất hiện tại đây khi khách đặt mua.</p>
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr><td colspan="8" class="text-center py-4 text-muted">Chưa có đơn hàng nào.</td></tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center rounded-bottom-4">
+        <span class="text-muted small">Hiển thị @Model?.Count() đơn hàng</span>
     </div>
 </div>

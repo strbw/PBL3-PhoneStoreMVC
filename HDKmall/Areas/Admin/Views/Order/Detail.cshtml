@@ -5,50 +5,62 @@
     var statuses = new[] { "Pending", "Processing", "Shipping", "Delivered", "Cancelled", "Failed" };
     var statusLabels = new Dictionary<string, string> {
         { "Pending", "Chờ xử lý" }, { "Processing", "Đang xử lý" },
-        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" }, { "Cancelled", "Đã hủy" },
-        { "Failed", "Thanh toán thất bại" }
+        { "Shipping", "Đang giao" }, { "Delivered", "Đã giao" },
+        { "Cancelled", "Đã hủy" }, { "Failed", "Thanh toán lỗi" }
     };
-    var statusClass = Model.Status switch {
-        "Pending" => "bg-warning text-dark",
-        "Processing" => "bg-info text-dark",
-        "Shipping" => "bg-primary",
-        "Delivered" => "bg-success",
-        "Cancelled" => "bg-danger",
-        "Failed" => "bg-dark",
-        _ => "bg-secondary"
-    };
-    var statusLbl = statusLabels.ContainsKey(Model.Status ?? "") ? statusLabels[Model.Status ?? "Pending"] : (Model.Status ?? "-");
+    string statusBadgeClass, statusLbl, statusIcon;
+    switch (Model.Status) {
+        case "Pending":    statusBadgeClass = "bg-warning bg-opacity-15 text-warning border-warning-subtle";    statusLbl = "Chờ xử lý";      statusIcon = "bi-hourglass-split"; break;
+        case "Processing": statusBadgeClass = "bg-info bg-opacity-15 text-info border-info-subtle";            statusLbl = "Đang xử lý";     statusIcon = "bi-gear"; break;
+        case "Shipping":   statusBadgeClass = "bg-primary bg-opacity-15 text-primary border-primary-subtle";   statusLbl = "Đang giao";      statusIcon = "bi-truck"; break;
+        case "Delivered":  statusBadgeClass = "bg-success bg-opacity-15 text-success border-success-subtle";   statusLbl = "Đã giao";        statusIcon = "bi-check-circle"; break;
+        case "Cancelled":  statusBadgeClass = "bg-danger bg-opacity-15 text-danger border-danger-subtle";      statusLbl = "Đã hủy";         statusIcon = "bi-x-circle"; break;
+        case "Failed":     statusBadgeClass = "bg-dark bg-opacity-10 text-dark border-secondary-subtle";       statusLbl = "Thanh toán lỗi"; statusIcon = "bi-exclamation-circle"; break;
+        default:           statusBadgeClass = "bg-secondary bg-opacity-10 text-secondary border-secondary-subtle"; statusLbl = Model.Status ?? "-"; statusIcon = "bi-circle"; break;
+    }
 }
 
-<div class="admin-section">
-    <div class="d-flex align-items-center gap-3 mb-4">
-        <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="btn btn-outline-secondary btn-sm">
-            ← Danh sách đơn hàng
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+    <div>
+        <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="text-muted text-decoration-none small">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách đơn hàng
         </a>
-        <h2 class="mb-0" style="font-size:18px; font-weight:700;">Chi tiết đơn hàng #@Model.Id</h2>
-        <span class="badge @statusClass ms-2">@statusLbl</span>
+        <div class="d-flex align-items-center gap-3 mt-1">
+            <h2 class="fw-bold mb-0">📦 Đơn hàng #@Model.Id</h2>
+            <span class="badge border px-3 py-2 rounded-pill @statusBadgeClass">
+                <i class="bi @statusIcon me-1"></i>@statusLbl
+            </span>
+        </div>
     </div>
+</div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
-    <div class="row g-4">
-        <!-- Order Info -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-3 mb-4">
-                <div class="card-header bg-white border-bottom py-3 px-4">
-                    <h6 class="mb-0 fw-bold">📦 Sản phẩm đặt mua</h6>
-                </div>
-                <div class="card-body p-0">
+<div class="row g-4">
+    <!-- Left: Order Items -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary">
+                    <i class="bi bi-cart3 me-2"></i>Sản phẩm đặt mua
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead class="table-light text-secondary">
                             <tr>
-                                <th class="ps-4">Sản phẩm</th>
-                                <th class="text-center">Số lượng</th>
-                                <th class="text-end pe-4">Đơn giá</th>
-                                <th class="text-end pe-4">Thành tiền</th>
+                                <th class="px-4 py-3 border-0">Sản phẩm</th>
+                                <th class="py-3 border-0 text-center">Số lượng</th>
+                                <th class="py-3 border-0 text-end">Đơn giá</th>
+                                <th class="px-4 py-3 border-0 text-end">Thành tiền</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -57,20 +69,43 @@
                                 foreach (var detail in Model.OrderDetails)
                                 {
                                     <tr>
-                                        <td class="ps-4">
-                                            <div class="fw-semibold">@(detail.Product?.Name ?? "Sản phẩm #" + detail.ProductId)</div>
+                                        <td class="px-4">
+                                            <div class="d-flex align-items-center gap-3">
+                                                @if (detail.Product?.ImageUrl != null)
+                                                {
+                                                    <img src="@detail.Product.ImageUrl" alt="@detail.Product.Name"
+                                                         class="rounded-3 border shadow-sm"
+                                                         style="width:48px;height:48px;object-fit:cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="rounded-3 bg-light border d-flex align-items-center justify-content-center"
+                                                         style="width:48px;height:48px;flex-shrink:0;">
+                                                        <i class="bi bi-box text-muted"></i>
+                                                    </div>
+                                                }
+                                                <div class="fw-semibold text-dark" style="max-width:220px;">
+                                                    @(detail.Product?.Name ?? "Sản phẩm #" + detail.ProductId)
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td class="text-center">@detail.Quantity</td>
-                                        <td class="text-end pe-4">@detail.UnitPrice.ToString("N0")₫</td>
-                                        <td class="text-end pe-4 fw-bold text-danger">@((detail.UnitPrice * detail.Quantity).ToString("N0"))₫</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-light text-dark border rounded-pill px-3">x@detail.Quantity</span>
+                                        </td>
+                                        <td class="text-end text-muted">@detail.UnitPrice.ToString("N0")₫</td>
+                                        <td class="px-4 text-end fw-bold text-danger">
+                                            @((detail.UnitPrice * detail.Quantity).ToString("N0"))₫
+                                        </td>
                                     </tr>
                                 }
                             }
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
-                                <td colspan="3" class="text-end fw-bold pe-4">Tổng cộng:</td>
-                                <td class="text-end pe-4 fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0")₫</td>
+                                <td colspan="3" class="text-end fw-bold py-3 px-4 text-secondary">Tổng cộng:</td>
+                                <td class="text-end fw-bold text-danger px-4 py-3" style="font-size:1.15rem;">
+                                    @Model.TotalAmount.ToString("N0")₫
+                                </td>
                             </tr>
                         </tfoot>
                     </table>
@@ -78,31 +113,113 @@
             </div>
         </div>
 
-        <!-- Sidebar: Customer + Update Status -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-3 mb-4">
-                <div class="card-header bg-white border-bottom py-3 px-4">
-                    <h6 class="mb-0 fw-bold">👤 Thông tin khách hàng</h6>
-                </div>
-                <div class="card-body px-4 py-3">
-                    <div class="mb-2"><span class="text-muted small">Tên:</span> <span class="fw-semibold">@(Model.User?.FullName ?? "-")</span></div>
-                    <div class="mb-2"><span class="text-muted small">Email:</span> <span>@(Model.User?.Email ?? "-")</span></div>
-                    <div class="mb-2"><span class="text-muted small">SĐT:</span> <span>@(Model.User?.PhoneNumber ?? "-")</span></div>
-                    <div class="mb-2"><span class="text-muted small">Địa chỉ:</span> <span>@(Model.Address ?? "-")</span></div>
-                    <div class="mb-2"><span class="text-muted small">Thanh toán:</span> <span class="badge bg-light text-dark border">@Model.PaymentMethod</span></div>
-                    <div class="mb-0"><span class="text-muted small">Ngày đặt:</span> <span>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span></div>
+        <!-- Order Timeline -->
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary"><i class="bi bi-map me-2"></i>Tiến trình đơn hàng</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="d-flex align-items-center gap-0">
+                    @{
+                        var timelineSteps = new[] {
+                            ("Pending",    "Đặt hàng",   "bi-bag-plus"),
+                            ("Processing", "Xử lý",      "bi-gear"),
+                            ("Shipping",   "Vận chuyển",  "bi-truck"),
+                            ("Delivered",  "Hoàn thành", "bi-check-circle-fill")
+                        };
+                        var cancelledOrFailed = Model.Status == "Cancelled" || Model.Status == "Failed";
+                        var currentIdx = Array.IndexOf(timelineSteps.Select(x => x.Item1).ToArray(), Model.Status);
+                    }
+                    @if (cancelledOrFailed)
+                    {
+                        <div class="text-center flex-fill">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 bg-danger text-white"
+                                 style="width:40px;height:40px;">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </div>
+                            <div class="small fw-semibold text-danger">@statusLbl</div>
+                        </div>
+                    }
+                    else
+                    {
+                        for (int i = 0; i < timelineSteps.Length; i++)
+                        {
+                            var stepKey   = timelineSteps[i].Item1;
+                            var stepLabel = timelineSteps[i].Item2;
+                            var stepIcon  = timelineSteps[i].Item3;
+                            var isDone    = currentIdx >= i;
+                            var isActive  = currentIdx == i;
+                            var dotClass  = isDone ? "bg-danger text-white" : "bg-light text-muted border";
+                            var textClass = isDone ? "text-danger fw-semibold" : "text-muted";
+                            <div class="text-center flex-fill position-relative">
+                                @if (i < timelineSteps.Length - 1)
+                                {
+                                    <div style="position:absolute;top:20px;left:50%;right:-50%;height:2px;background:@(currentIdx > i ? "#dc3545" : "#dee2e6");z-index:0;"></div>
+                                }
+                                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 position-relative @dotClass"
+                                     style="width:40px;height:40px;z-index:1;@(isActive ? "box-shadow:0 0 0 4px rgba(220,53,69,0.2);" : "")">
+                                    <i class="bi @stepIcon" style="font-size:16px;"></i>
+                                </div>
+                                <div class="small @textClass">@stepLabel</div>
+                            </div>
+                        }
+                    }
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="card-header bg-white border-bottom py-3 px-4">
-                    <h6 class="mb-0 fw-bold">🔄 Cập nhật trạng thái</h6>
+    <!-- Right Sidebar -->
+    <div class="col-lg-4">
+        <!-- Customer Info -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary"><i class="bi bi-person-circle me-2"></i>Khách hàng</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold"
+                         style="width:48px;height:48px;font-size:1.2rem;flex-shrink:0;">
+                        @((Model.User?.FullName ?? "?").Substring(0, 1).ToUpper())
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">@(Model.User?.FullName ?? "-")</div>
+                        <div class="text-muted small">@(Model.User?.Email ?? "-")</div>
+                    </div>
                 </div>
-                <div class="card-body px-4 py-3">
-                    <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" class="d-flex flex-column gap-2">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <select name="status" class="form-select">
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="text-muted small"><i class="bi bi-telephone me-2"></i>SĐT</span>
+                        <span class="fw-medium text-end">@(Model.User?.PhoneNumber ?? "-")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="text-muted small"><i class="bi bi-geo-alt me-2"></i>Địa chỉ</span>
+                        <span class="fw-medium text-end" style="max-width:180px;">@(Model.Address ?? "-")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small"><i class="bi bi-credit-card me-2"></i>Thanh toán</span>
+                        <span class="badge bg-light text-dark border rounded-pill px-2">@Model.PaymentMethod</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small"><i class="bi bi-calendar3 me-2"></i>Ngày đặt</span>
+                        <span class="fw-medium">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Status -->
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary"><i class="bi bi-arrow-repeat me-2"></i>Cập nhật trạng thái</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" class="d-flex flex-column gap-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div>
+                        <label class="form-label fw-semibold text-dark small mb-2">Trạng thái hiện tại</label>
+                        <select name="status" class="form-select bg-light rounded-3 border-0">
                             @foreach (var s in statuses)
                             {
                                 var lbl = statusLabels.ContainsKey(s) ? statusLabels[s] : s;
@@ -116,9 +233,11 @@
                                 }
                             }
                         </select>
-                        <button type="submit" class="btn btn-primary w-100">Lưu thay đổi</button>
-                    </form>
-                </div>
+                    </div>
+                    <button type="submit" class="btn btn-danger fw-bold rounded-pill w-100 shadow-sm">
+                        <i class="bi bi-check-circle me-2"></i>Lưu thay đổi
+                    </button>
+                </form>
             </div>
         </div>
     </div>

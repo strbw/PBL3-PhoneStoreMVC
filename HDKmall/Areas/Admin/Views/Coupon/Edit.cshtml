@@ -2,47 +2,189 @@
 @{
     ViewData["Title"] = "Sửa mã giảm giá";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var expired = Model.ExpiryDate < DateTime.Now;
+    var usageFull = Model.UsedCount >= Model.UsageLimit;
 }
 
-<div class="admin-section" style="max-width:520px;">
-    <h2 style="font-size:18px; font-weight:700; margin-bottom:20px;">Sửa mã giảm giá</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="text-muted text-decoration-none small">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+        </a>
+        <h2 class="fw-bold mb-0 mt-1">✏️ Sửa Mã Giảm Giá #@Model.Id</h2>
+    </div>
+</div>
 
-    <form asp-area="Admin" asp-controller="Coupon" asp-action="Edit" asp-route-id="@Model.Id" method="post">
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="All" class="alert alert-danger mb-3" style="display:none;"></div>
+<div class="row g-4">
+    <!-- Form -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary">Thông tin mã giảm giá</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <form asp-area="Admin" asp-controller="Coupon" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 border-0 shadow-sm mb-3"></div>
 
-        <div class="mb-3">
-            <label asp-for="Code" class="form-label fw-medium">Mã giảm giá *</label>
-            <input asp-for="Code" class="form-control" />
-            <span asp-validation-for="Code" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="DiscountAmount" class="form-label fw-medium">Số tiền giảm (₫) *</label>
-            <input asp-for="DiscountAmount" class="form-control" type="number" min="0" />
-            <span asp-validation-for="DiscountAmount" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="ExpiryDate" class="form-label fw-medium">Ngày hết hạn *</label>
-            <input asp-for="ExpiryDate" class="form-control" type="date" />
-            <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="UsageLimit" class="form-label fw-medium">Giới hạn sử dụng</label>
-            <input asp-for="UsageLimit" class="form-control" type="number" min="1" />
-            <span asp-validation-for="UsageLimit" class="text-danger small"></span>
-        </div>
-        <div class="mb-3">
-            <label class="form-label fw-medium">Đã sử dụng</label>
-            <input value="@Model.UsedCount" class="form-control" readonly />
-        </div>
+                    <div class="mb-4">
+                        <label asp-for="Code" class="form-label fw-semibold text-dark">Mã Giảm Giá <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-ticket-perforated text-muted"></i></span>
+                            <input asp-for="Code" class="form-control border-start-0 bg-light font-monospace fw-bold text-uppercase"
+                                   id="couponCode" oninput="this.value=this.value.toUpperCase(); updatePreview()" />
+                        </div>
+                        <span asp-validation-for="Code" class="text-danger small"></span>
+                    </div>
 
-        <div class="d-flex gap-2 mt-4">
-            <button type="submit" class="btn btn-primary">Cập nhật</button>
-            <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+                    <div class="mb-4">
+                        <label asp-for="DiscountAmount" class="form-label fw-semibold text-dark">Số Tiền Giảm (₫) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-currency-dollar text-muted"></i></span>
+                            <input asp-for="DiscountAmount" class="form-control border-start-0 bg-light" type="number" min="0"
+                                   id="couponAmount" oninput="updatePreview()" />
+                            <span class="input-group-text bg-light border-start-0">₫</span>
+                        </div>
+                        <span asp-validation-for="DiscountAmount" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ExpiryDate" class="form-label fw-semibold text-dark">Ngày Hết Hạn <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event text-muted"></i></span>
+                            <input asp-for="ExpiryDate" class="form-control border-start-0 bg-light" type="date"
+                                   id="couponExpiry" oninput="updatePreview()" />
+                        </div>
+                        <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="UsageLimit" class="form-label fw-semibold text-dark">Giới Hạn Sử Dụng</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-people text-muted"></i></span>
+                            <input asp-for="UsageLimit" class="form-control border-start-0 bg-light" type="number" min="1"
+                                   id="couponLimit" oninput="updatePreview()" />
+                            <span class="input-group-text bg-light border-start-0">lượt</span>
+                        </div>
+                        <span asp-validation-for="UsageLimit" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-dark">Đã Sử Dụng</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-bar-chart text-muted"></i></span>
+                            <input value="@Model.UsedCount lượt" class="form-control border-start-0 bg-light text-muted" readonly />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4 pt-2 border-top">
+                        <button type="submit" class="btn btn-danger fw-bold px-4 rounded-pill shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i>Cập Nhật Mã
+                        </button>
+                        <a asp-area="Admin" asp-controller="Coupon" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">Hủy</a>
+                    </div>
+                </form>
+            </div>
         </div>
-    </form>
+    </div>
+
+    <!-- Preview Card -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top:90px;">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary"><i class="bi bi-eye me-2"></i>Xem Trước</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div id="couponCardPreview" class="rounded-4 p-4 text-center position-relative overflow-hidden"
+                     style="background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%); color:white; min-height:160px;">
+                    <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.1);"></div>
+                    <div style="position:absolute; bottom:-30px; left:-20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.08);"></div>
+                    <div class="mb-2">
+                        <i class="bi bi-ticket-perforated" style="font-size:2rem; opacity:0.8;"></i>
+                    </div>
+                    <div class="font-monospace fw-bold" id="previewCode" style="font-size:1.6rem; letter-spacing:3px; text-shadow:0 2px 4px rgba(0,0,0,0.3);">
+                        @Model.Code
+                    </div>
+                    <div class="mt-2 fw-bold" id="previewAmount" style="font-size:1.1rem; opacity:0.9;">
+                        Giảm @Model.DiscountAmount.ToString("N0") ₫
+                    </div>
+                </div>
+
+                <div class="mt-3 row g-2">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3 text-center">
+                            <div class="text-muted small mb-1"><i class="bi bi-calendar-x me-1"></i>Hết hạn</div>
+                            <div class="fw-bold text-dark small" id="previewExpiry">@Model.ExpiryDate.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3 text-center">
+                            <div class="text-muted small mb-1"><i class="bi bi-people me-1"></i>Còn lại</div>
+                            <div class="fw-bold text-dark small" id="previewLimit">@(Model.UsageLimit - Model.UsedCount) lượt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="mt-3 text-center">
+                    @if (expired)
+                    {
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle px-3 py-2 rounded-pill">
+                            <i class="bi bi-x-circle me-1"></i>Đã hết hạn
+                        </span>
+                    }
+                    else if (usageFull)
+                    {
+                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle px-3 py-2 rounded-pill">
+                            <i class="bi bi-dash-circle me-1"></i>Đã dùng hết
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-3 py-2 rounded-pill">
+                            <i class="bi bi-check-circle me-1"></i>Còn hiệu lực
+                        </span>
+                    }
+                </div>
+
+                <!-- Usage Progress -->
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Đã dùng</span>
+                        <span>@Model.UsedCount / @Model.UsageLimit</span>
+                    </div>
+                    @{
+                        var usedPct = Model.UsageLimit > 0 ? (int)Math.Min(100, Model.UsedCount * 100 / Model.UsageLimit) : 0;
+                        var barColor = usageFull ? "bg-danger" : (usedPct > 70 ? "bg-warning" : "bg-success");
+                    }
+                    <div class="progress rounded-pill" style="height:8px;">
+                        <div class="progress-bar @barColor rounded-pill" style="width:@usedPct%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function updatePreview() {
+            const code = document.getElementById('couponCode').value || 'CODE';
+            const amount = parseInt(document.getElementById('couponAmount').value) || 0;
+            const expiry = document.getElementById('couponExpiry').value;
+            const limit = parseInt(document.getElementById('couponLimit').value) || 0;
+            const used = @Model.UsedCount;
+
+            document.getElementById('previewCode').textContent = code;
+            document.getElementById('previewAmount').textContent = 'Giảm ' + amount.toLocaleString('vi-VN') + ' ₫';
+            document.getElementById('previewLimit').textContent = Math.max(0, limit - used) + ' lượt';
+
+            if (expiry) {
+                const d = new Date(expiry);
+                document.getElementById('previewExpiry').textContent =
+                    d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            }
+        }
+    </script>
 }
