@@ -6,6 +6,7 @@ using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace HDKmall.Controllers
 {
@@ -26,6 +27,19 @@ namespace HDKmall.Controllers
         {
             if (ModelState.IsValid)
             {
+                var existingUser = _accountService.GetUserByEmail(model.Email);
+                if (existingUser == null)
+                {
+                    ModelState.AddModelError("Email", "Tài khoản này chưa được đăng ký trên hệ thống.");
+                    return View(model);
+                }
+
+                if (!existingUser.IsActive)
+                {
+                    ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+                    return View(model);
+                }
+
                 var user = _accountService.Authenticate(model);
                 if (user != null)
                 {
@@ -44,7 +58,7 @@ namespace HDKmall.Controllers
                     TempData["success"] = "Chào mừng " + user.FullName + " đã quay trở lại!";
                     return RedirectToAction("Index", "Home");
                 }
-                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
+                ModelState.AddModelError("Password", "Mật khẩu không chính xác. Vui lòng thử lại.");
             }
             return View(model);
         }

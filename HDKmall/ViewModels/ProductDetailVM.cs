@@ -14,6 +14,7 @@ namespace HDKmall.ViewModels
         public Category Category { get; set; }
         public int? BrandId { get; set; }
         public Brand Brand { get; set; }
+        public List<ProductVersionVM> Versions { get; set; } = new List<ProductVersionVM>();
         public List<ProductVariantVM> Variants { get; set; } = new List<ProductVariantVM>();
         public List<ReviewVM> Reviews { get; set; } = new List<ReviewVM>();
         public double AverageRating { get; set; }

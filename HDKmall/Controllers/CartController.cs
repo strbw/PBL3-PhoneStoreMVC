@@ -10,11 +10,13 @@ namespace HDKmall.Controllers
     {
         private readonly ICartService _cartService;
         private readonly IProductSearchService _productSearchService;
+        private readonly IRecommendationService _recommendationService;
 
-        public CartController(ICartService cartService, IProductSearchService productSearchService)
+        public CartController(ICartService cartService, IProductSearchService productSearchService, IRecommendationService recommendationService)
         {
             _cartService = cartService;
             _productSearchService = productSearchService;
+            _recommendationService = recommendationService;
         }
 
         // GET: Cart
@@ -26,8 +28,12 @@ namespace HDKmall.Controllers
             var cart = _cartService.GetOrCreateCart(userId, sessionId);
             if (cart == null || !cart.Items.Any())
             {
+                ViewBag.RecommendedProducts = _recommendationService.GetPersonalizedRecommendations(10);
                 return View(new ShoppingCart());
             }
+
+            var productIdsInCart = cart.Items.Select(i => i.ProductId).ToList();
+            ViewBag.RecommendedProducts = _recommendationService.GetRecommendationsForCart(productIdsInCart, 10);
 
             return View(cart);
         }

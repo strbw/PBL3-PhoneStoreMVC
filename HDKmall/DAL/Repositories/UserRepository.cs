@@ -1,6 +1,8 @@
 using HDKmall.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using HDKmall.Models;
+using System.Linq;
+using System.Collections.Generic;
 using System.Data;
 
 namespace HDKmall.DAL.Repositories

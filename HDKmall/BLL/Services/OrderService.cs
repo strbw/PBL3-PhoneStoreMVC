@@ -2,6 +2,9 @@ using HDKmall.BLL.Interfaces;
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HDKmall.BLL.Services
 {
@@ -29,8 +32,9 @@ namespace HDKmall.BLL.Services
                 OrderDetails = items.Select(i => new OrderDetail
                 {
                     ProductId = i.ProductId,
+                    ProductVariantId = i.VariantId,
                     Quantity = i.Quantity,
-                    UnitPrice = i.Product?.Price ?? 0
+                    UnitPrice = i.Variant != null ? i.Variant.Price : (i.Product?.Price ?? 0)
                 }).ToList()
             };
 

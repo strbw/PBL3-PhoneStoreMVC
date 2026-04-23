@@ -7,11 +7,10 @@ namespace HDKmall.Models
     {
         [Key]
         public int Id { get; set; }
-        public int ProductId { get; set; }
-        public Product Product { get; set; }
+        public int ProductVersionId { get; set; }
+        public ProductVersion ProductVersion { get; set; }
         
         public string? Color { get; set; }
-        public string? Capacity { get; set; }
         
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }

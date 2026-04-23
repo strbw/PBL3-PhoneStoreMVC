@@ -11,6 +11,10 @@ namespace HDKmall.DAL.Interfaces
         void Update(Product product);
         void Delete(int id);
 
+        // Version methods
+        void AddVersion(ProductVersion version);
+        void DeleteVersions(int productId);
+
         // Image methods
         void AddImage(ProductImage image);
         void DeleteImage(int imageId);

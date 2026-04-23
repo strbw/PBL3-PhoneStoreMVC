@@ -46,35 +46,88 @@ function initSearch() {
   const input = document.getElementById('search-input');
   const dropdown = document.getElementById('search-dropdown');
   const form = document.getElementById('search-form');
+  const recentSection = document.getElementById('recent-searches-section');
+  const recentList = document.getElementById('recent-searches-list');
+  const recommendedList = document.getElementById('search-recommended-list');
+  
   if (!input || !dropdown) return;
 
-  let debounceTimer;
+  function loadRecommendations() {
+    // 1. Fetch Recent Searches
+    fetch('/Product/GetRecentSearches')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          recentList.innerHTML = data.map(s => `
+            <a href="/Product/Search?q=${encodeURIComponent(s)}" style="background:#f0f0f0; padding:4px 12px; border-radius:16px; font-size:12px; text-decoration:none; color:#333;">${s}</a>
+          `).join('');
+          recentSection.style.display = 'block';
+        } else {
+          recentSection.style.display = 'none';
+        }
+      });
 
+    // 2. Fetch Personalized Recommendations
+    fetch('/Product/GetPersonalizedRecommendations?take=5')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          recommendedList.innerHTML = data.map(p => `
+            <div class="search-result-item" onclick="location.href='/product/${p.slug || p.id}'">
+              <img src="${p.imageUrl}" alt="${p.name}" class="search-result-img" loading="lazy">
+              <div>
+                <div class="search-result-name">${p.name}</div>
+                <div class="search-result-price">${new Intl.NumberFormat('vi-VN').format(p.price)}₫</div>
+              </div>
+            </div>
+          `).join('');
+        }
+      });
+  }
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim().length === 0) {
+      loadRecommendations();
+      dropdown.classList.add('active');
+      dropdown.style.display = 'block';
+    }
+  });
+
+  let debounceTimer;
   input.addEventListener('input', () => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      const kw = input.value.trim();
-      if (kw.length < 2) {
-        dropdown.classList.remove('active');
-        dropdown.innerHTML = '';
-        return;
-      }
-      const results = searchProducts(kw).slice(0, 6);
-      if (!results.length) {
-        dropdown.innerHTML = '<div class="search-result-item" style="justify-content:center;color:#999">Không tìm thấy sản phẩm</div>';
-        dropdown.classList.add('active');
-        return;
-      }
-      dropdown.innerHTML = results.map(p => `
-        <div class="search-result-item" onclick="location.href='product-detail.html?id=${p.id}'">
-          <img src="${p.image}" alt="${p.name}" class="search-result-img" loading="lazy">
-          <div>
-            <div class="search-result-name">${p.name}</div>
-            <div class="search-result-price">${formatPrice(p.price)}</div>
-          </div>
-        </div>
-      `).join('');
+    const kw = input.value.trim();
+    
+    if (kw.length === 0) {
+      loadRecommendations();
       dropdown.classList.add('active');
+      dropdown.style.display = 'block';
+      return;
+    }
+
+    debounceTimer = setTimeout(() => {
+      if (kw.length < 2) return;
+
+      fetch(`/Product/GetProducts?q=${encodeURIComponent(kw)}`)
+        .then(r => r.json())
+        .then(data => {
+            const results = data.filter(p => p.name.toLowerCase().includes(kw.toLowerCase())).slice(0, 6);
+            if (!results.length) {
+                dropdown.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">Không tìm thấy sản phẩm nào</div>';
+            } else {
+                dropdown.innerHTML = results.map(p => `
+                    <div class="search-result-item" onclick="location.href='/product/${p.slug || p.id}'">
+                      <img src="${p.imageUrl}" alt="${p.name}" class="search-result-img" loading="lazy">
+                      <div>
+                        <div class="search-result-name">${p.name}</div>
+                        <div class="search-result-price">${new Intl.NumberFormat('vi-VN').format(p.price)}₫</div>
+                      </div>
+                    </div>
+                `).join('');
+            }
+            dropdown.classList.add('active');
+            dropdown.style.display = 'block';
+        });
     }, 300);
   });
 
@@ -82,15 +135,7 @@ function initSearch() {
   document.addEventListener('click', (e) => {
     if (!input.closest('.search-bar').contains(e.target)) {
       dropdown.classList.remove('active');
-    }
-  });
-
-  // Submit search
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const kw = input.value.trim();
-    if (kw) {
-      window.location.href = `search.html?q=${encodeURIComponent(kw)}`;
+      dropdown.style.display = 'none';
     }
   });
 }

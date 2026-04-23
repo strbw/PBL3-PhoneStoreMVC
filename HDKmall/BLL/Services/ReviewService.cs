@@ -14,9 +14,8 @@ namespace HDKmall.BLL.Services
     {
         private readonly IReviewRepository _reviewRepository;
         private readonly IOrderRepository _orderRepository;
-        private readonly IPhotoService _photoService; // Thêm dịch vụ xử lý ảnh
+        private readonly IPhotoService _photoService;
 
-        // Cập nhật constructor để nhận thêm IPhotoService
         public ReviewService(
             IReviewRepository reviewRepository, 
             IOrderRepository orderRepository,
@@ -31,21 +30,19 @@ namespace HDKmall.BLL.Services
         {
             var review = new Review
             {
-                ProductId = vm.ProductId,
+                ProductVersionId = vm.ProductVersionId,
                 UserId = userId,
-                Rating = Math.Min(5, Math.Max(1, vm.Rating)), // Đảm bảo rating từ 1-5
+                Rating = Math.Min(5, Math.Max(1, vm.Rating)),
                 Comment = vm.Comment,
                 CreatedAt = DateTime.Now,
-                Status = "Approved" // Tự động duyệt sau khi khách mua hàng xong và gửi đánh giá
+                Status = "Approved"
             };
 
-            // Ép mảng Tags (List) thành chuỗi JSON để lưu vào Database
             if (vm.Tags != null && vm.Tags.Any())
             {
                 review.Tags = JsonSerializer.Serialize(vm.Tags);
             }
 
-            // Gọi Cloudinary upload ảnh nếu người dùng có đính kèm file
             if (vm.ImageFile != null)
             {
                 var uploadResult = await _photoService.AddPhotoAsync(vm.ImageFile);
@@ -56,31 +53,31 @@ namespace HDKmall.BLL.Services
             }
 
             _reviewRepository.Add(review);
-            _reviewRepository.SaveChanges(); // Nhớ lưu xuống DB
+            _reviewRepository.SaveChanges();
             return review;
         }
 
-        public IEnumerable<ReviewVM> GetProductReviews(int productId)
+        public IEnumerable<ReviewVM> GetProductReviews(int productVersionId)
         {
-            var reviews = _reviewRepository.GetApprovedByProductId(productId);
+            var reviews = _reviewRepository.GetApprovedByVersionId(productVersionId);
             return reviews.Select(r => new ReviewVM
             {
                 Id = r.Id,
-                ProductId = r.ProductId,
+                ProductVersionId = r.ProductVersionId,
                 UserId = r.UserId,
                 UserName = r.User?.FullName ?? "Anonymous",
                 Rating = r.Rating,
                 Comment = r.Comment,
                 CreatedAt = r.CreatedAt,
-                Tags = r.Tags,           // Cột mới
-                ImageUrl = r.ImageUrl,   // Cột mới
-                Status = r.Status        // Cột mới
+                Tags = r.Tags,
+                ImageUrl = r.ImageUrl,
+                Status = r.Status
             });
         }
 
-        public double GetAverageRating(int productId)
+        public double GetAverageRating(int productVersionId)
         {
-            var reviews = _reviewRepository.GetApprovedByProductId(productId).ToList();
+            var reviews = _reviewRepository.GetApprovedByVersionId(productVersionId).ToList();
             if (!reviews.Any()) return 0;
             return reviews.Average(r => r.Rating);
         }
@@ -91,19 +88,20 @@ namespace HDKmall.BLL.Services
             _reviewRepository.SaveChanges();
         }
 
-        public bool UserCanReview(int userId, int productId)
+        public bool UserCanReview(int userId, int productVersionId)
         {
-            // 1. Kiểm tra xem người dùng đã mua sản phẩm này và đơn hàng đã hoàn tất (Delivered) chưa
             var userOrders = _orderRepository.GetOrdersByUserId(userId);
+            // Check if user bought any product that has this version
+            // Actually, usually order details link to variant or product.
+            // Need to check OrderDetail model.
             var hasBought = userOrders.Any(o =>
                 o.Status == "Delivered" &&
-                o.OrderDetails.Any(od => od.ProductId == productId));
+                o.OrderDetails.Any(od => od.ProductVariant != null && od.ProductVariant.ProductVersionId == productVersionId));
 
             if (!hasBought) return false;
 
-            // 2. Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa (mỗi người chỉ được đánh giá 1 lần)
             var userReviews = _reviewRepository.GetByUserId(userId);
-            var hasReviewed = userReviews.Any(r => r.ProductId == productId);
+            var hasReviewed = userReviews.Any(r => r.ProductVersionId == productVersionId);
 
             return !hasReviewed;
         }

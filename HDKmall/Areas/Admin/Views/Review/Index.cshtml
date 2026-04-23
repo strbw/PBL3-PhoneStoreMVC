@@ -72,9 +72,9 @@
                             <tr>
                                 <td class="px-4 text-muted fw-medium">#@review.Id</td>
                                 <td>
-                                    <a href="/Product/Detail/@review.ProductId" class="text-decoration-none fw-semibold text-primary-emphasis"
+                                    <a href="/Product/Detail/@(review.ProductVersion?.Product?.Slug ?? "")" class="text-decoration-none fw-semibold text-primary-emphasis"
                                        style="max-width:160px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                        @(review.Product?.Name ?? $"#{review.ProductId}")
+                                        @(review.ProductVersion?.Product?.Name ?? "N/A") (@(review.ProductVersion?.Name ?? "Default"))
                                     </a>
                                 </td>
                                 <td>

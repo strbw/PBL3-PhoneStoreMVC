@@ -2,6 +2,8 @@ using HDKmall.BLL.Interfaces;
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using HDKmall.ViewModels;
+using System.Linq;
+using System.Collections.Generic;
 namespace HDKmall.BLL.Services
 {   
     public class AccountService : IAccountService
@@ -31,6 +33,11 @@ namespace HDKmall.BLL.Services
             }
 
             return user;
+        }
+
+        public User GetUserByEmail(string email)
+        {
+            return _userRepository.GetUserByEmail(email);
         }
 
         public bool RegisterUser(RegisterVM model)

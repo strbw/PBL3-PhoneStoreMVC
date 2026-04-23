@@ -66,8 +66,20 @@
       </a>
       <form class="search-bar" id="search-form" action="/Product/Search">
         <div class="search-input-wrapper">
-          <input type="text" id="search-input" name="q" class="search-input" placeholder="Tìm điện thoại, phụ kiện...">
+          <input type="text" id="search-input" name="q" class="search-input" placeholder="Tìm điện thoại, phụ kiện..." autocomplete="off">
           <button type="submit" class="search-btn">🔍</button>
+        </div>
+        <div class="search-dropdown" id="search-dropdown">
+          <div class="dropdown-section recent-searches-section" id="recent-searches-section" style="display:none; padding:12px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size:12px; font-weight:700; color:#999; text-transform:uppercase;">Tìm kiếm gần đây</span>
+            </div>
+            <div id="recent-searches-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+          </div>
+          <div class="dropdown-section recommended-section" id="recommended-section" style="padding:12px;">
+            <div style="font-size:12px; font-weight:700; color:#999; text-transform:uppercase; margin-bottom:8px;">Có thể bạn quan tâm</div>
+            <div id="search-recommended-list"></div>
+          </div>
         </div>
       </form>
       <div class="header-actions">

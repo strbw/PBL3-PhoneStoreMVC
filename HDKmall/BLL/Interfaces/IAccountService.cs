@@ -6,6 +6,7 @@ namespace HDKmall.BLL.Interfaces
     public interface IAccountService
     {
         User Authenticate(LoginVM model);
+        User GetUserByEmail(string email);
         bool RegisterUser(RegisterVM model);
         ProfileVM GetProfile(int userId);
         bool UpdateProfile(int userId, ProfileVM model);

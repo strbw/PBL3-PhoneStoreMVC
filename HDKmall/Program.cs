@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 
 // Session support
 builder.Services.AddSession(options =>
@@ -60,6 +61,7 @@ builder.Services.AddScoped<IMoMoService, MoMoService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IBannerRepository, BannerRepository>();
 builder.Services.AddScoped<IBannerService, BannerService>();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 
 var app = builder.Build();

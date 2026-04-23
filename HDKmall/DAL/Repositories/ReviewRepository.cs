@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
@@ -18,15 +19,16 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.Reviews
                 .Include(r => r.User)
-                .Include(r => r.Product)
+                .Include(r => r.ProductVersion)
+                .ThenInclude(v => v.Product)
                 .FirstOrDefault(r => r.Id == id);
         }
 
-        public IEnumerable<Review> GetByProductId(int productId)
+        public IEnumerable<Review> GetByVersionId(int versionId)
         {
             return _context.Reviews
                 .Include(r => r.User)
-                .Where(r => r.ProductId == productId)
+                .Where(r => r.ProductVersionId == versionId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
         }
@@ -34,7 +36,8 @@ namespace HDKmall.DAL.Repositories
         public IEnumerable<Review> GetByUserId(int userId)
         {
             return _context.Reviews
-                .Include(r => r.Product)
+                .Include(r => r.ProductVersion)
+                .ThenInclude(v => v.Product)
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
@@ -44,7 +47,8 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.Reviews
                 .Include(r => r.User)
-                .Include(r => r.Product)
+                .Include(r => r.ProductVersion)
+                .ThenInclude(v => v.Product)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
         }
@@ -72,13 +76,16 @@ namespace HDKmall.DAL.Repositories
         {
             _context.SaveChanges();
         }
-        public IEnumerable<Review> GetApprovedByProductId(int productId)
+
+        public IEnumerable<Review> GetApprovedByVersionId(int versionId)
         {
             return _context.Reviews
-                           .Where(r => r.ProductId == productId && r.Status == "Approved").ToList();
+                .Include(r => r.User)
+                .Where(r => r.ProductVersionId == versionId && r.Status == "Approved")
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
         }
 
-        // Hàm 2: Cập nhật trạng thái duyệt/ẩn của một review
         public void UpdateStatus(int id, string status)
         {
             var review = _context.Reviews.FirstOrDefault(r => r.Id == id);

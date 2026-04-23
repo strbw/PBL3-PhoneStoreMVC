@@ -1,4 +1,5 @@
 using HDKmall.BLL.Interfaces;
+using HDKmall.Models;
 using HDKmall.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -81,11 +82,13 @@ namespace HDKmall.Areas.Admin.Controllers
 
             // 4. Low Stock Products
             viewModel.LowStockProducts = allProducts
-                .SelectMany(p => p.Variants.Select(v => new LowStockItem { 
-                    ProductName = p.Name, 
-                    VariantName = $"{v.Color} {v.Capacity}", 
-                    Stock = v.Stock 
-                }))
+                .SelectMany(p => (p.Versions ?? new List<ProductVersion>())
+                    .SelectMany(v => (v.Variants ?? new List<ProductVariant>())
+                        .Select(vr => new LowStockItem { 
+                            ProductName = p.Name, 
+                            VariantName = $"{vr.Color} {v.Name}", 
+                            Stock = vr.Stock 
+                        })))
                 .Where(v => v.Stock < 10)
                 .OrderBy(v => v.Stock)
                 .Take(5)
@@ -100,4 +103,4 @@ namespace HDKmall.Areas.Admin.Controllers
             return View(viewModel);
         }
     }
-}
+}

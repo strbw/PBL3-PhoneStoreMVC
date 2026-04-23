@@ -1,6 +1,8 @@
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HDKmall.DAL.Repositories
 {
@@ -18,7 +20,10 @@ namespace HDKmall.DAL.Repositories
             return _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.ProductVariant)
+                        .ThenInclude(v => v.ProductVersion)
                 .FirstOrDefault(o => o.Id == id);
         }
 
@@ -27,7 +32,10 @@ namespace HDKmall.DAL.Repositories
             return _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.ProductVariant)
+                        .ThenInclude(v => v.ProductVersion)
                 .Where(o => o.UserId == userId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
@@ -38,7 +46,10 @@ namespace HDKmall.DAL.Repositories
             return _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.ProductVariant)
+                        .ThenInclude(v => v.ProductVersion)
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
         }

@@ -5,9 +5,8 @@ namespace HDKmall.ViewModels
     public class ProductVariantVM
     {
         public int Id { get; set; }
-        public int ProductId { get; set; }
+        public int ProductVersionId { get; set; }
         public string? Color { get; set; }
-        public string? Capacity { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
 

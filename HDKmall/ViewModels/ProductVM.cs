@@ -18,19 +18,13 @@ namespace HDKmall.ViewModels
 
         public int? BrandId { get; set; }
 
-        // Single main image (kept for backward compatibility)
-        public IFormFile? Image { get; set; }
-
-        // Multiple images upload
-        public List<IFormFile>? Images { get; set; }
-
         // Existing image URL (for display on edit)
         public string? ImageUrl { get; set; }
 
-        // Variants
-        public List<ProductVariantVM> Variants { get; set; } = new List<ProductVariantVM>();
+        // Main product image file for upload
+        public IFormFile? ImageFile { get; set; }
 
-        // Specifications
-        public List<ProductSpecVM> Specifications { get; set; } = new List<ProductSpecVM>();
+        // Versions (Capacities)
+        public List<ProductVersionVM> Versions { get; set; } = new List<ProductVersionVM>();
     }
 }

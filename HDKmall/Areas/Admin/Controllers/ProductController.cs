@@ -4,6 +4,8 @@ using HDKmall.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HDKmall.Areas.Admin.Controllers
 {
@@ -95,25 +97,32 @@ namespace HDKmall.Areas.Admin.Controllers
                 CategoryId = product.CategoryId,
                 BrandId = product.BrandId,
                 ImageUrl = product.ImageUrl,
-                Variants = (product.Variants ?? new List<ProductVariant>()).Select(v => new ProductVariantVM
+                Versions = (product.Versions ?? new List<ProductVersion>()).Select(v => new ProductVersionVM
                 {
                     Id = v.Id,
-                    ProductId = v.ProductId,
-                    Color = v.Color ?? "",
-                    Capacity = v.Capacity ?? "",
-                    Price = v.Price,
-                    Stock = v.Stock,
-                    ImageUrl = v.ImageUrl ?? ""
-                }).ToList(),
-                Specifications = (product.Specifications ?? new List<ProductSpecification>())
-                    .OrderBy(s => s.DisplayOrder)
-                    .Select(s => new ProductSpecVM
+                    Name = v.Name,
+                    BasePrice = v.BasePrice,
+                    Description = v.Description,
+                    ImageUrl = v.ImageUrl,
+                    Variants = (v.Variants ?? new List<ProductVariant>()).Select(vr => new ProductVariantVM
                     {
-                        Id = s.Id,
-                        SpecName = s.SpecName,
-                        SpecValue = s.SpecValue,
-                        DisplayOrder = s.DisplayOrder
-                    }).ToList()
+                        Id = vr.Id,
+                        ProductVersionId = vr.ProductVersionId,
+                        Color = vr.Color,
+                        Price = vr.Price,
+                        Stock = vr.Stock,
+                        ImageUrl = vr.ImageUrl
+                    }).ToList(),
+                    Specifications = (v.Specifications ?? new List<ProductSpecification>())
+                        .OrderBy(s => s.DisplayOrder)
+                        .Select(s => new ProductSpecVM
+                        {
+                            Id = s.Id,
+                            SpecName = s.SpecName,
+                            SpecValue = s.SpecValue,
+                            DisplayOrder = s.DisplayOrder
+                        }).ToList()
+                }).ToList()
             };
 
             PopulateDropdowns(vm.CategoryId, vm.BrandId);

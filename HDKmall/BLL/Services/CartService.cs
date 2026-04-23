@@ -1,6 +1,8 @@
 using HDKmall.BLL.Interfaces;
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace HDKmall.BLL.Services
 {

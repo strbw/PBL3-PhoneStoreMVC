@@ -4,6 +4,7 @@ using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace HDKmall.Controllers
 {
@@ -11,10 +12,12 @@ namespace HDKmall.Controllers
     public class ReviewController : Controller
     {
         private readonly IReviewService _reviewService;
+        private readonly HDKmall.DAL.Interfaces.IProductRepository _productRepo;
 
-        public ReviewController(IReviewService reviewService)
+        public ReviewController(IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo)
         {
             _reviewService = reviewService;
+            _productRepo = productRepo;
         }
 
         [HttpPost]
@@ -22,39 +25,30 @@ namespace HDKmall.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Nếu dữ liệu form không hợp lệ, đẩy về lại trang Chi tiết sản phẩm
                 TempData["Error"] = "Vui lòng nhập đầy đủ thông tin đánh giá.";
-                return RedirectToAction("Detail", "Product", new { id = vm.ProductId });
+                return RedirectToRequest();
             }
 
-            // Lấy UserId của người đang đăng nhập. 
-            // Lưu ý: Tùy vào cách nhóm bạn cấu hình đăng nhập, cách lấy ID có thể khác.
-            // Nếu bạn dùng Session, hãy sửa lại thành: int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (int.TryParse(userIdClaim, out int userId))
             {
-                // Kiểm tra lại quyền đánh giá (đã mua hàng & chưa đánh giá sản phẩm này)
-                if (!_reviewService.UserCanReview(userId, vm.ProductId))
+                if (!_reviewService.UserCanReview(userId, vm.ProductVersionId))
                 {
-                    TempData["Error"] = "Bạn không thể đánh giá sản phẩm này (có thể bạn chưa mua hoặc đã đánh giá rồi).";
-                    return RedirectToAction("Detail", "Product", new { id = vm.ProductId });
+                    TempData["Error"] = "Bạn không thể đánh giá sản phẩm này.";
+                    return RedirectToRequest();
                 }
 
-                // Chuyển toàn bộ dữ liệu (bao gồm cả ảnh) xuống Service xử lý
                 await _reviewService.AddReviewAsync(vm, userId);
-                TempData["Success"] = "Cảm ơn bạn! Đánh giá của bạn đã được hiển thị trên hệ thống.";
+                TempData["Success"] = "Cảm ơn bạn! Đánh giá của bạn đã được gửi.";
             }
 
-            return RedirectToAction("Detail", "Product", new { id = vm.ProductId });
+            return RedirectToRequest();
         }
 
-        // POST: Review/Delete
         [HttpPost]
         public IActionResult Delete(int id)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            
             _reviewService.DeleteReview(id);
             TempData["Success"] = "Đánh giá đã được xoá";
             return RedirectToRequest();
@@ -62,7 +56,9 @@ namespace HDKmall.Controllers
 
         private IActionResult RedirectToRequest()
         {
-            return Redirect(Request.Headers["Referer"].ToString() ?? "/");
+            var referer = Request.Headers["Referer"].ToString();
+            if (string.IsNullOrEmpty(referer)) return RedirectToAction("Index", "Home");
+            return Redirect(referer);
         }
     }
 }

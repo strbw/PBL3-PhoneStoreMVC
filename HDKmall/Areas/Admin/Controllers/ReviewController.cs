@@ -32,7 +32,7 @@ namespace HDKmall.Areas.Admin.Controllers
     {
         var key = q.Trim().ToLower();
         reviews = reviews.Where(r =>
-            (r.Product?.Name ?? "").ToLower().Contains(key) ||
+            (r.ProductVersion?.Product?.Name ?? "").ToLower().Contains(key) ||
             (r.User?.FullName ?? "").ToLower().Contains(key) ||
             (r.Comment ?? "").ToLower().Contains(key)
         );

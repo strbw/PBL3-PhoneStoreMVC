@@ -182,7 +182,7 @@
                                     {
                                         var itemPrice = item.Variant != null ? item.Variant.Price : item.Product?.Price ?? 0;
                                         var variantLabel = item.Variant != null
-                                            ? string.Join("/", new[] { item.Variant.Color, item.Variant.Capacity }.Where(v => !string.IsNullOrEmpty(v)))
+                                            ? string.Join("/", new[] { item.Variant.Color, item.Variant.ProductVersion?.Name }.Where(v => !string.IsNullOrEmpty(v)))
                                             : "";
                                         <div class="d-flex align-items-center bg-light p-2 rounded-3 border">
                                             <div class="position-relative me-3 bg-white p-1 rounded border border-light flex-shrink-0" style="width: 65px; height: 65px; display:flex; align-items:center;">

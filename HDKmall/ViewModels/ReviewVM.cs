@@ -3,7 +3,7 @@ namespace HDKmall.ViewModels
     public class ReviewVM
     {
         public int Id { get; set; }
-        public int ProductId { get; set; }
+        public int ProductVersionId { get; set; }
         public int UserId { get; set; }
         public string UserName { get; set; }
         public int Rating { get; set; }

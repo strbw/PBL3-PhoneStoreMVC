@@ -1,6 +1,8 @@
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HDKmall.DAL.Repositories
 {
@@ -17,9 +19,10 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.ShoppingCarts
                 .Include(c => c.Items)
-                .ThenInclude(i => i.Product)
+                    .ThenInclude(i => i.Product)
                 .Include(c => c.Items)
-                .ThenInclude(i => i.Variant)
+                    .ThenInclude(i => i.Variant)
+                        .ThenInclude(v => v.ProductVersion)
                 .FirstOrDefault(c => c.UserId == userId);
         }
 
@@ -27,9 +30,10 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.ShoppingCarts
                 .Include(c => c.Items)
-                .ThenInclude(i => i.Product)
+                    .ThenInclude(i => i.Product)
                 .Include(c => c.Items)
-                .ThenInclude(i => i.Variant)
+                    .ThenInclude(i => i.Variant)
+                        .ThenInclude(v => v.ProductVersion)
                 .FirstOrDefault(c => c.SessionId == sessionId);
         }
 
@@ -37,9 +41,10 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.ShoppingCarts
                 .Include(c => c.Items)
-                .ThenInclude(i => i.Product)
+                    .ThenInclude(i => i.Product)
                 .Include(c => c.Items)
-                .ThenInclude(i => i.Variant)
+                    .ThenInclude(i => i.Variant)
+                        .ThenInclude(v => v.ProductVersion)
                 .FirstOrDefault(c => c.Id == id);
         }
 
@@ -48,6 +53,7 @@ namespace HDKmall.DAL.Repositories
             return _context.CartItems
                 .Include(i => i.Product)
                 .Include(i => i.Variant)
+                    .ThenInclude(v => v.ProductVersion)
                 .FirstOrDefault(i => i.Id == cartItemId);
         }
 

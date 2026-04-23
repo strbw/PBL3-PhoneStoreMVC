@@ -1,6 +1,8 @@
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace HDKmall.DAL.Repositories
 {
@@ -18,9 +20,7 @@ namespace HDKmall.DAL.Repositories
             return _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
-                .Include(p => p.Variants)
-                .Include(p => p.Images)
-                .Include(p => p.Reviews)
+                .Include(p => p.Versions)
                 .ToList();
         }
 
@@ -29,11 +29,12 @@ namespace HDKmall.DAL.Repositories
             return _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
-                .Include(p => p.Variants)
-                .Include(p => p.Images)
-                .Include(p => p.Specifications)
-                .Include(p => p.Reviews)
-                    .ThenInclude(r => r.User)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Variants)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Specifications)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Images)
                 .FirstOrDefault(p => p.Id == id);
         }
 
@@ -42,11 +43,12 @@ namespace HDKmall.DAL.Repositories
             return _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
-                .Include(p => p.Variants)
-                .Include(p => p.Images)
-                .Include(p => p.Specifications)
-                .Include(p => p.Reviews)
-                    .ThenInclude(r => r.User)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Variants)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Specifications)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Images)
                 .FirstOrDefault(p => p.Slug == slug);
         }
 
@@ -73,15 +75,32 @@ namespace HDKmall.DAL.Repositories
         public void Delete(int id)
         {
             var product = _context.Products
-                .Include(p => p.Images)
-                .Include(p => p.Variants)
-                .Include(p => p.Specifications)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Images)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Variants)
+                .Include(p => p.Versions)
+                    .ThenInclude(v => v.Specifications)
                 .FirstOrDefault(p => p.Id == id);
             if (product != null)
             {
                 _context.Products.Remove(product);
                 _context.SaveChanges();
             }
+        }
+
+        // Version methods
+        public void AddVersion(ProductVersion version)
+        {
+            _context.ProductVersions.Add(version);
+            _context.SaveChanges();
+        }
+
+        public void DeleteVersions(int productId)
+        {
+            var versions = _context.ProductVersions.Where(v => v.ProductId == productId).ToList();
+            _context.ProductVersions.RemoveRange(versions);
+            _context.SaveChanges();
         }
 
         // Image methods
@@ -110,7 +129,8 @@ namespace HDKmall.DAL.Repositories
 
         public void DeleteVariants(int productId)
         {
-            var variants = _context.ProductVariants.Where(v => v.ProductId == productId).ToList();
+            // This is a bit tricky now since variants are linked to versions
+            var variants = _context.ProductVariants.Where(v => v.ProductVersion.ProductId == productId).ToList();
             _context.ProductVariants.RemoveRange(variants);
             _context.SaveChanges();
         }
@@ -124,7 +144,7 @@ namespace HDKmall.DAL.Repositories
 
         public void DeleteSpecifications(int productId)
         {
-            var specs = _context.ProductSpecifications.Where(s => s.ProductId == productId).ToList();
+            var specs = _context.ProductSpecifications.Where(s => s.ProductVersion.ProductId == productId).ToList();
             _context.ProductSpecifications.RemoveRange(specs);
             _context.SaveChanges();
         }

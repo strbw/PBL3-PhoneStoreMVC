@@ -5,6 +5,7 @@ using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Linq;
 
 namespace HDKmall.Controllers
 {
@@ -15,14 +16,16 @@ namespace HDKmall.Controllers
         private readonly IBrandService _brandService;
         private readonly IReviewService _reviewService;
         private readonly HDKmall.DAL.Interfaces.IProductRepository _productRepo;
+        private readonly IRecommendationService _recommendationService;
 
-        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo)
+        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo, IRecommendationService recommendationService)
         {
             _searchService = searchService;
             _categoryService = categoryService;
             _brandService = brandService;
             _reviewService = reviewService;
             _productRepo = productRepo;
+            _recommendationService = recommendationService;
         }
 
         private string RemoveDiacritics(string text)
@@ -126,12 +129,19 @@ namespace HDKmall.Controllers
                 return NotFound();
             }
 
+            // Track recently viewed
+            _recommendationService.AddToRecentlyViewed(product.Id);
+
+            // Get related products
+            ViewBag.RelatedProducts = _recommendationService.GetRelatedProducts(product.Id);
+
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (int.TryParse(userIdString, out var userId) && userId > 0)
                 {
-                    ViewBag.CanReview = _reviewService.UserCanReview(userId, product.Id);
+                    var firstVersionId = product.Versions.FirstOrDefault()?.Id ?? 0;
+                    ViewBag.CanReview = firstVersionId > 0 && _reviewService.UserCanReview(userId, firstVersionId);
                 }
                 else
                 {
@@ -163,6 +173,9 @@ namespace HDKmall.Controllers
 
             var result = _searchService.SearchProducts(filter);
             ViewBag.SearchQuery = q;
+
+            // Track search history
+            _recommendationService.AddToRecentSearches(q);
 
             return View("Index", result);
         }
@@ -261,6 +274,18 @@ namespace HDKmall.Controllers
             }
             TempData["success"] = $"Đã cập nhật thành công {count} sản phẩm!";
             return RedirectToAction("Index");
+        }
+        
+        [HttpGet]
+        public IActionResult GetRecentSearches()
+        {
+            return Ok(_recommendationService.GetRecentSearches());
+        }
+
+        [HttpGet]
+        public IActionResult GetPersonalizedRecommendations(int take = 10)
+        {
+            return Ok(_recommendationService.GetPersonalizedRecommendations(take));
         }
     }
 }
