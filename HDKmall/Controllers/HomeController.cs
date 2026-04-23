@@ -39,8 +39,19 @@ namespace HDKmall.Controllers
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(int? statusCode = null)
         {
+            if (statusCode == 404)
+            {
+                ViewData["ErrorTitle"] = "404 - Không tìm thấy trang";
+                ViewData["ErrorMessage"] = "Rất tiếc, trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.";
+            }
+            else
+            {
+                ViewData["ErrorTitle"] = "Đã có lỗi xảy ra";
+                ViewData["ErrorMessage"] = "Hệ thống đang gặp sự cố tạm thời. Vui lòng thử lại sau.";
+            }
+
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }

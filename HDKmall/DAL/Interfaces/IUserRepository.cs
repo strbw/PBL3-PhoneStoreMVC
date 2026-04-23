@@ -1,4 +1,4 @@
-﻿using HDKmall.Models;
+using HDKmall.Models;
 namespace HDKmall.DAL.Interfaces
 {
     public interface IUserRepository
@@ -14,5 +14,6 @@ namespace HDKmall.DAL.Interfaces
         UserAddress GetUserAddressById(int userId, int addressId);
         void AddUserAddress(UserAddress address);
         void DeleteUserAddress(UserAddress address);
+        IEnumerable<Role> GetAllRoles();
     }
 }

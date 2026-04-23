@@ -3,6 +3,7 @@ using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using HDKmall.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HDKmall.BLL.Services
 {
@@ -10,11 +11,13 @@ namespace HDKmall.BLL.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IReviewRepository _reviewRepository;
+        private readonly ILogger<ProductSearchService> _logger;
 
-        public ProductSearchService(IProductRepository productRepository, IReviewRepository reviewRepository)
+        public ProductSearchService(IProductRepository productRepository, IReviewRepository reviewRepository, ILogger<ProductSearchService> logger)
         {
             _productRepository = productRepository;
             _reviewRepository = reviewRepository;
+            _logger = logger;
         }
 
         public PaginationVM SearchProducts(ProductFilterVM filter)
@@ -78,6 +81,7 @@ namespace HDKmall.BLL.Services
             {
                 Id = p.Id,
                 Name = p.Name,
+                Slug = p.Slug,
                 Price = p.Price,
                 Description = p.Description,
                 ImageUrl = p.ImageUrl,
@@ -139,12 +143,24 @@ namespace HDKmall.BLL.Services
         public ProductDetailVM GetProductDetail(int id)
         {
             var product = _productRepository.GetById(id);
+            return MapToProductDetailVM(product);
+        }
+
+        public ProductDetailVM GetProductDetailBySlug(string slug)
+        {
+            var product = _productRepository.GetBySlug(slug);
+            return MapToProductDetailVM(product);
+        }
+
+        private ProductDetailVM MapToProductDetailVM(Product product)
+        {
             if (product == null) return null;
 
             return new ProductDetailVM
             {
                 Id = product.Id,
                 Name = product.Name,
+                Slug = product.Slug,
                 Description = product.Description,
                 BasePrice = product.Price,
                 ImageUrl = product.ImageUrl,
@@ -207,6 +223,7 @@ namespace HDKmall.BLL.Services
             {
                 Id = p.Id,
                 Name = p.Name,
+                Slug = p.Slug,
                 Price = p.Price,
                 Description = p.Description,
                 ImageUrl = p.ImageUrl,

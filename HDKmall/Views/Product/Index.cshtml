@@ -146,13 +146,13 @@
                 {
                     <div class="col">
                         <div class="pl-product-card h-100">
-                            <a href="/Product/Detail/@item.Id" class="img-box d-block text-center text-decoration-none" style="height:180px;">
+                            <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)" class="img-box d-block text-center text-decoration-none" style="height:180px;">
                                 <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/img/Product_Default.jpg" : item.ImageUrl)"
-                                     alt="@item.Name" style="max-height:100%; object-fit:contain; display:inline-block;">
+                                     alt="@item.Name" style="max-height:100%; object-fit:contain; display:inline-block;" onerror="this.src='/img/Product_Default.jpg'">
                             </a>
                             <div class="p-3 d-flex flex-column flex-grow-1">
                                 <div class="text-muted" style="font-size:12px; margin-bottom:4px;">@item.BrandName</div>
-                                <a href="/Product/Detail/@item.Id" class="text-decoration-none text-dark fw-semibold lh-sm mb-2" style="font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">@item.Name</a>
+                                <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)" class="text-decoration-none text-dark fw-semibold lh-sm mb-2" style="font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">@item.Name</a>
                                 <div class="mt-auto">
                                     <!-- Stars -->
                                     <div style="color:#ffc107; font-size:12px; margin-bottom:4px;">
@@ -220,8 +220,7 @@
             || document.querySelector('meta[name="csrf-token"]')?.content || '';
 
         btn.disabled = true;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '⏳ Đang thêm...';
+        btn.classList.add('btn-loading');
 
         fetch('/Cart/Add', {
             method: 'POST',
@@ -234,23 +233,27 @@
         })
         .then(r => r.json())
         .then(data => {
-            showPlToast(data.message || (data.success ? 'Đã thêm vào giỏ hàng!' : 'Lỗi thêm sản phẩm'), data.success ? 'success' : 'danger');
+            if (typeof toastr !== 'undefined') {
+                if (data.success) toastr.success(data.message);
+                else toastr.error(data.message);
+            } else {
+                showPlToast(data.message || (data.success ? 'Đã thêm vào giỏ hàng!' : 'Lỗi thêm sản phẩm'), data.success ? 'success' : 'danger');
+            }
+            
             if (data.success) {
                 const badge = document.getElementById('cart-badge');
                 if (badge) {
                     badge.textContent = data.cartCount;
                     badge.classList.remove('d-none');
                 }
-                btn.innerHTML = '✅ Đã thêm!';
-                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 1500);
-            } else {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
             }
         })
         .catch(() => {
-            showPlToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
-            btn.innerHTML = originalText;
+            if (typeof toastr !== 'undefined') toastr.error('Có lỗi xảy ra, vui lòng thử lại');
+            else showPlToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
+        })
+        .finally(() => {
+            btn.classList.remove('btn-loading');
             btn.disabled = false;
         });
     }

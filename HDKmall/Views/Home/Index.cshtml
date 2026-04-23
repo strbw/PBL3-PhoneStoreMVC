@@ -139,13 +139,13 @@
                     <div class="card h-100 border border-light shadow-sm rounded-4 overflow-hidden product-card-hover position-relative">
                         <span class="position-absolute top-0 start-0 m-3 badge bg-danger rounded-pill fw-bold z-1" style="font-size: 0.75rem;">HOT</span>
                         
-                        <a href="/Product/Detail/@item.Id" class="text-center bg-white py-4 d-block" style="height: 220px;">
-                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/img/default.png" : item.ImageUrl)" class="img-fluid" alt="@item.Name" style="max-height: 100%; object-fit: contain;">
+                        <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)" class="text-center bg-white py-4 d-block" style="height: 220px;">
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/img/default.png" : item.ImageUrl)" class="img-fluid" alt="@item.Name" style="max-height: 100%; object-fit: contain;" onerror="this.src='/img/default.png'">
                         </a>
                         <div class="card-body d-flex flex-column bg-white">
                             <div class="text-muted small fw-medium mb-1">@(string.IsNullOrEmpty(item.BrandName) ? "Hãng" : item.BrandName)</div>
                             <h5 class="card-title fs-6 lh-sm mb-3">
-                                <a href="/Product/Detail/@item.Id" class="text-decoration-none text-dark fw-bold">@item.Name</a>
+                                <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)" class="text-decoration-none text-dark fw-bold">@item.Name</a>
                             </h5>
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <div class="text-danger fw-bolder fs-5">@item.Price.ToString("N0")₫</div>
@@ -177,13 +177,13 @@
                     <div class="card h-100 border border-light shadow-sm rounded-4 overflow-hidden product-card-hover position-relative">
                         <span class="position-absolute top-0 start-0 m-3 badge bg-primary rounded-pill fw-bold z-1" style="font-size: 0.75rem;">MỚI</span>
                         
-                        <a href="/Product/Detail/@item.Id" class="text-center bg-white py-4 d-block" style="height: 220px;">
+                        <a href="@(!string.IsNullOrEmpty(item.Slug) ? "/product/" + item.Slug : "/Product/Detail/" + item.Id)" class="text-center bg-white py-4 d-block" style="height: 220px;">
                             <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/img/default.png" : item.ImageUrl)" class="img-fluid" alt="@item.Name" style="max-height: 100%; object-fit: contain;">
                         </a>
                         <div class="card-body d-flex flex-column bg-white">
                             <div class="text-muted small fw-medium mb-1">@(string.IsNullOrEmpty(item.BrandName) ? "Hãng" : item.BrandName)</div>
                             <h5 class="card-title fs-6 lh-sm mb-3">
-                                <a href="/Product/Detail/@item.Id" class="text-decoration-none text-dark fw-bold">@item.Name</a>
+                                <a href="@(!string.IsNullOrEmpty(item.Slug) ? "/product/" + item.Slug : "/Product/Detail/" + item.Id)" class="text-decoration-none text-dark fw-bold">@item.Name</a>
                             </h5>
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <div class="text-danger fw-bolder fs-5">@item.Price.ToString("N0")₫</div>
@@ -208,8 +208,7 @@
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
         
         btn.disabled = true;
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '⏳';
+        btn.classList.add('btn-loading');
 
         fetch('/Cart/Add', {
             method: 'POST',
@@ -222,23 +221,27 @@
         })
         .then(r => r.json())
         .then(data => {
-            showHomeToast(data.message || (data.success ? 'Đã thêm vào giỏ hàng!' : 'Lỗi thêm sản phẩm'), data.success ? 'success' : 'danger');
+            if (typeof toastr !== 'undefined') {
+                if (data.success) toastr.success(data.message);
+                else toastr.error(data.message);
+            } else {
+                showHomeToast(data.message || (data.success ? 'Đã thêm vào giỏ hàng!' : 'Lỗi thêm sản phẩm'), data.success ? 'success' : 'danger');
+            }
+
             if (data.success) {
                 const badge = document.getElementById('cart-badge');
                 if (badge) {
                     badge.textContent = data.cartCount;
                     badge.classList.remove('d-none');
                 }
-                btn.innerHTML = '✅';
-                setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; }, 1500);
-            } else {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
             }
         })
         .catch(() => {
-            showHomeToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
-            btn.innerHTML = originalHtml;
+            if (typeof toastr !== 'undefined') toastr.error('Có lỗi xảy ra, vui lòng thử lại');
+            else showHomeToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
+        })
+        .finally(() => {
+            btn.classList.remove('btn-loading');
             btn.disabled = false;
         });
     }

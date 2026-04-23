@@ -50,6 +50,7 @@ namespace HDKmall.Controllers
                     return Json(new { success = true, message = "Sản phẩm đã được thêm vào giỏ hàng", cartCount = count });
                 }
 
+                TempData["success"] = "Sản phẩm đã được thêm vào giỏ hàng";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -58,6 +59,7 @@ namespace HDKmall.Controllers
                 return Json(new { success = false, message = "Lỗi khi thêm sản phẩm", cartCount = 0 });
             }
 
+            TempData["error"] = "Có lỗi xảy ra khi thêm vào giỏ hàng";
             return RedirectToAction(nameof(Index));
         }
 

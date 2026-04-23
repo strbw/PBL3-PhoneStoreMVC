@@ -6,6 +6,7 @@ namespace HDKmall.DAL.Interfaces
     {
         IEnumerable<Product> GetAll();
         Product GetById(int id);
+        Product GetBySlug(string slug);
         void Add(Product product);
         void Update(Product product);
         void Delete(int id);

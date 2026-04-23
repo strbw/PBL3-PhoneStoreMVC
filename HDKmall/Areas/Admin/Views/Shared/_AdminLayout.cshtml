@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8" />
@@ -8,93 +8,224 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/style.css" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>" />
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --admin-primary: #d0021b;
+            --admin-dark: #0f172a;
+            --admin-bg: #f8fafc;
+        }
+
+        body { background-color: var(--admin-bg); overflow-x: hidden; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--admin-dark);
+            z-index: 1030;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-brand {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-brand .logo-icon {
+            width: 35px; height: 35px;
+            background: var(--admin-primary);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.2rem;
+        }
+
+        .sidebar-nav { flex: 1; padding: 20px 12px; overflow-y: auto; }
+
+        .nav-link-admin {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: rgba(255,255,255,0.6) !important;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .nav-link-admin:hover {
+            background: rgba(255,255,255,0.05);
+            color: white !important;
+        }
+
+        .nav-link-admin.active {
+            background: var(--admin-primary);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(208, 2, 27, 0.3);
+        }
+
+        .nav-link-admin i { font-size: 1.1rem; width: 20px; text-align: center; }
+
+        /* Main Content Styling */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+
+        .top-navbar {
+            height: 70px;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .content-area { padding: 30px; }
+
+        /* Glass Cards */
+        .admin-card {
+            background: white;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            transition: transform 0.2s;
+        }
+
+        .admin-card:hover { transform: translateY(-5px); }
+
+        /* Mobile Adjustments */
+        @@media (max-width: 991px) {
+            .sidebar { left: calc(-1 * var(--sidebar-width)); }
+            .sidebar.active { left: 0; }
+            .main-wrapper { margin-left: 0; }
+            .top-navbar { padding: 0 15px; }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
-    <nav class="mobile-menu" id="mobile-menu">
-        <div class="mobile-menu-header">
-            <div class="logo">
-                <div class="logo-icon">📱</div>
-                <div class="logo-text">Phone<span>Store</span></div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo-icon"><i class="bi bi-phone"></i></div>
+            <div class="text-white">
+                <div class="fw-bold fs-5 lh-1">PhoneStore</div>
+                <div class="small opacity-50" style="font-size: 0.65rem; letter-spacing: 2px;">MANAGEMENT</div>
             </div>
-            <button class="mobile-menu-close" id="mobile-menu-close">✕</button>
         </div>
-        <a href="/Admin/Dashboard" class="mobile-nav-item">🏠 Tổng quan</a>
-        <a href="/Admin/Product" class="mobile-nav-item">🛍️ Sản phẩm</a>
-        <a href="/Admin/Order" class="mobile-nav-item">📦 Đơn hàng</a>
-        <a href="/Admin/User" class="mobile-nav-item">👤 Người dùng</a>
-        <a href="/Admin/Banner" class="mobile-nav-item">🖼 Banner</a>
-        <a href="/Admin/Coupon" class="mobile-nav-item">🏷 Coupons</a>
-        <a href="/Admin/Review" class="mobile-nav-item">⭐ Đánh giá</a>
-    </nav>
 
-    <header class="header">
-        <div class="header-top">
-            <div class="container">
-                <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
-                <a href="/Admin/Dashboard" class="logo">
-                    <div class="logo-icon">📱</div>
-                    <div class="logo-text">Phone<span>Store</span></div>
-                </a>
-                <div style="flex:1"></div>
-                <div class="header-actions">
-                    <div class="header-user-menu" style="display:flex; align-items:center; gap:8px;">
-                        <span class="btn-icon">👤</span>
-                        <span class="user-name">@User.Identity?.Name</span>
-                        <a href="/" class="header-btn" title="Về trang khách hàng">🏠</a>
-                        <a href="/Account/Logout" class="header-btn logout-btn" title="Đăng xuất">⏻</a>
+        <div class="sidebar-nav">
+            <div class="text-white opacity-25 small uppercase fw-bold mb-3 px-3" style="font-size: 0.7rem; letter-spacing: 1px;">MENU CHÍNH</div>
+            
+            <a href="/Admin/Dashboard" class="nav-link-admin @(ViewBag.ActiveTab == "dashboard" ? "active" : "")">
+                <i class="bi bi-grid-1x2-fill"></i> Tổng quan
+            </a>
+            <a href="/Admin/Product" class="nav-link-admin @(ViewBag.ActiveTab == "products" ? "active" : "")">
+                <i class="bi bi-box-seam-fill"></i> Sản phẩm
+            </a>
+            <a href="/Admin/Order" class="nav-link-admin @(ViewBag.ActiveTab == "orders" ? "active" : "")">
+                <i class="bi bi-receipt-cutoff"></i> Đơn hàng
+            </a>
+            <a href="/Admin/User" class="nav-link-admin @(ViewBag.ActiveTab == "users" ? "active" : "")">
+                <i class="bi bi-people-fill"></i> Người dùng
+            </a>
+
+            <div class="text-white opacity-25 small uppercase fw-bold mt-4 mb-3 px-3" style="font-size: 0.7rem; letter-spacing: 1px;">MARKETING & UI</div>
+            
+            <a href="/Admin/Banner" class="nav-link-admin @(ViewBag.ActiveTab == "banners" ? "active" : "")">
+                <i class="bi bi-image-fill"></i> Banners
+            </a>
+            <a href="/Admin/Coupon" class="nav-link-admin @(ViewBag.ActiveTab == "coupons" ? "active" : "")">
+                <i class="bi bi-tags-fill"></i> Coupons
+            </a>
+            <a href="/Admin/Review" class="nav-link-admin @(ViewBag.ActiveTab == "reviews" ? "active" : "")">
+                <i class="bi bi-star-fill"></i> Đánh giá
+            </a>
+        </div>
+
+        <div class="p-4 mt-auto border-top border-secondary border-opacity-10">
+            <a href="/Account/Logout" class="btn btn-outline-danger btn-sm w-100 rounded-pill py-2">
+                <i class="bi bi-box-arrow-left me-2"></i> Đăng xuất
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <header class="top-navbar">
+            <button class="btn btn-light d-lg-none me-3" id="sidebarToggle"><i class="bi bi-list fs-4"></i></button>
+            
+            <div class="d-none d-md-flex align-items-center">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item small text-muted">Admin</li>
+                        <li class="breadcrumb-item active small text-dark fw-bold" aria-current="page">@ViewBag.ActiveTab</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div class="input-group input-group-sm d-none d-lg-flex" style="width: 250px;">
+                    <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm kiếm...">
+                </div>
+                
+                <div class="dropdown">
+                    <button class="btn btn-white d-flex align-items-center gap-2 border-0 dropdown-toggle" data-bs-toggle="dropdown">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                            @(User.Identity?.Name?[0].ToString().ToUpper() ?? "A")
+                        </div>
+                        <span class="small fw-bold d-none d-sm-block">@User.Identity?.Name</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2">
+                        <li><a class="dropdown-item py-2 px-3" href="/"><i class="bi bi-shop me-2"></i> Về cửa hàng</a></li>
+                        <li><a class="dropdown-item py-2 px-3" href="/Account/Profile"><i class="bi bi-person me-2"></i> Hồ sơ</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item py-2 px-3 text-danger" href="/Account/Logout"><i class="bi bi-power me-2"></i> Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-area">
+            <div class="container-fluid p-0">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h3 class="fw-bold mb-0">@ViewData["Title"]</h3>
+                    <div id="page-actions-header"></div>
+                </div>
+
+                @RenderBody()
+            </div>
+        </main>
+
+        <footer class="py-4 border-top bg-white mt-5">
+            <div class="container-fluid px-5">
+                <div class="row align-items-center justify-content-between small">
+                    <div class="text-muted">Copyright &copy; PhoneStore 2026</div>
+                    <div>
+                        <a href="#" class="text-decoration-none text-muted me-3">Chính sách</a>
+                        <a href="#" class="text-decoration-none text-muted">Điều khoản</a>
                     </div>
                 </div>
-            </div>
-        </div>
-        <nav class="header-nav">
-            <div class="container">
-                <a href="/Admin/Product" class="nav-item">🛍️ Sản phẩm</a>
-                <a href="/Admin/Order" class="nav-item">📦 Đơn hàng</a>
-            </div>
-        </nav>
-    </header>
-
-    <main class="admin-page">
-        <div class="container" style="padding:32px 0 60px">
-
-            <div class="admin-header">
-                <div>
-                    <h1 class="admin-title">Bảng điều khiển quản trị</h1>
-                    <p class="admin-subtitle">Hệ thống quản lý PhoneStore</p>
-                </div>
-                <div class="admin-user">@User.Identity?.Name</div>
-            </div>
-
-            <div class="admin-tabs" id="admin-tabs">
-                <a href="/Admin/Dashboard" class="admin-tab @(ViewBag.ActiveTab == "dashboard" ? "active" : "")">Tổng quan</a>
-                <a href="/Admin/Product" class="admin-tab @(ViewBag.ActiveTab == "products" ? "active" : "")">Sản phẩm</a>
-                <a href="/Admin/Order" class="admin-tab @(ViewBag.ActiveTab == "orders" ? "active" : "")">Đơn hàng</a>
-                <a href="/Admin/User" class="admin-tab @(ViewBag.ActiveTab == "users" ? "active" : "")">Người dùng</a>
-                <a href="/Admin/Banner" class="admin-tab @(ViewBag.ActiveTab == "banners" ? "active" : "")">Banner</a>
-                <a href="/Admin/Coupon" class="admin-tab @(ViewBag.ActiveTab == "coupons" ? "active" : "")">Coupons</a>
-                <a href="/Admin/Review" class="admin-tab @(ViewBag.ActiveTab == "reviews" ? "active" : "")">Đánh giá</a>
-            </div>
-
-            @RenderBody()
-
-        </div>
-
-        <div id="admin-toast" class="admin-toast"></div>
-    </main>
-
-    <footer class="footer">
-        <div class="footer-bottom">
-            <div class="container">© 2026 PhoneStore. All rights reserved.</div>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/main.js"></script>
-    @RenderSection("Scripts", required: false)
-
-    <!-- Preview Modal (chung cho mọi ảnh trong admin) -->
+       <!-- Preview Modal (chung cho mọi ảnh trong admin) -->
     <div id="imagePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
         <div style="position:relative; max-width:90%; max-height:90%;">
             <img id="imagePreviewModalImg" src="" style="max-width:100%; max-height:90vh; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.4);" />
@@ -102,31 +233,34 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
         // Click ảnh để xem lớn (dùng data-preview-src)
         document.addEventListener('click', function (e) {
-        const target = e.target.closest('[data-preview-src]');
-        if (!target) return;
-
-        const src = target.getAttribute('data-preview-src');
-        if (!src) return;
-
-        const modal = document.getElementById('imagePreviewModal');
-        const img = document.getElementById('imagePreviewModalImg');
-        img.src = src;
-        modal.style.display = 'flex';
+            const target = e.target.closest('[data-preview-src]');
+            if (!target) return;
+            const src = target.getAttribute('data-preview-src');
+            if (!src) return;
+            const modal = document.getElementById('imagePreviewModal');
+            const img = document.getElementById('imagePreviewModalImg');
+            img.src = src;
+            modal.style.display = 'flex';
         });
 
         document.getElementById('imagePreviewModalClose').addEventListener('click', function () {
-        document.getElementById('imagePreviewModal').style.display = 'none';
+            document.getElementById('imagePreviewModal').style.display = 'none';
         });
 
         document.getElementById('imagePreviewModal').addEventListener('click', function (e) {
-        if (e.target.id === 'imagePreviewModal') {
-        e.currentTarget.style.display = 'none';
-        }
+            if (e.target.id === 'imagePreviewModal') {
+                e.currentTarget.style.display = 'none';
+            }
         });
     </script>
-
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

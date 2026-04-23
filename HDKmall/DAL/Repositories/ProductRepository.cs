@@ -37,14 +37,35 @@ namespace HDKmall.DAL.Repositories
                 .FirstOrDefault(p => p.Id == id);
         }
 
+        public Product GetBySlug(string slug)
+        {
+            return _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Variants)
+                .Include(p => p.Images)
+                .Include(p => p.Specifications)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.User)
+                .FirstOrDefault(p => p.Slug == slug);
+        }
+
         public void Add(Product product)
         {
+            if (string.IsNullOrEmpty(product.Slug))
+            {
+                product.Slug = HDKmall.Helpers.SlugHelper.GenerateSlug(product.Name);
+            }
             _context.Products.Add(product);
             _context.SaveChanges();
         }
 
         public void Update(Product product)
         {
+            if (string.IsNullOrEmpty(product.Slug))
+            {
+                product.Slug = HDKmall.Helpers.SlugHelper.GenerateSlug(product.Name);
+            }
             _context.Products.Update(product);
             _context.SaveChanges();
         }

@@ -31,7 +31,26 @@ namespace HDKmall.Areas.Admin.Controllers
             }
 
             ViewBag.Search = q;
+            ViewBag.Roles = _accountService.GetAllRoles();
             return View(users);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ToggleStatus(int id)
+        {
+            _accountService.ToggleUserStatus(id);
+            TempData["Success"] = "Đã cập nhật trạng thái người dùng.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult UpdateRole(int id, int roleId)
+        {
+            _accountService.ChangeUserRole(id, roleId);
+            TempData["Success"] = "Đã cập nhật vai trò người dùng.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

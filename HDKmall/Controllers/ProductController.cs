@@ -14,13 +14,15 @@ namespace HDKmall.Controllers
         private readonly ICategoryService _categoryService;
         private readonly IBrandService _brandService;
         private readonly IReviewService _reviewService;
+        private readonly HDKmall.DAL.Interfaces.IProductRepository _productRepo;
 
-        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService)
+        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo)
         {
             _searchService = searchService;
             _categoryService = categoryService;
             _brandService = brandService;
             _reviewService = reviewService;
+            _productRepo = productRepo;
         }
 
         private string RemoveDiacritics(string text)
@@ -80,10 +82,45 @@ namespace HDKmall.Controllers
             return View(result);
         }
 
-        // GET: Product/Detail/5
-        public IActionResult Detail(int id)
+        // GET: Product/Detail/5 or /product/slug
+        [Route("Product/Detail/{id:int}")]
+        [Route("product/{slug}")]
+        public IActionResult Detail(int? id, string slug)
         {
-            var product = _searchService.GetProductDetail(id);
+            ProductDetailVM product = null;
+
+            if (!string.IsNullOrEmpty(slug))
+            {
+                product = _searchService.GetProductDetailBySlug(slug);
+                
+                // Fallback: Nếu không tìm thấy theo slug trong DB (do chưa update dữ liệu cũ)
+                if (product == null)
+                {
+                    var allProducts = _productRepo.GetAll();
+                    var match = allProducts.FirstOrDefault(p => HDKmall.Helpers.SlugHelper.GenerateSlug(p.Name) == slug);
+                    if (match != null)
+                    {
+                        match.Slug = slug;
+                        _productRepo.Update(match);
+                        product = _searchService.GetProductDetail(match.Id);
+                    }
+                }
+            }
+            else if (id.HasValue)
+            {
+                product = _searchService.GetProductDetail(id.Value);
+                // Tự động cập nhật slug nếu còn thiếu để lần sau link đẹp hơn
+                if (product != null && string.IsNullOrEmpty(product.Slug))
+                {
+                    var p = _productRepo.GetById(product.Id);
+                    if (p != null)
+                    {
+                        p.Slug = HDKmall.Helpers.SlugHelper.GenerateSlug(p.Name);
+                        _productRepo.Update(p);
+                    }
+                }
+            }
+
             if (product == null)
             {
                 return NotFound();
@@ -91,8 +128,15 @@ namespace HDKmall.Controllers
 
             if (User.Identity?.IsAuthenticated == true)
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                ViewBag.CanReview = userId > 0 && _reviewService.UserCanReview(userId, id);
+                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdString, out var userId) && userId > 0)
+                {
+                    ViewBag.CanReview = _reviewService.UserCanReview(userId, product.Id);
+                }
+                else
+                {
+                    ViewBag.CanReview = false;
+                }
             }
             else
             {
@@ -200,6 +244,23 @@ namespace HDKmall.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+        [HttpGet("Product/UpdateAllSlugs")]
+        public IActionResult UpdateAllSlugs()
+        {
+            var products = _productRepo.GetAll();
+            int count = 0;
+            foreach (var p in products)
+            {
+                if (string.IsNullOrEmpty(p.Slug))
+                {
+                    p.Slug = HDKmall.Helpers.SlugHelper.GenerateSlug(p.Name);
+                    _productRepo.Update(p);
+                    count++;
+                }
+            }
+            TempData["success"] = $"Đã cập nhật thành công {count} sản phẩm!";
+            return RedirectToAction("Index");
         }
     }
 }

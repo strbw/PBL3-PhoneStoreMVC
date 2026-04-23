@@ -1,4 +1,4 @@
-﻿using HDKmall.Models;
+using HDKmall.Models;
 using HDKmall.ViewModels;
 
 namespace HDKmall.BLL.Interfaces
@@ -14,5 +14,8 @@ namespace HDKmall.BLL.Interfaces
         bool DeleteAddress(int userId, int addressId);
         bool SetDefaultAddress(int userId, int addressId);
         IEnumerable<User> GetAllUsers();
+        void ToggleUserStatus(int userId);
+        void ChangeUserRole(int userId, int roleId);
+        IEnumerable<Role> GetAllRoles();
     }
 }

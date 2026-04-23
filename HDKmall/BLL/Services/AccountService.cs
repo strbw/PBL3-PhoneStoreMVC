@@ -1,4 +1,4 @@
-﻿using HDKmall.BLL.Interfaces;
+using HDKmall.BLL.Interfaces;
 using HDKmall.DAL.Interfaces;
 using HDKmall.Models;
 using HDKmall.ViewModels;
@@ -197,6 +197,33 @@ namespace HDKmall.BLL.Services
         public IEnumerable<User> GetAllUsers()
         {
             return _userRepository.GetAllUsers();
+        }
+
+        public void ToggleUserStatus(int userId)
+        {
+            var user = _userRepository.GetUserById(userId);
+            if (user != null)
+            {
+                user.IsActive = !user.IsActive;
+                _userRepository.UpdateUser(user);
+                _userRepository.SaveChanges();
+            }
+        }
+
+        public void ChangeUserRole(int userId, int roleId)
+        {
+            var user = _userRepository.GetUserById(userId);
+            if (user != null)
+            {
+                user.RoleId = roleId;
+                _userRepository.UpdateUser(user);
+                _userRepository.SaveChanges();
+            }
+        }
+
+        public IEnumerable<Role> GetAllRoles()
+        {
+            return _userRepository.GetAllRoles();
         }
     }
 }

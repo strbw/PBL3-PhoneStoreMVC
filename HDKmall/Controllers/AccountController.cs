@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +41,7 @@ namespace HDKmall.Controllers
                     var principal = new ClaimsPrincipal(identity);
 
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                    TempData["success"] = "Chào mừng " + user.FullName + " đã quay trở lại!";
                     return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");

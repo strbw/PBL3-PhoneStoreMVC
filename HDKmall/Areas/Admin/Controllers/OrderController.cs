@@ -16,10 +16,15 @@ namespace HDKmall.Areas.Admin.Controllers
             _orderService = orderService;
         }
 
-        public IActionResult Index(string? q)
+        public IActionResult Index(string? q, string? status)
         {
             ViewBag.ActiveTab = "orders";
             var orders = _orderService.GetAllOrders();
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                orders = orders.Where(o => o.Status == status);
+            }
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -34,6 +39,7 @@ namespace HDKmall.Areas.Admin.Controllers
             }
 
             ViewBag.Search = q;
+            ViewBag.SelectedStatus = status;
             return View(orders);
         }
 

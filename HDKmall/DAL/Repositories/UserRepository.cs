@@ -1,4 +1,4 @@
-﻿using HDKmall.DAL.Interfaces;
+using HDKmall.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using HDKmall.Models;
 using System.Data;
@@ -80,6 +80,11 @@ namespace HDKmall.DAL.Repositories
         public void DeleteUserAddress(UserAddress address)
         {
             _context.UserAddresses.Remove(address);
+        }
+        
+        public IEnumerable<Role> GetAllRoles()
+        {
+            return _context.Roles.ToList();
         }
     }
 }

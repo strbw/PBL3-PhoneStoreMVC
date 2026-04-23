@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = Model.Name;
+    ViewData["MetaDescription"] = Model.Description?.Length > 160 ? Model.Description.Substring(0, 157) + "..." : Model.Description;
+    ViewData["OgImage"] = Model.ImageUrl;
+    
     var colors = Model.Variants.Select(v => v.Color).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
     var capacities = Model.Variants.Select(v => v.Capacity).Where(c => !string.IsNullOrEmpty(c)).Distinct().ToList();
     var totalStock = Model.Variants.Any() ? Model.Variants.Sum(v => v.Stock) : 1;
@@ -35,6 +38,15 @@
             });
         }
     }
+}
+
+@section SEO {
+    <meta name="description" content="@ViewData["MetaDescription"]" />
+    <meta property="og:title" content="@ViewData["Title"] - PhoneStore" />
+    <meta property="og:description" content="@ViewData["MetaDescription"]" />
+    <meta property="og:image" content="@ViewData["OgImage"]" />
+    <meta property="og:type" content="product" />
+    <meta name="twitter:card" content="summary_large_image" />
 }
 
 <style>
@@ -135,7 +147,8 @@
                 <img id="mainImage"
                      src="@(galleryImages.Any() ? galleryImages.First().ImageUrl : "/img/Product_Default.jpg")"
                      alt="@Model.Name"
-                     class="pd-img-main" />
+                     class="pd-img-main"
+                     onerror="this.src='/img/Product_Default.jpg'" />
 
                 @if (galleryImages.Count > 1)
                 {
@@ -601,6 +614,9 @@
         const variantId = document.getElementById('selectedVariantId').value || 0;
         const quantity = document.getElementById('selectedQuantity').value || 1;
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const btn = document.getElementById('btnAddCart');
+        
+        btn?.classList.add('btn-loading');
 
         fetch('/Cart/Add', {
             method: 'POST',
@@ -624,6 +640,9 @@
         })
         .catch(() => {
             document.getElementById('add-cart-form').submit();
+        })
+        .finally(() => {
+            btn.classList.remove('btn-loading');
         });
     }
 
@@ -632,6 +651,9 @@
         const variantId = document.getElementById('selectedVariantId').value || 0;
         const quantity = document.getElementById('selectedQuantity').value || 1;
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const btn = document.getElementById('btnBuyNow');
+        
+        btn?.classList.add('btn-loading');
 
         fetch('/Cart/Add', {
             method: 'POST',
@@ -648,6 +670,9 @@
         })
         .catch(() => {
             document.getElementById('add-cart-form').submit();
+        })
+        .finally(() => {
+            btn?.classList.remove('btn-loading');
         });
     }
 

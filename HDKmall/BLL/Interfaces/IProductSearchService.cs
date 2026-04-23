@@ -11,5 +11,6 @@ namespace HDKmall.BLL.Interfaces
         List<ProductListVM> GetFeaturedProducts(int take = 10);
         List<ProductListVM> GetNewProducts(int take = 10);
         ProductDetailVM GetProductDetail(int id);
+        ProductDetailVM GetProductDetailBySlug(string slug);
     }
 }
