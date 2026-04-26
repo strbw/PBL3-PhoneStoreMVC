@@ -1,32 +1,34 @@
-@if (TempData["success"] != null || TempData["SuccessMessage"] != null)
+@if (TempData["success"] != null || TempData["SuccessMessage"] != null || TempData["Success"] != null)
 {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script type="text/javascript">
-        toastr.success('@(TempData["success"] ?? TempData["SuccessMessage"])');
+        document.addEventListener('DOMContentLoaded', function() {
+            showSuccessToast('@Html.Raw(TempData["success"] ?? TempData["SuccessMessage"] ?? TempData["Success"])');
+        });
     </script>
 }
-@if (TempData["error"] != null || TempData["ErrorMessage"] != null)
+@if (TempData["error"] != null || TempData["ErrorMessage"] != null || TempData["Error"] != null)
 {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script type="text/javascript">
-        toastr.error('@(TempData["error"] ?? TempData["ErrorMessage"])');
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Lỗi!',
+                text: '@Html.Raw(TempData["error"] ?? TempData["ErrorMessage"] ?? TempData["Error"])',
+                icon: 'error',
+                confirmButtonColor: '#d70018'
+            });
+        });
     </script>
 }
 @if (TempData["info"] != null)
 {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script type="text/javascript">
-        toastr.info('@TempData["info"]');
-    </script>
-}
-@if (TempData["warning"] != null)
-{
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script type="text/javascript">
-        toastr.warning('@TempData["warning"]');
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Thông tin',
+                text: '@Html.Raw(TempData["info"])',
+                icon: 'info',
+                confirmButtonColor: '#d70018'
+            });
+        });
     </script>
 }

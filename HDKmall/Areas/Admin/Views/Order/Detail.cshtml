@@ -86,6 +86,12 @@
                                                 }
                                                 <div class="fw-semibold text-dark" style="max-width:220px;">
                                                     @(detail.Product?.Name ?? "Sản phẩm #" + detail.ProductId)
+                                                    @if (detail.ProductVariant?.ProductVersion != null) {
+                                                        <div class="text-primary small">(@detail.ProductVariant.ProductVersion.Name)</div>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(detail.ProductVariant?.Color)) {
+                                                        <div class="text-muted small fw-normal">Màu: @detail.ProductVariant.Color</div>
+                                                    }
                                                 </div>
                                             </div>
                                         </td>

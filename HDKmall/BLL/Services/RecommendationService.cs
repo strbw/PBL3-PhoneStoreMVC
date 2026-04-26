@@ -13,13 +13,15 @@ namespace HDKmall.BLL.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ApplicationDbContext _context;
         private const string RECENTLY_VIEWED_COOKIE = "RecentlyViewedProducts";
         private const string RECENT_SEARCHES_COOKIE = "RecentSearches";
 
-        public RecommendationService(IProductRepository productRepository, IHttpContextAccessor httpContextAccessor)
+        public RecommendationService(IProductRepository productRepository, IHttpContextAccessor httpContextAccessor, ApplicationDbContext context)
         {
             _productRepository = productRepository;
             _httpContextAccessor = httpContextAccessor;
+            _context = context;
         }
 
         public void AddToRecentlyViewed(int productId)
@@ -140,17 +142,47 @@ namespace HDKmall.BLL.Services
 
         public List<ProductListVM> GetPersonalizedRecommendations(int take = 10)
         {
-            // First priority: Recently viewed
+            var user = _httpContextAccessor.HttpContext?.User;
+            List<int> wishlistedProductIds = new List<int>();
+
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                var userIdStr = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    wishlistedProductIds = _context.Wishlists
+                        .Where(w => w.UserId == userId)
+                        .Select(w => w.ProductId)
+                        .Distinct()
+                        .ToList();
+                }
+            }
+
+            // First priority: Wishlisted products (not yet in cart/viewed?)
+            var wishlistProducts = _productRepository.GetAll()
+                                                   .Where(p => wishlistedProductIds.Contains(p.Id))
+                                                   .ToList();
+
+            // Second priority: Recently viewed
             var recentlyViewed = GetRecentlyViewedProducts(5);
             
-            // Second priority: High rated/Trending products
+            // Third priority: High rated/Trending products
             var trending = _productRepository.GetAll()
                                            .OrderByDescending(p => p.Versions.SelectMany(v => v.Reviews).Count())
-                                           .Take(take)
+                                           .Take(take + 5) // Take more to filter
                                            .ToList();
 
             var result = MapToProductListVM(trending);
             
+            // Mix in Wishlist
+            if (wishlistProducts.Any())
+            {
+                var wpMapped = MapToProductListVM(wishlistProducts);
+                var wpIds = wpMapped.Select(w => w.Id).ToList();
+                result = result.Where(r => !wpIds.Contains(r.Id)).ToList();
+                result.InsertRange(0, wpMapped);
+            }
+
             // Mix in some recently viewed if available
             if (recentlyViewed.Any())
             {
@@ -159,22 +191,33 @@ namespace HDKmall.BLL.Services
                 result.InsertRange(0, recentlyViewed);
             }
 
-            return result.Take(take).ToList();
+            return result.DistinctBy(p => p.Id).Take(take).ToList();
         }
 
         private List<ProductListVM> MapToProductListVM(List<Product> products)
         {
-            return products.Select(p => new ProductListVM
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Slug = p.Slug,
-                Price = p.Price,
-                ImageUrl = p.Versions.FirstOrDefault()?.ImageUrl ?? p.ImageUrl,
-                CategoryName = p.Category?.Name,
-                BrandName = p.Brand?.Name,
-                AverageRating = p.Versions.SelectMany(v => v.Reviews).Any() ? p.Versions.SelectMany(v => v.Reviews).Average(r => r.Rating) : 0,
-                ReviewCount = p.Versions.SelectMany(v => v.Reviews).Count()
+            return products.Select(p => {
+                // Pick the "best" version to show (cheapest/first)
+                var bestVersion = p.Versions?.OrderBy(v => v.BasePrice).FirstOrDefault();
+                
+                return new ProductListVM
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Slug = p.Slug,
+                    Price = (bestVersion != null && bestVersion.BasePrice > 0) ? bestVersion.BasePrice : p.Price,
+                    ImageUrl = bestVersion?.ImageUrl ?? p.ImageUrl,
+                    CategoryName = p.Category?.Name,
+                    BrandName = p.Brand?.Name,
+                    AverageRating = p.Versions != null && p.Versions.SelectMany(v => v.Reviews).Any() 
+                        ? p.Versions.SelectMany(v => v.Reviews).Average(r => r.Rating) 
+                        : 0,
+                    ReviewCount = p.Versions != null ? p.Versions.SelectMany(v => v.Reviews).Count() : 0,
+                    VersionId = bestVersion?.Id,
+                    VersionName = bestVersion?.Name,
+                    OriginalPrice = bestVersion?.OriginalPrice,
+                    DiscountPercent = bestVersion?.DiscountPercent ?? 0
+                };
             }).ToList();
         }
     }

@@ -1,0 +1,131 @@
+@model IEnumerable<HDKmall.Models.User>
+@{
+    ViewData["Title"] = "Trung tâm Hỗ trợ trực tuyến";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="height: calc(100vh - 200px);">
+    <div class="row g-0 h-100">
+        <!-- User List -->
+        <div class="col-md-4 col-lg-3 border-end h-100 d-flex flex-column">
+            <div class="p-3 bg-light border-bottom">
+                <h6 class="fw-bold mb-0">Hội thoại</h6>
+            </div>
+            <div class="flex-1 overflow-auto" id="userList">
+                @foreach (var user in Model)
+                {
+                    <div class="user-item p-3 border-bottom cursor-pointer" onclick="selectUser(@user.UserId, '@user.FullName')">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-3">@user.FullName[0]</div>
+                            <div class="flex-1">
+                                <div class="fw-bold small">@user.FullName</div>
+                                <div class="text-muted tiny-label">Khách hàng #@user.UserId</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!Model.Any())
+                {
+                    <div class="p-4 text-center text-muted small">Chưa có cuộc hội thoại nào.</div>
+                }
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="col-md-8 col-lg-9 h-100 d-flex flex-column bg-white">
+            <div id="chatHeader" class="p-3 border-bottom bg-light d-none">
+                <h6 class="fw-bold mb-0" id="activeUserName">Chọn một khách hàng để chat</h6>
+            </div>
+            
+            <div id="adminChatBody" class="flex-1 p-4 overflow-auto d-flex flex-column gap-3" style="background: #f8f9fa;">
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-chat-dots fs-1 opacity-25 d-block mb-3"></i>
+                    <h5>Hệ thống hỗ trợ HDKmall</h5>
+                    <p class="small">Chọn khách hàng từ danh sách bên trái để bắt đầu tư vấn.</p>
+                </div>
+            </div>
+
+            <div id="chatFooter" class="p-3 border-top d-none">
+                <div class="input-group">
+                    <input type="text" id="adminChatInput" class="form-control bg-light border-0" placeholder="Nhập tin nhắn tư vấn..." onkeypress="handleAdminChatKey(event)">
+                    <button class="btn btn-primary px-4" onclick="sendAdminMessage()">GỬI <i class="bi bi-send-fill ms-1"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .user-item:hover { background: #f1f5f9; }
+    .user-item.active { background: #e2e8f0; border-left: 4px solid #d70018; }
+    .avatar-circle { width: 40px; height: 40px; background: #d70018; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .cursor-pointer { cursor: pointer; }
+    
+    .chat-bubble { max-width: 70%; padding: 12px 16px; border-radius: 15px; font-size: 14px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .chat-bubble.admin { align-self: flex-end; background: #d70018; color: #fff; border-bottom-right-radius: 2px; }
+    .chat-bubble.user { align-self: flex-start; background: #fff; border: 1px solid #eee; color: #333; border-bottom-left-radius: 2px; }
+    .chat-time { font-size: 10px; opacity: 0.6; display: block; margin-top: 5px; }
+</style>
+
+@section Scripts {
+    <script>
+        let selectedUserId = null;
+        let adminPolling = null;
+
+        function selectUser(userId, name) {
+            selectedUserId = userId;
+            document.getElementById('chatHeader').classList.remove('d-none');
+            document.getElementById('chatFooter').classList.remove('d-none');
+            document.getElementById('activeUserName').innerText = 'Tư vấn cho: ' + name;
+            
+            // UI highlight
+            document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            loadAdminChatHistory();
+            
+            if (adminPolling) clearInterval(adminPolling);
+            adminPolling = setInterval(loadAdminChatHistory, 5000);
+        }
+
+        async function loadAdminChatHistory() {
+            if (!selectedUserId) return;
+            try {
+                const res = await fetch(`/Admin/Chat/GetHistory?userId=${selectedUserId}`);
+                const history = await res.json();
+                renderAdminChat(history);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderAdminChat(history) {
+            const body = document.getElementById('adminChatBody');
+            body.innerHTML = history.map(msg => `
+                <div class="chat-bubble ${msg.isFromAdmin ? 'admin' : 'user'}">
+                    ${msg.message}
+                    <span class="chat-time">${new Date(msg.timestamp).toLocaleString()}</span>
+                </div>
+            `).join('');
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function handleAdminChatKey(e) {
+            if (e.key === 'Enter') sendAdminMessage();
+        }
+
+        async function sendAdminMessage() {
+            const input = document.getElementById('adminChatInput');
+            const msg = input.value.trim();
+            if (!msg || !selectedUserId) return;
+
+            input.value = '';
+            try {
+                const res = await fetch('/Admin/Chat/Send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: selectedUserId, message: msg })
+                });
+                if (res.ok) loadAdminChatHistory();
+            } catch (e) { console.error(e); }
+        }
+    </script>
+}

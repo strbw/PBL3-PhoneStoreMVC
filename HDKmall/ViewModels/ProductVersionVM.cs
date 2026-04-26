@@ -14,6 +14,9 @@ namespace HDKmall.ViewModels
         [Required(ErrorMessage = "Vui lòng nhập giá cơ bản")]
         public decimal BasePrice { get; set; }
 
+        public decimal? OriginalPrice { get; set; }
+        public int DiscountPercent { get; set; }
+
         public string? Description { get; set; } // Đặc điểm nổi bật
 
         public string? ImageUrl { get; set; }
@@ -22,6 +25,9 @@ namespace HDKmall.ViewModels
         public List<ProductVariantVM> Variants { get; set; } = new List<ProductVariantVM>();
         public List<ProductSpecVM> Specifications { get; set; } = new List<ProductSpecVM>();
         
+        public double AverageRating { get; set; }
+        public int ReviewCount { get; set; }
+
         // For additional images
         public List<IFormFile>? AdditionalImages { get; set; }
     }

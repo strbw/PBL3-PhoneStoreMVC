@@ -1,0 +1,48 @@
+@model HDKmall.Models.Brand
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Thương hiệu";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none text-muted small fw-bold">
+        <i class="bi bi-arrow-left me-1"></i> QUAY LẠI DANH SÁCH
+    </a>
+    <h2 class="fw-bold mt-2">✏️ Chỉnh sửa Thương hiệu</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold small text-secondary">TÊN THƯƠNG HIỆU</label>
+                        <input asp-for="Name" class="form-control rounded-3 border-light-subtle bg-light" placeholder="Nhập tên thương hiệu" required />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-bold small text-secondary">MÔ TẢ</label>
+                        <textarea asp-for="Description" class="form-control rounded-3 border-light-subtle bg-light" rows="4" placeholder="Nhập mô tả ngắn..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary py-2 fw-bold rounded-3 shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> CẬP NHẬT THAY ĐỔI
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

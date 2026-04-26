@@ -1,26 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 namespace HDKmall.ViewModels
 {
     public class RegisterVM
     {
         [Required(ErrorMessage = "Vui lòng nhập Họ tên")]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập Email")]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         [RegularExpression(@"^(0[3-9])\d{8}$", ErrorMessage = "Số điện thoại không hợp lệ")]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập Mật khẩu")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng xác nhận Mật khẩu")]
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp")]
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

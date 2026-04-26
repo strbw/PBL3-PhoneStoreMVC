@@ -13,7 +13,9 @@ namespace HDKmall.DAL.Interfaces
 
         // Version methods
         void AddVersion(ProductVersion version);
+        void UpdateVersion(ProductVersion version);
         void DeleteVersions(int productId);
+        void DeleteVersionById(int versionId);
 
         // Image methods
         void AddImage(ProductImage image);
@@ -21,10 +23,16 @@ namespace HDKmall.DAL.Interfaces
 
         // Variant methods
         void AddVariant(ProductVariant variant);
+        void UpdateVariant(ProductVariant variant);
         void DeleteVariants(int productId);
+        void DeleteVariantById(int variantId);
+        void DeleteVariantsByVersionId(int versionId);
 
         // Specification methods
         void AddSpecification(ProductSpecification spec);
+        void UpdateSpecification(ProductSpecification spec);
         void DeleteSpecifications(int productId);
+        void DeleteSpecById(int specId);
+        void DeleteSpecificationsByVersionId(int versionId);
     }
 }

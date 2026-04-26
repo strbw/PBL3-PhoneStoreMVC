@@ -118,10 +118,10 @@
                                         <button type="submit" class="btn btn-outline-primary btn-sm">Đặt mặc định</button>
                                     </form>
                                 }
-                                <form asp-action="DeleteAddress" method="post">
+                                <form asp-action="DeleteAddress" method="post" onsubmit="confirmDeleteAddress(event, this);">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="addressId" value="@address.AddressId" />
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDeleteAddress(event, this.closest('form'));">Xóa</button>
                                 </form>
                             </div>
                         </div>
@@ -138,4 +138,13 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        async function confirmDeleteAddress(event, form) {
+            event.preventDefault();
+            const confirmed = await modernConfirm('Xác nhận xóa?', 'Bạn có chắc chắn muốn xóa địa chỉ này?');
+            if (confirmed) {
+                form.submit();
+            }
+        }
+    </script>
 }

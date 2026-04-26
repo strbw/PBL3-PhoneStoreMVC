@@ -17,6 +17,14 @@ namespace HDKmall.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal BasePrice { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? OriginalPrice { get; set; }
+
+        [NotMapped]
+        public int DiscountPercent => OriginalPrice.HasValue && OriginalPrice > BasePrice 
+            ? (int)Math.Round((double)(1 - (BasePrice / OriginalPrice.Value)) * 100) 
+            : 0;
+
         public string? Description { get; set; } // "Đặc điểm nổi bật"
 
         public string? ImageUrl { get; set; } // Default image for this version
@@ -24,6 +32,10 @@ namespace HDKmall.Models
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
         public ICollection<ProductSpecification> Specifications { get; set; } = new List<ProductSpecification>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+
+        [NotMapped]
+        public double AverageRating => Reviews != null && Reviews.Any(r => r.Status == "Approved") 
+            ? Reviews.Where(r => r.Status == "Approved").Average(r => r.Rating) 
+            : 0;
     }
 }

@@ -1,4 +1,4 @@
-@model IEnumerable<HDKmall.Models.Product>
+@model IEnumerable<HDKmall.ViewModels.ProductListVM>
 
 @{
     ViewData["Title"] = "Danh Sách Sản Phẩm";
@@ -73,13 +73,13 @@
                                 <td class="text-end fw-bold text-danger">@item.Price.ToString("N0") ₫</td>
                                 <td>
                                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1 rounded-pill">
-                                        @(item.Category?.Name ?? item.CategoryId.ToString())
+                                        @item.CategoryName
                                     </span>
                                 </td>
                                 <td>
-                                    @if(item.Brand != null) {
+                                    @if(!string.IsNullOrEmpty(item.BrandName)) {
                                         <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-1 rounded-pill">
-                                            @item.Brand.Name
+                                            @item.BrandName
                                         </span>
                                     } else {
                                         <span class="text-muted">-</span>
@@ -89,8 +89,8 @@
                                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 me-1" title="Sửa">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
-                                        <button type="submit" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3" title="Xóa">
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="confirmDelete(event, this);">
+                                        <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3" title="Xóa" onclick="confirmDelete(event, this.closest('form'));">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -116,3 +116,14 @@
         <span class="text-muted small">Hiển thị @Model?.Count() sản phẩm</span>
     </div>
 </div>
+@section Scripts {
+    <script>
+        async function confirmDelete(event, form) {
+            event.preventDefault();
+            const confirmed = await modernConfirm('Xác nhận xóa?', 'Bạn có chắc chắn muốn xóa sản phẩm này?');
+            if (confirmed) {
+                form.submit();
+            }
+        }
+    </script>
+}

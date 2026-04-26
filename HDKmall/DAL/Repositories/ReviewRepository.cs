@@ -53,6 +53,23 @@ namespace HDKmall.DAL.Repositories
                 .ToList();
         }
 
+        public IEnumerable<Review> GetByProductId(int productId)
+        {
+            return _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.ProductVersion)
+                .Where(r => r.ProductVersion.ProductId == productId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
+        }
+
+        public Review? GetUserReviewForVersion(int userId, int versionId)
+        {
+            return _context.Reviews
+                .Include(r => r.User)
+                .FirstOrDefault(r => r.UserId == userId && r.ProductVersionId == versionId);
+        }
+
         public void Add(Review review)
         {
             _context.Reviews.Add(review);
@@ -81,7 +98,17 @@ namespace HDKmall.DAL.Repositories
         {
             return _context.Reviews
                 .Include(r => r.User)
-                .Where(r => r.ProductVersionId == versionId && r.Status == "Approved")
+                .Where(r => r.ProductVersionId == versionId && (r.Status == "Approved" || r.Status == "Pending"))
+                .OrderByDescending(r => r.CreatedAt)
+                .ToList();
+        }
+
+        public IEnumerable<Review> GetApprovedByProductId(int productId)
+        {
+            return _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.ProductVersion)
+                .Where(r => r.ProductVersion.ProductId == productId && (r.Status == "Approved" || r.Status == "Pending"))
                 .OrderByDescending(r => r.CreatedAt)
                 .ToList();
         }

@@ -21,6 +21,7 @@ namespace HDKmall.DAL.Repositories
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.Versions)
+                    .ThenInclude(v => v.Reviews)
                 .ToList();
         }
 
@@ -34,7 +35,9 @@ namespace HDKmall.DAL.Repositories
                 .Include(p => p.Versions)
                     .ThenInclude(v => v.Specifications)
                 .Include(p => p.Versions)
-                    .ThenInclude(v => v.Images)
+                    .ThenInclude(v => v.Reviews)
+                        .ThenInclude(r => r.User)
+                .Include(p => p.Images)
                 .FirstOrDefault(p => p.Id == id);
         }
 
@@ -48,7 +51,9 @@ namespace HDKmall.DAL.Repositories
                 .Include(p => p.Versions)
                     .ThenInclude(v => v.Specifications)
                 .Include(p => p.Versions)
-                    .ThenInclude(v => v.Images)
+                    .ThenInclude(v => v.Reviews)
+                        .ThenInclude(r => r.User)
+                .Include(p => p.Images)
                 .FirstOrDefault(p => p.Slug == slug);
         }
 
@@ -75,15 +80,21 @@ namespace HDKmall.DAL.Repositories
         public void Delete(int id)
         {
             var product = _context.Products
-                .Include(p => p.Versions)
-                    .ThenInclude(v => v.Images)
+                .Include(p => p.Images)
                 .Include(p => p.Versions)
                     .ThenInclude(v => v.Variants)
                 .Include(p => p.Versions)
                     .ThenInclude(v => v.Specifications)
                 .FirstOrDefault(p => p.Id == id);
+
             if (product != null)
             {
+                // Cleanup cart items for all variants of this product
+                var variantIds = product.Versions.SelectMany(v => v.Variants).Select(vr => (int?)vr.Id).ToList();
+                var cartItems = _context.CartItems.Where(ci => ci.ProductId == id || (ci.VariantId.HasValue && variantIds.Contains(ci.VariantId))).ToList();
+                
+                if (cartItems.Any()) _context.CartItems.RemoveRange(cartItems);
+                
                 _context.Products.Remove(product);
                 _context.SaveChanges();
             }
@@ -96,11 +107,42 @@ namespace HDKmall.DAL.Repositories
             _context.SaveChanges();
         }
 
+        public void UpdateVersion(ProductVersion version)
+        {
+            _context.ProductVersions.Update(version);
+            _context.SaveChanges();
+        }
+
+        public void DeleteVersionById(int versionId)
+        {
+            var version = _context.ProductVersions.Find(versionId);
+            if (version != null)
+            {
+                _context.ProductVersions.Remove(version);
+                _context.SaveChanges();
+            }
+        }
+
         public void DeleteVersions(int productId)
         {
-            var versions = _context.ProductVersions.Where(v => v.ProductId == productId).ToList();
-            _context.ProductVersions.RemoveRange(versions);
-            _context.SaveChanges();
+            // Load versions with variants to ensure we have IDs for cleanup
+            var versions = _context.ProductVersions
+                .Include(v => v.Variants)
+                .Where(v => v.ProductId == productId)
+                .ToList();
+
+            if (versions.Any())
+            {
+                var variantIds = versions.SelectMany(v => v.Variants).Select(vr => (int?)vr.Id).ToList();
+                if (variantIds.Any())
+                {
+                    var cartItems = _context.CartItems.Where(ci => ci.VariantId.HasValue && variantIds.Contains(ci.VariantId)).ToList();
+                    if (cartItems.Any()) _context.CartItems.RemoveRange(cartItems);
+                }
+
+                _context.ProductVersions.RemoveRange(versions);
+                _context.SaveChanges();
+            }
         }
 
         // Image methods
@@ -127,6 +169,32 @@ namespace HDKmall.DAL.Repositories
             _context.SaveChanges();
         }
 
+        public void UpdateVariant(ProductVariant variant)
+        {
+            _context.ProductVariants.Update(variant);
+            _context.SaveChanges();
+        }
+
+        public void DeleteVariantById(int variantId)
+        {
+            var variant = _context.ProductVariants.Find(variantId);
+            if (variant != null)
+            {
+                _context.ProductVariants.Remove(variant);
+                _context.SaveChanges();
+            }
+        }
+
+        public void DeleteVariantsByVersionId(int versionId)
+        {
+            var variants = _context.ProductVariants.Where(v => v.ProductVersionId == versionId).ToList();
+            if (variants.Any())
+            {
+                _context.ProductVariants.RemoveRange(variants);
+                _context.SaveChanges();
+            }
+        }
+
         public void DeleteVariants(int productId)
         {
             // This is a bit tricky now since variants are linked to versions
@@ -140,6 +208,32 @@ namespace HDKmall.DAL.Repositories
         {
             _context.ProductSpecifications.Add(spec);
             _context.SaveChanges();
+        }
+
+        public void UpdateSpecification(ProductSpecification spec)
+        {
+            _context.ProductSpecifications.Update(spec);
+            _context.SaveChanges();
+        }
+
+        public void DeleteSpecById(int specId)
+        {
+            var spec = _context.ProductSpecifications.Find(specId);
+            if (spec != null)
+            {
+                _context.ProductSpecifications.Remove(spec);
+                _context.SaveChanges();
+            }
+        }
+
+        public void DeleteSpecificationsByVersionId(int versionId)
+        {
+            var specs = _context.ProductSpecifications.Where(s => s.ProductVersionId == versionId).ToList();
+            if (specs.Any())
+            {
+                _context.ProductSpecifications.RemoveRange(specs);
+                _context.SaveChanges();
+            }
         }
 
         public void DeleteSpecifications(int productId)

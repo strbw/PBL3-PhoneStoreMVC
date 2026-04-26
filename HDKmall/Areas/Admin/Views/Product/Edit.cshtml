@@ -11,6 +11,105 @@
     .nested-card { background-color: #f8f9fa; border: 1px dashed #dee2e6; }
     .btn-remove { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; padding: 0; }
     .tiny-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    /* Styles for Preview Modal to look like real Detail page */
+    .preview-option-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-bottom: 24px; }
+    .preview-option-item {
+        border: 1.5px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px;
+        background: #fff;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 56px;
+    }
+    .preview-option-item.active { border-color: #d70018; background: #fff5f5; box-shadow: 0 0 0 1px #d70018; }
+    .preview-option-name { font-size: 13px; font-weight: 700; color: #333; display: block; }
+    .preview-option-price { font-size: 11px; color: #666; margin-top: 2px; }
+    .preview-selector-label { font-size: 14px; font-weight: 700; color: #444; margin-bottom: 12px; display: block; }
+    .preview-current-price { color: #d70018; font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    
+    .preview-current-price { color: #d70018; font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    
+    .preview-current-price { color: #d70018; font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    
+    /* IN-PAGE PREVIEW SECTION STYLING */
+    #livePreviewSection {
+        background: #f8fafc;
+        border-radius: 32px;
+        padding: 60px 40px;
+        margin-top: 50px;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    #previewContent {
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .preview-card-inner {
+        background: #fff;
+        border-radius: 24px;
+        padding: 50px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        width: 100%;
+    }
+
+    #previewModal .modal-header {
+        flex: 0 0 auto;
+        padding: 20px 40px;
+        background: #fff;
+        border-bottom: 1px solid #f1f5f9;
+        border-radius: 24px 24px 0 0;
+    }
+
+    #previewModal .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto !important;
+        padding: 0 !important;
+        background: #f8fafc;
+    }
+    
+    #previewModal .modal-footer {
+        flex: 0 0 auto;
+        background: #fff;
+        border-top: 1px solid #f1f5f9;
+        border-radius: 0 0 24px 24px;
+        padding: 15px 40px;
+    }
+
+    #previewContent {
+        padding: 40px !important;
+    }
+
+    .preview-card-inner {
+        background: #fff;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        margin: 0 auto;
+        max-width: 1300px;
+        width: 100%;
+    }
+
+    .preview-img-container {
+        background: #fafafa;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        min-height: 500px;
+        border: 1px solid #f0f0f0;
+    }
+
+    .preview-img-container img {
+        max-width: 100%;
+        max-height: 600px;
+        object-fit: contain;
+    }
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -48,18 +147,31 @@
                                 <option value="">-- Chọn --</option>
                             </select>
                         </div>
+
+
                         <div class="col-md-12">
-                            <label asp-for="ImageFile" class="form-label fw-bold text-muted small">Hình ảnh đại diện sản phẩm (Chung)</label>
-                            <div class="d-flex gap-3 align-items-center">
-                                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                                {
-                                    <img src="@Model.ImageUrl" class="rounded shadow-sm" style="width:60px;height:60px;object-fit:cover;" />
-                                }
-                                <div class="flex-grow-1">
-                                    <input asp-for="ImageFile" type="file" class="form-control bg-light border-0" accept="image/*" />
-                                    <input type="hidden" asp-for="ImageUrl" />
+                            <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Hình ảnh chung cho các dung lượng (Gallery)</label>
+                            <input asp-for="GalleryFiles" type="file" multiple class="form-control bg-light border-0" accept="image/*" />
+                            <small class="text-muted d-block mb-2">Thêm nhiều ảnh để hiển thị chung ở đầu Slider.</small>
+                            @if (Model.ExistingImages != null && Model.ExistingImages.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    @for (int i = 0; i < Model.ExistingImages.Count; i++)
+                                    {
+                                        <div class="position-relative" style="width:60px; height:60px;">
+                                            <img src="@Model.ExistingImages[i].ImageUrl" class="rounded shadow-sm w-100 h-100" style="object-fit:cover;" />
+                                            <input type="hidden" name="ExistingImages[@i].Id" value="@Model.ExistingImages[i].Id" />
+                                            <input type="hidden" name="ExistingImages[@i].ImageUrl" value="@Model.ExistingImages[i].ImageUrl" />
+                                            <input type="hidden" name="ExistingImages[@i].PublicId" value="@Model.ExistingImages[i].PublicId" />
+                                            <div class="form-check position-absolute top-0 end-0 m-1 bg-white rounded-circle" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;padding:0;">
+                                                <input class="form-check-input m-0" type="checkbox" name="ExistingImages[@i].IsMain" value="true" title="Đánh dấu để Xóa" />
+                                                <input type="hidden" name="ExistingImages[@i].IsMain" value="false" />
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="w-100 mt-1"><small class="text-danger"><i class="bi bi-info-circle me-1"></i>Tích vào ô vuông trên ảnh để xóa ảnh đó.</small></div>
                                 </div>
-                            </div>
+                            }
                         </div>
                         <div class="col-12">
                             <label asp-for="Description" class="form-label fw-bold text-muted small">Mô tả tổng quát</label>
@@ -99,9 +211,13 @@
                                         <label class="form-label fw-bold small text-muted">Tên dung lượng</label>
                                         <input type="text" name="Versions[@v].Name" value="@version.Name" class="form-control bg-light border-0 fw-bold" required />
                                     </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold small text-muted">Giá cơ bản (₫)</label>
-                                        <input type="number" name="Versions[@v].BasePrice" value="@version.BasePrice" class="form-control bg-light border-0" required />
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold small text-muted">Giá hiện tại (₫)</label>
+                                        <input type="number" name="Versions[@v].BasePrice" value="@version.BasePrice" class="form-control bg-light border-0 fw-bold text-danger" required />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold small text-muted">Giá gốc (để gạch ngang)</label>
+                                        <input type="number" name="Versions[@v].OriginalPrice" value="@version.OriginalPrice" class="form-control bg-light border-0" placeholder="Bỏ trống nếu không sale" />
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label fw-bold small text-muted">Ảnh đại diện dung lượng</label>
@@ -154,6 +270,11 @@
                                                                         {
                                                                             <img src="@variant.ImageUrl" class="rounded shadow-sm" style="width:28px;height:28px;object-fit:cover;" />
                                                                             <input type="hidden" name="Versions[@v].Variants[@vr].ImageUrl" value="@variant.ImageUrl" />
+                                                                            <input type="hidden" name="Versions[@v].Variants[@vr].Id" value="@variant.Id" />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="hidden" name="Versions[@v].Variants[@vr].Id" value="@variant.Id" />
                                                                         }
                                                                     </div>
                                                                 </div>
@@ -181,6 +302,7 @@
                                                             </div>
                                                             <div class="col-6">
                                                                 <input type="text" name="Versions[@v].Specifications[@s].SpecValue" value="@spec.SpecValue" class="form-control form-control-sm border-light" />
+                                                                <input type="hidden" name="Versions[@v].Specifications[@s].Id" value="@spec.Id" />
                                                             </div>
                                                             <div class="col-1 text-center">
                                                                 <button type="button" class="btn btn-sm text-danger border-0 p-0" onclick="removeRow('spec_@v @s')"><i class="bi bi-x-circle-fill"></i></button>
@@ -200,7 +322,7 @@
         </div>
     </div>
 
-    <div class="sticky-bottom bg-white border-top p-3 mt-4 text-end rounded-top-4 shadow-lg d-flex justify-content-end gap-3">
+    <div class="sticky-bottom bg-white border-top p-3 mt-4 text-end rounded-top-4 shadow-lg d-flex justify-content-end gap-3" style="z-index: 1000;">
         <button type="button" class="btn btn-outline-primary btn-lg px-4 rounded-pill fw-bold shadow-sm" onclick="showPreview()">
             <i class="bi bi-eye-fill me-2"></i> XEM TRƯỚC GIAO DIỆN
         </button>
@@ -210,23 +332,16 @@
     </div>
 </form>
 
-<!-- Modal Xem trước -->
-<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-0 bg-light rounded-top-4 py-3 px-4">
-                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-phone-vibrate me-2"></i>Bản xem trước sản phẩm (Dự kiến)</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div id="previewContent" class="p-4">
-                    <!-- Content will be injected here via JS -->
-                </div>
-            </div>
-            <div class="modal-footer border-0 bg-light rounded-bottom-4 py-3 px-4">
-                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng bản xem trước</button>
-            </div>
-        </div>
+<!-- Phần Xem trước trực tiếp tại trang -->
+<div id="livePreviewSection" style="display: none;">
+    <div class="d-flex align-items-center mb-5">
+        <div class="flex-grow-1 h-px bg-secondary opacity-10"></div>
+        <h2 class="mx-4 fw-bold text-dark"><i class="bi bi-display me-2 text-primary"></i>BẢN XEM TRƯỚC GIAO DIỆN NGƯỜI DÙNG</h2>
+        <div class="flex-grow-1 h-px bg-secondary opacity-10"></div>
+    </div>
+    
+    <div id="previewContent">
+        <!-- Nội dung sẽ được đổ vào đây -->
     </div>
 </div>
 
@@ -255,9 +370,10 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3 mb-4">
-                        <div class="col-md-4"><label class="form-label fw-bold small">Dung lượng</label><input type="text" name="Versions[${vIdx}].Name" class="form-control bg-light border-0 fw-bold" required /></div>
-                        <div class="col-md-4"><label class="form-label fw-bold small">Giá cơ bản (₫)</label><input type="number" name="Versions[${vIdx}].BasePrice" class="form-control bg-light border-0" required /></div>
-                        <div class="col-md-4"><label class="form-label fw-bold small">Ảnh</label><input type="file" name="Versions[${vIdx}].ImageFile" class="form-control form-control-sm border-0 bg-light" accept="image/*" /></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small">Dung lượng</label><input type="text" name="Versions[${vIdx}].Name" class="form-control bg-light border-0 fw-bold" required /></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small text-danger">Giá bán (₫)</label><input type="number" name="Versions[${vIdx}].BasePrice" class="form-control bg-light border-0 fw-bold" required /></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small">Giá gốc (₫)</label><input type="number" name="Versions[${vIdx}].OriginalPrice" class="form-control bg-light border-0" placeholder="Giá niêm yết..." /></div>
+                        <div class="col-md-3"><label class="form-label fw-bold small">Ảnh</label><input type="file" name="Versions[${vIdx}].ImageFile" class="form-control form-control-sm border-0 bg-light" accept="image/*" /></div>
                         <div class="col-12"><textarea name="Versions[${vIdx}].Description" class="form-control bg-light border-0" rows="3" placeholder="Đặc điểm nổi bật..."></textarea></div>
                     </div>
                     <div class="row g-4">
@@ -312,85 +428,110 @@
         function showPreview() {
             const productName = document.querySelector('input[name="Name"]').value || "Tên sản phẩm";
             const description = document.querySelector('textarea[name="Description"]').value || "Mô tả sản phẩm...";
-            
-            let versionsHtml = "";
+
             const versionElements = document.querySelectorAll('.version-card');
-            
+            if (versionElements.length === 0) {
+                alert('Chưa có dung lượng nào để xem trước!');
+                return;
+            }
+
+            // Build version tabs
+            let tabsHtml = '';
+            let tabContentsHtml = '';
+
             versionElements.forEach((vEl, vIdx) => {
-                const vName = vEl.querySelector(`input[name="Versions[${vIdx}].Name"]`)?.value || "Dung lượng";
-                const vBasePrice = vEl.querySelector(`input[name="Versions[${vIdx}].BasePrice"]`)?.value || "0";
-                const vDesc = vEl.querySelector(`textarea[name="Versions[${vIdx}].Description"]`)?.value || "";
-                
-                let variantsHtml = "";
-                const variantRows = vEl.querySelectorAll(`[id^="variant_${vIdx}_"]`);
+                const nameEl = vEl.querySelector(`input[name="Versions[${vIdx}].Name"]`);
+                const priceEl = vEl.querySelector(`input[name="Versions[${vIdx}].BasePrice"]`);
+                const originalPriceEl = vEl.querySelector(`input[name="Versions[${vIdx}].OriginalPrice"]`);
+                const imgHiddenEl = vEl.querySelector(`input[name="Versions[${vIdx}].ImageUrl"]`);
+
+                const vName = nameEl?.value || `Dung lượng ${vIdx+1}`;
+                const vBasePrice = parseFloat(priceEl?.value || '0');
+                const vOriginalPrice = parseFloat(originalPriceEl?.value || '0');
+                const existingImgUrl = imgHiddenEl?.value || '';
+
+                // Get variants
+                let variantsHtml = '';
+                const variantRows = [...vEl.querySelectorAll(`[id^="variant_${vIdx} "],[id^="variant_${vIdx}_"]`)];
                 variantRows.forEach((varRow, varIdx) => {
-                    const color = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Color"]`)?.value || "Màu";
-                    const price = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Price"]`)?.value || "0";
-                    const stock = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Stock"]`)?.value || "0";
-                    const displayPrice = parseInt(price) > 0 ? price : vBasePrice;
-                    
-                    variantsHtml += `
-                        <div class="col-md-6 mb-2">
-                            <div class="p-2 border rounded-3 bg-white shadow-xs">
-                                <div class="fw-bold small text-dark">${color}</div>
-                                <div class="text-danger fw-bold">${new Intl.NumberFormat('vi-VN').format(displayPrice)}₫</div>
-                                <div class="tiny-label text-muted">Tồn kho: ${stock}</div>
-                            </div>
-                        </div>`;
+                    const color = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Color"]`)?.value || 'Màu';
+                    const price = parseFloat(varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Price"]`)?.value || '0');
+                    const displayPrice = price > 0 ? price : vBasePrice;
+                    variantsHtml += `<div class="preview-option-item ${varIdx===0?'active':''}"><span class="preview-option-name">${color}</span><span class="preview-option-price">${displayPrice.toLocaleString('vi-VN')}₫</span></div>`;
                 });
+                if (!variantsHtml) variantsHtml = '<div class="text-muted small">Chưa cấu hình màu sắc</div>';
 
-                let specsHtml = "";
-                const specRows = vEl.querySelectorAll(`[id^="spec_${vIdx}_"]`);
+                // Get specs
+                let specsHtml = '';
+                const specRows = [...vEl.querySelectorAll(`[id^="spec_${vIdx} "],[id^="spec_${vIdx}_"]`)];
                 specRows.forEach((sRow, sIdx) => {
-                    const name = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecName"]`)?.value || "";
-                    const value = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecValue"]`)?.value || "";
-                    specsHtml += `<tr><td class="fw-bold py-1" style="width:40%">${name}</td><td class="py-1">${value}</td></tr>`;
+                    const name = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecName"]`)?.value || '';
+                    const value = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecValue"]`)?.value || '';
+                    if (name) specsHtml += `<tr><td class="text-muted border-0 py-1" style="width:45%">${name}</td><td class="fw-bold border-0 py-1">${value}</td></tr>`;
                 });
+                if (!specsHtml) specsHtml = '<tr><td class="text-muted">Chưa cấu hình thông số</td></tr>';
 
-                versionsHtml += `
-                    <div class="mb-4 p-3 border rounded-4 bg-light shadow-xs">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold text-primary mb-0">${vName}</h5>
-                            <span class="badge bg-white text-dark shadow-xs border">Giá cơ bản: ${new Intl.NumberFormat('vi-VN').format(vBasePrice)}₫</span>
-                        </div>
-                        <p class="text-muted small mb-3">${vDesc}</p>
-                        <div class="row mb-3">${variantsHtml || '<div class="col-12 text-muted small">Chưa có màu sắc</div>'}</div>
-                        <div class="bg-white p-3 rounded-3 shadow-xs">
-                            <h6 class="fw-bold small mb-2"><i class="bi bi-list-task me-1"></i>Thông số kỹ thuật</h6>
-                            <table class="table table-sm table-borderless mb-0 small">${specsHtml || '<tr><td>Chưa có thông số</td></tr>'}</table>
-                        </div>
-                    </div>`;
-            });
+                // Image
+                const imgSrc = existingImgUrl || '';
+                const imgHtml = imgSrc
+                    ? `<img src="${imgSrc}" class="img-fluid" />`
+                    : `<div class="text-center py-4"><i class="bi bi-image fs-1 text-muted"></i><p class="text-muted small mt-2">Chưa có ảnh</p></div>`;
 
-            const currentImageUrl = document.querySelector('input[name="ImageUrl"]')?.value || "";
-            const imagePlaceholder = currentImageUrl 
-                ? `<img src="${currentImageUrl}" class="rounded-4 img-fluid shadow" style="max-height:400px; object-fit:contain;" />`
-                : `<div class="text-center"><i class="bi bi-image fs-1 text-muted"></i><p class="text-muted small mt-2">Chưa có ảnh đại diện</p></div>`;
+                tabsHtml += `<button type="button" class="btn ${vIdx===0?'btn-danger':'btn-outline-secondary'} btn-sm rounded-pill px-3 me-2 mb-2 preview-tab-btn" onclick="switchPreviewTab(${vIdx}, ${versionElements.length})" id="ptab_${vIdx}">${vName} — ${vBasePrice.toLocaleString('vi-VN')}₫</button>`;
 
-            const html = `
-                <div class="row">
-                    <div class="col-lg-5">
-                        <div class="bg-light rounded-4 d-flex align-items-center justify-content-center border border-dashed p-3" style="min-height: 400px;">
-                            ${imagePlaceholder}
+                tabContentsHtml += `
+                <div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">
+                    <div class="preview-card-inner">
+                        <div class="row gx-5">
+                            <div class="col-lg-6 mb-4">
+                                <div class="preview-img-container">${imgHtml}</div>
+                            </div>
+                            <div class="col-lg-6">
+                                <h2 class="fw-bolder mb-3">${productName}</h2>
+                                <h4 class="text-muted mb-4">${vName}</h4>
+                                <div class="preview-price-container mb-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="preview-current-price">${vBasePrice.toLocaleString('vi-VN')}₫</div>
+                                        ${vOriginalPrice > vBasePrice ? `<div class="text-muted text-decoration-line-through small">${vOriginalPrice.toLocaleString('vi-VN')}₫</div> <span class="badge bg-danger">Giảm ${Math.round((1 - vBasePrice/vOriginalPrice)*100)}%</span>` : ''}
+                                    </div>
+                                    <div class="small text-muted mt-2"><i class="bi bi-truck me-2"></i>Miễn phí giao hàng toàn quốc</div>
+                                </div>
+                                <div class="mb-4">
+                                    <span class="preview-selector-label">Chọn màu sắc (Demo)</span>
+                                    <div class="preview-option-grid">${variantsHtml}</div>
+                                </div>
+                                <div class="mt-4 pt-4 border-top">
+                                    <h5 class="fw-bold mb-3"><i class="bi bi-cpu me-2"></i>Thông số kỹ thuật</h5>
+                                    <table class="table table-sm border-0"><tbody>${specsHtml}</tbody></table>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-lg-7">
-                        <h2 class="fw-bold text-dark mb-1">${productName}</h2>
-                        <div class="mb-3">
-                            <span class="badge bg-danger rounded-pill px-3 py-2">Premium Product</span>
+                        <div class="mt-5 p-4 bg-light rounded-4">
+                            <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Mô tả sản phẩm</h5>
+                            <div class="small text-dark" style="white-space:pre-wrap; line-height: 1.6;">${description}</div>
                         </div>
-                        <hr class="my-4 opacity-10">
-                        <div class="product-description text-muted mb-4">
-                            ${description}
-                        </div>
-                        <h6 class="fw-bold mb-3"><i class="bi bi-layers me-2"></i>Các phiên bản hiện tại:</h6>
-                        ${versionsHtml || '<div class="alert alert-light">Chưa có phiên bản nào</div>'}
                     </div>
                 </div>`;
+            });
 
-            document.getElementById('previewContent').innerHTML = html;
-            const modal = new bootstrap.Modal(document.getElementById('previewModal'));
-            modal.show();
+            const html = `<div class="mb-4 d-flex justify-content-center">${tabsHtml}</div>${tabContentsHtml}`;
+            const previewSection = document.getElementById('livePreviewSection');
+            const previewContent = document.getElementById('previewContent');
+            
+            previewContent.innerHTML = html;
+            previewSection.style.display = 'block';
+            
+            // Cuộn xuống phần xem trước
+            previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function switchPreviewTab(activeIdx, total) {
+            for(let i=0;i<total;i++) {
+                const content = document.getElementById(`ptabContent_${i}`);
+                const btn = document.getElementById(`ptab_${i}`);
+                if(content) content.style.display = i===activeIdx ? 'block' : 'none';
+                if(btn) { btn.classList.toggle('btn-danger', i===activeIdx); btn.classList.toggle('btn-outline-secondary', i!==activeIdx); }
+            }
         }
     </script>
 }

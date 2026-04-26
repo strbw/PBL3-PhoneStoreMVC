@@ -54,53 +54,83 @@ namespace HDKmall.BLL.Services
             {
                 var searchTerm = filter.SearchQuery.ToLower();
                 query = query.Where(p => p.Name.ToLower().Contains(searchTerm) || 
-                                         (p.Description != null && p.Description.ToLower().Contains(searchTerm)));
+                                         (p.Description != null && p.Description.ToLower().Contains(searchTerm)) ||
+                                         p.Versions.Any(v => v.Name.ToLower().Contains(searchTerm)));
             }
 
-            // Apply sorting
+            if (filter.OnlyPromotions)
+            {
+                query = query.Where(p => p.Versions.Any(v => v.OriginalPrice != null && v.OriginalPrice > v.BasePrice));
+            }
+
+            // Evaluate the filtered products into memory first to avoid Expression Tree errors
+            var allFilteredProducts = query.ToList();
+
+            // Flatten products into versions in memory and map to VM
+            var flattenedVMs = allFilteredProducts.SelectMany(p => 
+            {
+                var versions = p.Versions.AsEnumerable();
+                if (filter.OnlyPromotions)
+                {
+                    versions = versions.Where(v => v.OriginalPrice != null && v.OriginalPrice > v.BasePrice);
+                }
+
+                if (versions.Any())
+                {
+                    return versions.Select(v => new { Product = p, Version = (ProductVersion?)v });
+                }
+                return new[] { new { Product = p, Version = (ProductVersion?)null } };
+            }).Select(x => new ProductListVM
+            {
+                Id = x.Product.Id,
+                VersionId = x.Version?.Id,
+                Name = x.Product.Name,
+                Slug = x.Product.Slug,
+                Price = x.Version != null && x.Version.BasePrice > 0 ? x.Version.BasePrice : x.Product.Price,
+                Description = x.Version?.Description ?? x.Product.Description ?? "",
+                ImageUrl = x.Version?.ImageUrl ?? x.Product.ImageUrl ?? "/img/default.png",
+                CategoryId = x.Product.CategoryId,
+                CategoryName = x.Product.Category?.Name,
+                BrandId = x.Product.BrandId,
+                BrandName = x.Product.Brand?.Name,
+                AverageRating = x.Version?.Reviews != null && x.Version.Reviews.Any(r => r.Status == "Approved") 
+                    ? x.Version.Reviews.Where(r => r.Status == "Approved").Average(r => r.Rating) 
+                    : 0,
+                ReviewCount = x.Version?.Reviews != null 
+                    ? x.Version.Reviews.Count(r => r.Status == "Approved")
+                    : 0,
+                VersionName = x.Version?.Name,
+                OriginalPrice = x.Version?.OriginalPrice,
+                DiscountPercent = x.Version?.DiscountPercent ?? 0
+            }).ToList();
+
+            // Apply sorting on the view models
+            IEnumerable<ProductListVM> sortedVMs = flattenedVMs;
             switch (filter.SortBy)
             {
                 case "price-low":
-                    query = query.OrderBy(p => p.Price);
+                    sortedVMs = flattenedVMs.OrderBy(x => x.Price);
                     break;
                 case "price-high":
-                    query = query.OrderByDescending(p => p.Price);
+                    sortedVMs = flattenedVMs.OrderByDescending(x => x.Price);
                     break;
                 case "rating":
-                    query = query.OrderByDescending(p => p.Versions.SelectMany(v => v.Reviews).Any() ? p.Versions.SelectMany(v => v.Reviews).Average(r => r.Rating) : 0);
+                    sortedVMs = flattenedVMs.OrderByDescending(x => x.AverageRating);
                     break;
                 default: // newest
-                    query = query.OrderByDescending(p => p.Id);
+                    sortedVMs = flattenedVMs.OrderByDescending(x => x.Id);
                     break;
             }
 
-            var totalCount = query.Count();
-            var products_page = query
+            var totalCount = sortedVMs.Count();
+            var paged = sortedVMs
                 .Skip((filter.PageNumber - 1) * filter.PageSize)
                 .Take(filter.PageSize)
                 .ToList();
 
-            var productVMs = products_page.Select(p => new ProductListVM
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Slug = p.Slug,
-                Price = p.Price,
-                Description = p.Description,
-                ImageUrl = p.Versions.FirstOrDefault()?.ImageUrl ?? p.ImageUrl,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category?.Name,
-                BrandId = p.BrandId,
-                BrandName = p.Brand?.Name,
-                AverageRating = p.Versions.SelectMany(v => v.Reviews).Any(r => r.Status == "Approved") 
-                    ? p.Versions.SelectMany(v => v.Reviews).Where(r => r.Status == "Approved").Average(r => r.Rating) 
-                    : 0,
-                ReviewCount = p.Versions.SelectMany(v => v.Reviews).Count(r => r.Status == "Approved")
-            }).ToList();
-
             return new PaginationVM
             {
-                Products = productVMs,
+                Products = paged,
                 TotalCount = totalCount,
                 PageNumber = filter.PageNumber,
                 PageSize = filter.PageSize
@@ -129,20 +159,20 @@ namespace HDKmall.BLL.Services
         {
             var products = _productRepository.GetAll()
                 .OrderByDescending(p => p.Versions.SelectMany(v => v.Reviews).Count())
-                .Take(take)
                 .ToList();
 
-            return MapToProductListVM(products);
+            var flat = MapToProductListVM(products);
+            return flat.Take(take).ToList();
         }
 
         public List<ProductListVM> GetNewProducts(int take = 10)
         {
             var products = _productRepository.GetAll()
                 .OrderByDescending(p => p.Id)
-                .Take(take)
                 .ToList();
 
-            return MapToProductListVM(products);
+            var flat = MapToProductListVM(products);
+            return flat.Take(take).ToList();
         }
 
         public ProductDetailVM GetProductDetail(int id)
@@ -161,7 +191,9 @@ namespace HDKmall.BLL.Services
         {
             if (product == null) return null;
 
-            var allReviews = product.Versions.SelectMany(v => v.Reviews).Where(r => r.Status == "Approved").ToList();
+            var allReviews = product.Versions.SelectMany(v => v.Reviews)
+                .Where(r => r.Status == "Approved" || r.Status == "Pending")
+                .ToList();
 
             return new ProductDetailVM
             {
@@ -180,6 +212,8 @@ namespace HDKmall.BLL.Services
                     Id = v.Id,
                     Name = v.Name,
                     BasePrice = v.BasePrice,
+                    OriginalPrice = v.OriginalPrice,
+                    DiscountPercent = v.DiscountPercent,
                     Description = v.Description,
                     ImageUrl = v.ImageUrl,
                     Variants = v.Variants.Select(vr => new ProductVariantVM
@@ -197,7 +231,11 @@ namespace HDKmall.BLL.Services
                         SpecName = s.SpecName,
                         SpecValue = s.SpecValue,
                         DisplayOrder = s.DisplayOrder
-                    }).ToList()
+                    }).ToList(),
+                    AverageRating = v.Reviews != null && v.Reviews.Any(r => r.Status == "Approved")
+                        ? v.Reviews.Where(r => r.Status == "Approved").Average(r => r.Rating)
+                        : 0,
+                    ReviewCount = v.Reviews != null ? v.Reviews.Count(r => r.Status == "Approved") : 0
                 }).ToList(),
                 Reviews = allReviews.Select(r => new ReviewVM
                 {
@@ -209,11 +247,12 @@ namespace HDKmall.BLL.Services
                     Comment = r.Comment,
                     CreatedAt = r.CreatedAt,
                     Tags = r.Tags,
-                    ImageUrl = r.ImageUrl
+                    ImageUrl = r.ImageUrl,
+                    IsEdited = r.IsEdited
                 }).ToList(),
                 AverageRating = allReviews.Any() ? allReviews.Average(r => r.Rating) : 0,
                 TotalReviews = allReviews.Count,
-                Images = product.Versions.SelectMany(v => v.Images)
+                Images = (product.Images ?? new List<ProductImage>())
                     .OrderBy(i => i.DisplayOrder)
                     .Select(i => new ProductImageVM
                     {
@@ -227,20 +266,37 @@ namespace HDKmall.BLL.Services
 
         private List<ProductListVM> MapToProductListVM(List<Product> products)
         {
-            return products.Select(p => new ProductListVM
+            var flattened = products.SelectMany(p => 
             {
-                Id = p.Id,
-                Name = p.Name,
-                Slug = p.Slug,
-                Price = p.Price,
-                Description = p.Description,
-                ImageUrl = p.Versions.FirstOrDefault()?.ImageUrl ?? p.ImageUrl,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category?.Name,
-                BrandId = p.BrandId,
-                BrandName = p.Brand?.Name,
-                AverageRating = p.Versions.SelectMany(v => v.Reviews).Any() ? p.Versions.SelectMany(v => v.Reviews).Average(r => r.Rating) : 0,
-                ReviewCount = p.Versions.SelectMany(v => v.Reviews).Count()
+                if (p.Versions != null && p.Versions.Any())
+                {
+                    return p.Versions.Select(v => new { Product = p, Version = (ProductVersion?)v });
+                }
+                return new[] { new { Product = p, Version = (ProductVersion?)null } };
+            }).ToList();
+
+            return flattened.Select(x => new ProductListVM
+            {
+                Id = x.Product.Id,
+                VersionId = x.Version?.Id,
+                Name = x.Product.Name,
+                Slug = x.Product.Slug,
+                Price = x.Version != null && x.Version.BasePrice > 0 ? x.Version.BasePrice : x.Product.Price,
+                Description = x.Version?.Description ?? x.Product.Description ?? "",
+                ImageUrl = x.Version?.ImageUrl ?? x.Product.ImageUrl ?? "/img/default.png",
+                CategoryId = x.Product.CategoryId,
+                CategoryName = x.Product.Category?.Name,
+                BrandId = x.Product.BrandId,
+                BrandName = x.Product.Brand?.Name,
+                AverageRating = x.Version?.Reviews != null && x.Version.Reviews.Any(r => r.Status == "Approved") 
+                    ? x.Version.Reviews.Where(r => r.Status == "Approved").Average(r => r.Rating) 
+                    : 0,
+                ReviewCount = x.Version?.Reviews != null 
+                    ? x.Version.Reviews.Count(r => r.Status == "Approved")
+                    : 0,
+                VersionName = x.Version?.Name,
+                OriginalPrice = x.Version?.OriginalPrice,
+                DiscountPercent = x.Version?.DiscountPercent ?? 0
             }).ToList();
         }
     }

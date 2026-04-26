@@ -35,20 +35,35 @@ namespace HDKmall.Areas.Admin.Controllers
         public IActionResult Index(string? q)
         {
             ViewBag.ActiveTab = "products";
-            var products = _productService.GetAllProducts();
+            var productsQuery = _productService.GetAllProducts().ToList();
+
+            var flatProducts = productsQuery.SelectMany(p => 
+                (p.Versions != null && p.Versions.Any() ? p.Versions.Select(v => (ProductVersion?)v) : new List<ProductVersion?> { (ProductVersion?)new ProductVersion { Name = "", BasePrice = p.Price, ImageUrl = p.ImageUrl } })
+                .Select(v => new ProductListVM
+                {
+                    Id = p.Id,
+                    Name = string.IsNullOrWhiteSpace(v.Name) ? p.Name : $"{p.Name} {v.Name}",
+                    Price = v.BasePrice > 0 ? v.BasePrice : p.Price,
+                    ImageUrl = v.ImageUrl ?? p.ImageUrl,
+                    CategoryName = p.Category?.Name ?? p.CategoryId.ToString(),
+                    BrandName = p.Brand?.Name,
+                    VersionId = v.Id,
+                    VersionName = v.Name
+                })
+            ).ToList();
 
             if (!string.IsNullOrWhiteSpace(q))
             {
                 var key = q.Trim().ToLower();
-                products = products.Where(p =>
+                flatProducts = flatProducts.Where(p =>
                     (p.Name ?? "").ToLower().Contains(key) ||
-                    (p.Category?.Name ?? "").ToLower().Contains(key) ||
-                    (p.Brand?.Name ?? "").ToLower().Contains(key)
-                );
+                    (p.CategoryName ?? "").ToLower().Contains(key) ||
+                    (p.BrandName ?? "").ToLower().Contains(key)
+                ).ToList();
             }
 
             ViewBag.Search = q;
-            return View(products);
+            return View(flatProducts);
         }
 
         public IActionResult Create()
@@ -97,11 +112,22 @@ namespace HDKmall.Areas.Admin.Controllers
                 CategoryId = product.CategoryId,
                 BrandId = product.BrandId,
                 ImageUrl = product.ImageUrl,
+                ExistingImages = (product.Images ?? new List<ProductImage>())
+                    .OrderBy(i => i.DisplayOrder)
+                    .Select(i => new ProductImageVM 
+                    { 
+                        Id = i.Id, 
+                        ImageUrl = i.ImageUrl,
+                        PublicId = i.PublicId,
+                        DisplayOrder = i.DisplayOrder,
+                        IsMain = false
+                    }).ToList(),
                 Versions = (product.Versions ?? new List<ProductVersion>()).Select(v => new ProductVersionVM
                 {
                     Id = v.Id,
                     Name = v.Name,
                     BasePrice = v.BasePrice,
+                    OriginalPrice = v.OriginalPrice,
                     Description = v.Description,
                     ImageUrl = v.ImageUrl,
                     Variants = (v.Variants ?? new List<ProductVariant>()).Select(vr => new ProductVariantVM

@@ -16,5 +16,10 @@ namespace HDKmall.ViewModels
         public string BrandName { get; set; }
         public double AverageRating { get; set; }
         public int ReviewCount { get; set; }
+        
+        public int? VersionId { get; set; }
+        public string? VersionName { get; set; }
+        public decimal? OriginalPrice { get; set; }
+        public int DiscountPercent { get; set; }
     }
 }

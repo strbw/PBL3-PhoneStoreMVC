@@ -179,7 +179,7 @@ namespace HDKmall.Migrations
                         new
                         {
                             Id = 4,
-                            Name = "Tai nghe"
+                            Name = "Loa"
                         },
                         new
                         {
@@ -191,6 +191,40 @@ namespace HDKmall.Migrations
                             Id = 6,
                             Name = "Đồng hồ thông minh"
                         });
+                });
+
+            modelBuilder.Entity("HDKmall.Models.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsFromAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("HDKmall.Models.Coupon", b =>
@@ -352,7 +386,7 @@ namespace HDKmall.Migrations
                     b.Property<bool>("IsMain")
                         .HasColumnType("bit");
 
-                    b.Property<int>("ProductVersionId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<string>("PublicId")
@@ -360,7 +394,7 @@ namespace HDKmall.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductVersionId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductImages");
                 });
@@ -445,6 +479,9 @@ namespace HDKmall.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal?>("OriginalPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -453,6 +490,42 @@ namespace HDKmall.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductVersions");
+                });
+
+            modelBuilder.Entity("HDKmall.Models.Promotion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BannerUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Promotions");
                 });
 
             modelBuilder.Entity("HDKmall.Models.Review", b =>
@@ -472,6 +545,9 @@ namespace HDKmall.Migrations
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("bit");
 
                     b.Property<int>("ProductVersionId")
                         .HasColumnType("int");
@@ -637,6 +713,37 @@ namespace HDKmall.Migrations
                     b.ToTable("UserAddresses");
                 });
 
+            modelBuilder.Entity("HDKmall.Models.Wishlist", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VersionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VersionId");
+
+                    b.ToTable("Wishlists");
+                });
+
             modelBuilder.Entity("HDKmall.Models.CartItem", b =>
                 {
                     b.HasOne("HDKmall.Models.Product", "Product")
@@ -660,6 +767,17 @@ namespace HDKmall.Migrations
                     b.Navigation("ShoppingCart");
 
                     b.Navigation("Variant");
+                });
+
+            modelBuilder.Entity("HDKmall.Models.ChatMessage", b =>
+                {
+                    b.HasOne("HDKmall.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HDKmall.Models.Order", b =>
@@ -717,13 +835,13 @@ namespace HDKmall.Migrations
 
             modelBuilder.Entity("HDKmall.Models.ProductImage", b =>
                 {
-                    b.HasOne("HDKmall.Models.ProductVersion", "ProductVersion")
+                    b.HasOne("HDKmall.Models.Product", "Product")
                         .WithMany("Images")
-                        .HasForeignKey("ProductVersionId")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProductVersion");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("HDKmall.Models.ProductSpecification", b =>
@@ -809,6 +927,31 @@ namespace HDKmall.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("HDKmall.Models.Wishlist", b =>
+                {
+                    b.HasOne("HDKmall.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HDKmall.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HDKmall.Models.ProductVersion", "ProductVersion")
+                        .WithMany()
+                        .HasForeignKey("VersionId");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductVersion");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HDKmall.Models.Brand", b =>
                 {
                     b.Navigation("Products");
@@ -826,13 +969,13 @@ namespace HDKmall.Migrations
 
             modelBuilder.Entity("HDKmall.Models.Product", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Versions");
                 });
 
             modelBuilder.Entity("HDKmall.Models.ProductVersion", b =>
                 {
-                    b.Navigation("Images");
-
                     b.Navigation("Reviews");
 
                     b.Navigation("Specifications");

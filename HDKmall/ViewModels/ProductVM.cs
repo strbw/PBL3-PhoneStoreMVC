@@ -24,6 +24,10 @@ namespace HDKmall.ViewModels
         // Main product image file for upload
         public IFormFile? ImageFile { get; set; }
 
+        // Gallery images
+        public List<IFormFile>? GalleryFiles { get; set; } = new List<IFormFile>();
+        public List<ProductImageVM>? ExistingImages { get; set; } = new List<ProductImageVM>();
+
         // Versions (Capacities)
         public List<ProductVersionVM> Versions { get; set; } = new List<ProductVersionVM>();
     }

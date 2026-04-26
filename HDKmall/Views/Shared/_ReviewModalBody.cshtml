@@ -1,0 +1,216 @@
+@using HDKmall.Models
+@{
+    var existing = ViewData["ExistingReview"] as Review;
+    var isEdit = ViewData["IsEdit"] is true;
+    var existingTags = new List<string>();
+    if (existing?.Tags != null) {
+        try { existingTags = System.Text.Json.JsonSerializer.Deserialize<List<string>>(existing.Tags) ?? new List<string>(); } catch {}
+    }
+    var presetTags = new[] {
+        "Giao hàng nhanh 🚀", "Đóng gói cẩn thận 📦", "Sản phẩm đẹp 👍",
+        "Chất lượng tốt 💎", "Đúng mô tả ✔️", "Giá hợp lý 💰",
+        "Nhân viên hỗ trợ tốt 🤝", "Sẽ mua lại 🔁"
+    };
+    int existingRating = existing?.Rating ?? 5;
+}
+
+<div class="d-flex align-items-center justify-content-between px-4 py-3" style="background:linear-gradient(135deg,#d70018,#ff6b35);">
+    <h5 class="fw-bold text-white mb-0">
+        @(isEdit ? "✏️ Sửa đánh giá của bạn" : "⭐ Viết đánh giá sản phẩm")
+    </h5>
+    <button type="button" class="btn-close btn-close-white" onclick="toggleReviewForm()" title="Đóng"></button>
+</div>
+
+<div class="p-4">
+    <!-- Product Info -->
+    <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-4 bg-light border">
+        <div id="reviewProductImg" class="flex-shrink-0 bg-white rounded border d-flex align-items-center justify-content-center" style="width:60px; height:60px; overflow:hidden;">
+            <i class="bi bi-box text-muted"></i>
+        </div>
+        <div>
+            <div class="fw-bold text-dark" id="reviewProductName">Đang tải...</div>
+            <div class="text-primary small fw-semibold" id="reviewProductVersion">Phiên bản: Đang tải...</div>
+        </div>
+    </div>
+
+    <!-- Star Rating -->
+    <div class="text-center mb-4">
+        <div class="fw-bold mb-2 text-dark">Bạn cảm thấy sản phẩm thế nào?</div>
+        <input type="hidden" name="Rating" id="rating-value" value="@existingRating" />
+        <div class="rating-input d-flex justify-content-center gap-1" id="starInputGroup">
+            @for(int i = 1; i <= 5; i++){
+                <i class="review-star-label @(i <= existingRating ? "bi-star-fill text-warning" : "bi-star text-muted") bi"
+                   data-star="@i" style="font-size:2.2rem; cursor:pointer; transition:transform .1s;"
+                   onclick="setRating(@i)"></i>
+            }
+        </div>
+        <div id="rating-text" class="fw-bold mt-1 small" style="color:#d70018;">
+            @(new[]{"","Rất tệ","Tệ","Bình thường","Hài lòng","Rất hài lòng"}[existingRating])
+        </div>
+    </div>
+
+    <!-- Preset Tags -->
+    <div class="mb-4">
+        <div class="fw-semibold small text-muted mb-2">🏷️ Đánh giá nhanh (chọn một hoặc nhiều)</div>
+        <div class="d-flex flex-wrap gap-2" id="tagContainer">
+            @foreach(var tag in presetTags) {
+                var isSelected = existingTags.Contains(tag);
+                <button type="button"
+                        class="btn btn-sm rounded-pill px-3 tag-preset-btn @(isSelected ? "btn-danger" : "btn-outline-secondary")"
+                        data-tag="@tag"
+                        onclick="toggleTag(this, '@tag.Replace("'","\\'")')">
+                    @tag
+                </button>
+            }
+        </div>
+        <!-- Hidden inputs for selected tags (populated by JS) -->
+        <div id="selectedTagsInputs">
+            @foreach(var tag in existingTags) {
+                <input type="hidden" name="Tags" value="@tag" />
+            }
+        </div>
+    </div>
+
+    <!-- Comment -->
+    <div class="mb-4">
+        <label class="fw-semibold small text-muted mb-2">💬 Nhận xét chi tiết</label>
+        <textarea name="Comment" id="reviewComment"
+                  class="form-control rounded-3 border-light-subtle"
+                  rows="4"
+                  placeholder="Chia sẻ trải nghiệm thực tế của bạn về sản phẩm này..."
+                  style="background:#f8f9fa; resize:none;">@(existing?.Comment ?? "")</textarea>
+        <div class="d-flex justify-content-end mt-1">
+            <small class="text-muted"><span id="charCount">0</span> ký tự</small>
+        </div>
+    </div>
+
+    <!-- Image Upload -->
+    <div class="mb-4">
+        <label class="fw-semibold small text-muted mb-2">📷 Thêm hình ảnh (không bắt buộc)</label>
+        @if (existing?.ImageUrl != null) {
+            <div class="mb-2">
+                <img src="@existing.ImageUrl" class="rounded-3 border" style="height:70px; width:70px; object-fit:cover;" />
+                <small class="text-muted ms-2">Ảnh hiện tại. Upload mới để thay thế.</small>
+            </div>
+        }
+        <div class="image-upload-area rounded-3 border border-dashed text-center p-3" id="imgUploadArea"
+             style="cursor:pointer; border-style:dashed !important; background:#f8f9fa;"
+             onclick="document.getElementById('reviewImgInput').click()">
+            <div id="imgPreviewWrap" class="d-none">
+                <img id="imgPreview" src="" class="rounded-3" style="max-height:150px; max-width:100%; object-fit:contain;" />
+            </div>
+            <div id="imgUploadPlaceholder">
+                <i class="bi bi-camera fs-2 text-muted"></i>
+                <p class="text-muted small mt-1 mb-0">Click để chọn ảnh hoặc kéo thả vào đây</p>
+                <p class="text-muted" style="font-size:11px;">PNG, JPG, WEBP – tối đa 5MB</p>
+            </div>
+        </div>
+        <input type="file" name="ImageFile" id="reviewImgInput" class="d-none" accept="image/*" onchange="previewReviewImg(this)">
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold rounded-3 fs-6">
+        @(isEdit ? "💾 CẬP NHẬT ĐÁNH GIÁ" : "📤 GỬI ĐÁNH GIÁ")
+    </button>
+    <p class="text-muted text-center mt-3" style="font-size:11px;">Bằng cách gửi đánh giá, bạn đã đồng ý với Điều khoản và điều kiện của HDKmall</p>
+</div>
+
+<script>
+(function() {
+    // Star rating interaction
+    const labels = document.querySelectorAll('.review-star-label');
+    const ratingTexts = ["","Rất tệ","Tệ","Bình thường","Hài lòng","Rất hài lòng"];
+    
+    window.setRating = function(val) {
+        document.getElementById('rating-value').value = val;
+        labels.forEach(l => {
+            const s = parseInt(l.dataset.star);
+            l.className = l.className.replace(/bi-star-fill|bi-star|text-warning|text-muted/g, '').trim();
+            if (s <= val) {
+                l.classList.add('bi-star-fill', 'text-warning');
+            } else {
+                l.classList.add('bi-star', 'text-muted');
+            }
+        });
+        const rtEl = document.getElementById('rating-text');
+        if (rtEl) rtEl.textContent = ratingTexts[val];
+    };
+
+    labels.forEach(label => {
+        // Hover effects
+        label.addEventListener('mouseenter', function() {
+            const star = parseInt(this.dataset.star);
+            labels.forEach(l => {
+                const s = parseInt(l.dataset.star);
+                l.style.transform = s <= star ? 'scale(1.15)' : 'scale(1)';
+            });
+        });
+        label.addEventListener('mouseleave', function() {
+            labels.forEach(l => l.style.transform = 'scale(1)');
+        });
+    });
+
+    // Char count for textarea
+    const ta = document.getElementById('reviewComment');
+    const cc = document.getElementById('charCount');
+    if (ta && cc) {
+        cc.textContent = ta.value.length;
+        ta.addEventListener('input', () => cc.textContent = ta.value.length);
+    }
+
+    // Drag & drop for image upload
+    const dropArea = document.getElementById('imgUploadArea');
+    if (dropArea) {
+        dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = '#d70018'; });
+        dropArea.addEventListener('dragleave', () => dropArea.style.borderColor = '');
+        dropArea.addEventListener('drop', e => {
+            e.preventDefault();
+            dropArea.style.borderColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('reviewImgInput').files = dt.files;
+                previewReviewImg(document.getElementById('reviewImgInput'));
+            }
+        });
+    }
+})();
+
+function toggleTag(btn, tag) {
+    const isActive = btn.classList.contains('btn-danger');
+    if (isActive) {
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-outline-secondary');
+    } else {
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-danger');
+    }
+    // Rebuild hidden inputs
+    const container = document.getElementById('selectedTagsInputs');
+    container.innerHTML = '';
+    document.querySelectorAll('.tag-preset-btn.btn-danger').forEach(b => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'Tags';
+        inp.value = b.dataset.tag;
+        container.appendChild(inp);
+    });
+}
+
+function previewReviewImg(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 5MB.'); input.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        const preview = document.getElementById('imgPreview');
+        const wrap = document.getElementById('imgPreviewWrap');
+        const placeholder = document.getElementById('imgUploadPlaceholder');
+        if (preview) preview.src = e.target.result;
+        if (wrap) wrap.classList.remove('d-none');
+        if (placeholder) placeholder.classList.add('d-none');
+    };
+    reader.readAsDataURL(file);
+}
+</script>

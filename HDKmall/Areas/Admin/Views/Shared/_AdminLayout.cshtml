@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>" />
     <style>
         :root {
@@ -27,10 +28,31 @@
             top: 0;
             background: var(--admin-dark);
             z-index: 1030;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        
+        .sidebar.collapsed .sidebar-brand .lh-1,
+        .sidebar.collapsed .sidebar-brand .small,
+        .sidebar.collapsed .sidebar-nav span,
+        .sidebar.collapsed .sidebar-nav .uppercase,
+        .sidebar.collapsed .btn-outline-danger span {
+            display: none !important;
+        }
+        
+        .sidebar.collapsed .nav-link-admin {
+            justify-content: center;
+            padding: 12px 0;
+        }
+        
+        .sidebar.collapsed .nav-link-admin i {
+            font-size: 1.4rem;
         }
 
         .sidebar-brand {
@@ -82,7 +104,11 @@
         .main-wrapper {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .main-wrapper.full-width {
+            margin-left: 70px;
         }
 
         .top-navbar {
@@ -136,16 +162,22 @@
             <div class="text-white opacity-25 small uppercase fw-bold mb-3 px-3" style="font-size: 0.7rem; letter-spacing: 1px;">MENU CHÍNH</div>
             
             <a href="/Admin/Dashboard" class="nav-link-admin @(ViewBag.ActiveTab == "dashboard" ? "active" : "")">
-                <i class="bi bi-grid-1x2-fill"></i> Tổng quan
+                <i class="bi bi-grid-1x2-fill"></i> <span>Tổng quan</span>
             </a>
             <a href="/Admin/Product" class="nav-link-admin @(ViewBag.ActiveTab == "products" ? "active" : "")">
-                <i class="bi bi-box-seam-fill"></i> Sản phẩm
+                <i class="bi bi-box-seam-fill"></i> <span>Sản phẩm</span>
+            </a>
+            <a href="/Admin/Category" class="nav-link-admin @(ViewBag.ActiveTab == "categories" ? "active" : "")">
+                <i class="bi bi-tags-fill"></i> <span>Danh mục</span>
+            </a>
+            <a href="/Admin/Brand" class="nav-link-admin @(ViewBag.ActiveTab == "brands" ? "active" : "")">
+                <i class="bi bi-patch-check-fill"></i> <span>Thương hiệu</span>
             </a>
             <a href="/Admin/Order" class="nav-link-admin @(ViewBag.ActiveTab == "orders" ? "active" : "")">
-                <i class="bi bi-receipt-cutoff"></i> Đơn hàng
+                <i class="bi bi-receipt-cutoff"></i> <span>Đơn hàng</span>
             </a>
             <a href="/Admin/User" class="nav-link-admin @(ViewBag.ActiveTab == "users" ? "active" : "")">
-                <i class="bi bi-people-fill"></i> Người dùng
+                <i class="bi bi-people-fill"></i> <span>Người dùng</span>
             </a>
 
             <div class="text-white opacity-25 small uppercase fw-bold mt-4 mb-3 px-3" style="font-size: 0.7rem; letter-spacing: 1px;">MARKETING & UI</div>
@@ -153,25 +185,31 @@
             <a href="/Admin/Banner" class="nav-link-admin @(ViewBag.ActiveTab == "banners" ? "active" : "")">
                 <i class="bi bi-image-fill"></i> Banners
             </a>
+            <a href="/Admin/Promotion" class="nav-link-admin @(ViewBag.ActiveTab == "promotions" ? "active" : "")">
+                <i class="bi bi-megaphone-fill"></i> Khuyến mãi
+            </a>
             <a href="/Admin/Coupon" class="nav-link-admin @(ViewBag.ActiveTab == "coupons" ? "active" : "")">
                 <i class="bi bi-tags-fill"></i> Coupons
             </a>
             <a href="/Admin/Review" class="nav-link-admin @(ViewBag.ActiveTab == "reviews" ? "active" : "")">
                 <i class="bi bi-star-fill"></i> Đánh giá
             </a>
+            <a href="/Admin/Chat" class="nav-link-admin @(ViewBag.ActiveTab == "contacts" ? "active" : "")">
+                <i class="bi bi-chat-dots-fill"></i> Quản lý Chat
+            </a>
         </div>
 
-        <div class="p-4 mt-auto border-top border-secondary border-opacity-10">
+        <div class="p-3 mt-auto border-top border-secondary border-opacity-10">
             <a href="/Account/Logout" class="btn btn-outline-danger btn-sm w-100 rounded-pill py-2">
-                <i class="bi bi-box-arrow-left me-2"></i> Đăng xuất
+                <i class="bi bi-box-arrow-left"></i> <span>Đăng xuất</span>
             </a>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <div class="main-wrapper">
+    <div class="main-wrapper" id="mainWrapper">
         <header class="top-navbar">
-            <button class="btn btn-light d-lg-none me-3" id="sidebarToggle"><i class="bi bi-list fs-4"></i></button>
+            <button class="btn btn-light rounded-circle me-3" id="sidebarToggle"><i class="bi bi-list fs-4"></i></button>
             
             <div class="d-none d-md-flex align-items-center">
                 <nav aria-label="breadcrumb">
@@ -236,7 +274,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('active');
+            const sidebar = document.querySelector('.sidebar');
+            const wrapper = document.getElementById('mainWrapper');
+            sidebar.classList.toggle('collapsed');
+            sidebar.classList.toggle('active'); // For mobile
+            wrapper.classList.toggle('full-width');
+            
+            // Save state
+            localStorage.setItem('admin_sidebar_collapsed', sidebar.classList.contains('collapsed'));
+        });
+
+        // Restore state
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('admin_sidebar_collapsed') === 'true') {
+                document.querySelector('.sidebar').classList.add('collapsed');
+                document.getElementById('mainWrapper').classList.add('full-width');
+            }
         });
 
         // Click ảnh để xem lớn (dùng data-preview-src)
@@ -260,6 +313,47 @@
                 e.currentTarget.style.display = 'none';
             }
         });
+    </script>
+    <partial name="_NotificationPartial" />
+    <style>
+        /* Modern Green Toast - CellphoneS Style */
+        .cps-toast-container { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
+        .cps-toast { background: #4CAF50; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: slideDown 0.3s ease-out; }
+        .cps-toast-icon { width: 24px; height: 24px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        @@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+    <div class="cps-toast-container" id="global-toast">
+        <div class="cps-toast">
+            <div class="cps-toast-icon">✓</div>
+            <span id="toast-message">Thành công!</span>
+        </div>
+    </div>
+
+    <script>
+        function showSuccessToast(message) {
+            const toast = document.getElementById('global-toast');
+            const msgEl = document.getElementById('toast-message');
+            if (!toast || !msgEl) return;
+            msgEl.textContent = message || "Thành công!";
+            toast.style.display = 'block';
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // Global Confirm function using SweetAlert2
+        async function modernConfirm(title, text) {
+            const result = await Swal.fire({
+                title: title || 'Xác nhận?',
+                text: text || 'Bạn có chắc chắn muốn thực hiện hành động này?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d70018',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            });
+            return result.isConfirmed;
+        }
     </script>
     @RenderSection("Scripts", required: false)
 </body>

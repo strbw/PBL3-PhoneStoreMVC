@@ -1,0 +1,116 @@
+@model HDKmall.Models.Promotion
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = (Model.Id == 0 ? "Tạo" : "Cập nhật") + " Chiến dịch Khuyến mãi";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left me-1"></i> Quay lại danh sách</a>
+    <h4 class="fw-bold mt-2">@(Model.Id == 0 ? "Thêm Chiến dịch mới" : "Chỉnh sửa Chiến dịch: " + Model.Name)</h4>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="card-body p-4">
+                <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post" enctype="multipart/form-data">
+                    @if(Model.Id > 0) { <input type="hidden" asp-for="Id" /> }
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Name" class="form-label fw-bold small text-muted">Tên chiến dịch</label>
+                            <input asp-for="Name" class="form-control bg-light border-0 fw-bold" placeholder="VD: Siêu Sale Hè 2026" required />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-bold small text-muted">Mô tả (Slogan)</label>
+                            <textarea asp-for="Description" class="form-control bg-light border-0" rows="2" placeholder="Nội dung hiển thị trên banner..."></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="StartDate" class="form-label fw-bold small text-muted">Ngày bắt đầu</label>
+                            <input asp-for="StartDate" type="date" class="form-control bg-light border-0" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="EndDate" class="form-label fw-bold small text-muted">Ngày kết thúc</label>
+                            <input asp-for="EndDate" type="date" class="form-control bg-light border-0" required />
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="ImageFile" class="form-label fw-bold small text-muted">Ảnh Banner (Upload)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-upload"></i></span>
+                                <input type="file" asp-for="ImageFile" id="bannerInput" class="form-control bg-light border-0" accept="image/*" />
+                                <input type="hidden" asp-for="BannerUrl" />
+                            </div>
+                            <small class="text-muted mt-1 d-block">Gợi ý kích thước: 1200x400px hoặc 1920x600px.</small>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" asp-for="IsActive" id="isActiveSwitch">
+                                <label class="form-check-label fw-bold text-dark" for="isActiveSwitch">Kích hoạt chiến dịch ngay</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                                <i class="bi bi-check2-circle me-1"></i> Lưu chiến dịch
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h6 class="fw-bold mb-0">Xem trước Banner</h6>
+            </div>
+            <div class="card-body p-4 pt-2">
+                <div id="bannerPreviewContainer" class="rounded-3 overflow-hidden shadow-sm bg-light d-flex align-items-center justify-content-center" style="width:100%; aspect-ratio: 16/9; border: 2px dashed #ddd;">
+                    <img id="bannerPreview" src="@(string.IsNullOrEmpty(Model.BannerUrl) ? "" : Model.BannerUrl)" class="w-100 h-100" style="object-fit:cover; display:@(string.IsNullOrEmpty(Model.BannerUrl) ? "none" : "block");" />
+                    <div id="bannerPlaceholder" class="text-center text-muted" style="display:@(string.IsNullOrEmpty(Model.BannerUrl) ? "block" : "none");">
+                        <i class="bi bi-image fs-1 opacity-25"></i>
+                        <p class="small mb-0 mt-2">Chưa có URL ảnh</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('bannerInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const img = document.getElementById('bannerPreview');
+            const placeholder = document.getElementById('bannerPlaceholder');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                // If there's an existing BannerUrl, fallback to it, else hide
+                const existingUrl = document.querySelector('input[name="BannerUrl"]').value;
+                if(existingUrl) {
+                    img.src = existingUrl;
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                } else {
+                    img.style.display = 'none';
+                    placeholder.style.display = 'block';
+                }
+            }
+        });
+    </script>
+}

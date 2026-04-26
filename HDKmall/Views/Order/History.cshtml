@@ -101,7 +101,19 @@
                                             @if (order.OrderDetails != null && order.OrderDetails.Any())
                                             {
                                                 var firstItem = order.OrderDetails.First();
-                                                <div>@firstItem.Product?.Name <span class="text-muted text-nowrap">x @firstItem.Quantity</span></div>
+                                                <div>
+                                                    <span class="fw-bold">@firstItem.Product?.Name</span>
+                                                    @if (firstItem.ProductVariant?.ProductVersion != null) {
+                                                        <span class="text-primary small">(@firstItem.ProductVariant.ProductVersion.Name)</span>
+                                                        <div class="mt-1" style="color:#ffc107; font-size:12px;">
+                                                            @for (int s = 1; s <= 5; s++) {
+                                                                <span>@(s <= Math.Round(firstItem.ProductVariant.ProductVersion.AverageRating) ? "★" : "☆")</span>
+                                                            }
+                                                            <span class="text-muted ms-1">(@firstItem.ProductVariant.ProductVersion.AverageRating.ToString("F1"))</span>
+                                                        </div>
+                                                    }
+                                                    <span class="text-muted text-nowrap">x @firstItem.Quantity</span>
+                                                </div>
                                                 if (order.OrderDetails.Count > 1)
                                                 {
                                                     <small class="text-muted">+ @(order.OrderDetails.Count - 1) sản phẩm khác</small>
@@ -114,6 +126,15 @@
                                         </td>
                                         <td class="pe-4 text-end">
                                             <a href="/Order/Detail/@order.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chi tiết</a>
+                                            @if (order.Status == "Delivered" && order.OrderDetails != null && order.OrderDetails.Any())
+                                            {
+                                                var firstDetail = order.OrderDetails.First();
+                                                var vId = firstDetail.ProductVariant?.ProductVersionId;
+                                                var reviewUrl = (order.OrderDetails.Count == 1) 
+                                                    ? $"/Product/Detail/{firstDetail.ProductId}?versionId={vId}&autoReview=true#review-section" 
+                                                    : $"/Order/Detail/{order.Id}";
+                                                <a href="@reviewUrl" class="btn btn-sm btn-danger rounded-pill px-3 ms-1">Đánh giá</a>
+                                            }
                                         </td>
                                     </tr>
                                 }

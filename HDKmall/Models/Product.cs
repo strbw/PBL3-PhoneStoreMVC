@@ -30,5 +30,6 @@ namespace HDKmall.Models
         public Brand Brand { get; set; }
 
         public ICollection<ProductVersion> Versions { get; set; } = new List<ProductVersion>();
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
     }
 }

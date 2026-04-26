@@ -20,7 +20,7 @@ namespace HDKmall.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var featuredProducts = _searchService.GetFeaturedProducts(8);
             var newProducts = _searchService.GetNewProducts(8);
@@ -29,6 +29,20 @@ namespace HDKmall.Controllers
             ViewBag.Brands = _brandService.GetAllBrands();
             ViewBag.FeaturedProducts = featuredProducts;
             ViewBag.NewProducts = newProducts;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    var wishlistService = HttpContext.RequestServices.GetService<IWishlistService>();
+                    if (wishlistService != null)
+                    {
+                        var wishlist = await wishlistService.GetUserWishlistAsync(userId);
+                        ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
+                    }
+                }
+            }
 
             return View();
         }

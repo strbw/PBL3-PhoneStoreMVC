@@ -22,10 +22,13 @@ namespace HDKmall.Models
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Promotion> Promotions { get; set; }
         public DbSet<Banner> Banners { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<ProductSpecification> ProductSpecifications { get; set; }
         public DbSet<UserAddress> UserAddresses { get; set; }
+        public DbSet<Wishlist> Wishlists { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,9 +60,9 @@ namespace HDKmall.Models
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<ProductImage>()
-                .HasOne(i => i.ProductVersion)
-                .WithMany(pv => pv.Images)
-                .HasForeignKey(i => i.ProductVersionId)
+                .HasOne(i => i.Product)
+                .WithMany(p => p.Images)
+                .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Review>()
@@ -94,7 +97,7 @@ namespace HDKmall.Models
                 new Category { Id = 1, Name = "Điện thoại" },
                 new Category { Id = 2, Name = "Máy tính bảng" },
                 new Category { Id = 3, Name = "Laptop" },
-                new Category { Id = 4, Name = "Tai nghe" },
+                new Category { Id = 4, Name = "Loa" },
                 new Category { Id = 5, Name = "Phụ kiện" },
                 new Category { Id = 6, Name = "Đồng hồ thông minh" }
             );

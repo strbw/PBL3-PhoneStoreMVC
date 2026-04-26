@@ -4,6 +4,7 @@ using System.Globalization;
 using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using HDKmall.Models;
 using System.Security.Claims;
 using System.Linq;
 
@@ -17,8 +18,9 @@ namespace HDKmall.Controllers
         private readonly IReviewService _reviewService;
         private readonly HDKmall.DAL.Interfaces.IProductRepository _productRepo;
         private readonly IRecommendationService _recommendationService;
+        private readonly ApplicationDbContext _context;
 
-        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo, IRecommendationService recommendationService)
+        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo, IRecommendationService recommendationService, ApplicationDbContext context)
         {
             _searchService = searchService;
             _categoryService = categoryService;
@@ -26,6 +28,7 @@ namespace HDKmall.Controllers
             _reviewService = reviewService;
             _productRepo = productRepo;
             _recommendationService = recommendationService;
+            _context = context;
         }
 
         private string RemoveDiacritics(string text)
@@ -37,7 +40,7 @@ namespace HDKmall.Controllers
         }
 
         // GET: Product/Index
-        public IActionResult Index(int? categoryId, string cat, int? brandId, string brand, decimal? minPrice, decimal? maxPrice, string sortBy = "newest", int page = 1)
+        public async Task<IActionResult> Index(int? categoryId, string cat, int? brandId, string brand, decimal? minPrice, decimal? maxPrice, string q, string sortBy = "newest", int page = 1)
         {
             var allCategories = _categoryService.GetAllCategories();
             var allBrands = _brandService.GetAllBrands();
@@ -62,6 +65,7 @@ namespace HDKmall.Controllers
 
             var filter = new ProductFilterVM
             {
+                SearchQuery = q,
                 CategoryId = categoryId,
                 BrandId = brandId,
                 MinPrice = minPrice,
@@ -81,6 +85,27 @@ namespace HDKmall.Controllers
             ViewBag.SelectedMinPrice = minPrice;
             ViewBag.SelectedMaxPrice = maxPrice;
             ViewBag.SelectedSortBy = sortBy;
+            ViewBag.SearchQuery = q;
+
+            // Track search history
+            if (!string.IsNullOrEmpty(q))
+            {
+                _recommendationService.AddToRecentSearches(q);
+            }
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    var wishlistService = HttpContext.RequestServices.GetService<IWishlistService>();
+                    if (wishlistService != null)
+                    {
+                        var wishlist = await wishlistService.GetUserWishlistAsync(userId);
+                        ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
+                    }
+                }
+            }
 
             return View(result);
         }
@@ -88,7 +113,7 @@ namespace HDKmall.Controllers
         // GET: Product/Detail/5 or /product/slug
         [Route("Product/Detail/{id:int}")]
         [Route("product/{slug}")]
-        public IActionResult Detail(int? id, string slug)
+        public async Task<IActionResult> Detail(int? id, string slug, int? versionId)
         {
             ProductDetailVM product = null;
 
@@ -135,54 +160,130 @@ namespace HDKmall.Controllers
             // Get related products
             ViewBag.RelatedProducts = _recommendationService.GetRelatedProducts(product.Id);
 
+            // Identify the active version ID
+            var activeVersionId = versionId ?? product.Versions.FirstOrDefault()?.Id ?? 0;
+            ViewBag.ActiveVersionId = activeVersionId;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    var wishlistService = HttpContext.RequestServices.GetService<IWishlistService>();
+                    if (wishlistService != null)
+                    {
+                        var wishlist = await wishlistService.GetUserWishlistAsync(userId);
+                        ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
+                    }
+                }
+            }
+
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (int.TryParse(userIdString, out var userId) && userId > 0)
                 {
-                    var firstVersionId = product.Versions.FirstOrDefault()?.Id ?? 0;
-                    ViewBag.CanReview = firstVersionId > 0 && _reviewService.UserCanReview(userId, firstVersionId);
+                    // Check if user bought THIS SPECIFIC version
+                    var hasBoughtActive = _reviewService.HasUserBoughtVersion(userId, activeVersionId);
+                    ViewBag.HasBought = hasBoughtActive;
+
+                    // Get user's existing review for this specific version
+                    var existingReview = _reviewService.GetUserReviewForVersion(userId, activeVersionId);
+                    ViewBag.UserExistingReview = existingReview;
+                    
+                    // Can review if bought AND (no existing review OR existing review is not edited yet)
+                    ViewBag.CanReview = hasBoughtActive && (existingReview == null || !existingReview.IsEdited); 
+                    
+                    ViewBag.ActiveVersionId = activeVersionId;
+                    ViewBag.DefaultReviewVersionId = activeVersionId;
                 }
                 else
                 {
+                    ViewBag.HasBought = false;
                     ViewBag.CanReview = false;
+                    ViewBag.UserExistingReview = null;
                 }
             }
             else
             {
+                ViewBag.HasBought = false;
                 ViewBag.CanReview = false;
+                ViewBag.UserExistingReview = null;
+            }
+
+            ViewBag.RequestedVersionId = versionId;
+
+            // Filter reviews to be version-specific (per user request)
+            if (activeVersionId > 0)
+            {
+                // We keep a backup of all reviews if needed, but for display we filter
+                var versionReviews = product.Reviews.Where(r => r.ProductVersionId == activeVersionId).ToList();
+                product.Reviews = versionReviews;
+                product.TotalReviews = versionReviews.Count;
+                product.AverageRating = versionReviews.Any() ? (double)versionReviews.Average(r => r.Rating) : 0;
             }
 
             return View(product);
         }
 
         // GET: Product/Search?q=iphone
+        [HttpGet("Product/Search")]
         public IActionResult Search(string q, int page = 1)
         {
             if (string.IsNullOrWhiteSpace(q))
             {
                 return RedirectToAction("Index");
             }
+            return RedirectToAction("Index", new { q = q, page = page });
+        }
 
+        [HttpGet("Product/Promotions")]
+        public async Task<IActionResult> Promotions(int? categoryId, string sortBy = "newest", int page = 1)
+        {
             var filter = new ProductFilterVM
             {
-                SearchQuery = q,
+                OnlyPromotions = true,
+                CategoryId = categoryId,
+                SortBy = sortBy,
                 PageNumber = page,
                 PageSize = 12
             };
 
             var result = _searchService.SearchProducts(filter);
-            ViewBag.SearchQuery = q;
+            ViewBag.SelectedSortBy = sortBy;
 
-            // Track search history
-            _recommendationService.AddToRecentSearches(q);
+            // Get categories for Tabs
+            ViewBag.Categories = _categoryService.GetAllCategories();
+            ViewBag.SelectedCategoryId = categoryId;
+            
+            // Get active promotion banner
+            var activePromotion = _context.Promotions.FirstOrDefault(p => p.IsActive && p.StartDate <= DateTime.Now && p.EndDate >= DateTime.Now);
+            ViewBag.ActivePromotion = activePromotion;
 
-            return View("Index", result);
+            if (User.Identity.IsAuthenticated)
+            {
+                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    var wishlistService = HttpContext.RequestServices.GetService<IWishlistService>();
+                    if (wishlistService != null)
+                    {
+                        var wishlist = await wishlistService.GetUserWishlistAsync(userId);
+                        ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
+                    }
+                }
+            }
+
+            return View(result);
         }
 
         // GET: Product/Category/1
+        [HttpGet("Product/Category/{id:int}")]
         public IActionResult Category(int id, int page = 1)
         {
+            var allCategories = _categoryService.GetAllCategories();
+            var allBrands = _brandService.GetAllBrands();
+
             var filter = new ProductFilterVM
             {
                 CategoryId = id,
@@ -191,15 +292,20 @@ namespace HDKmall.Controllers
             };
 
             var result = _searchService.SearchProducts(filter);
-            ViewBag.Categories = _categoryService.GetAllCategories();
+            ViewBag.Categories = allCategories;
+            ViewBag.Brands = allBrands;
             ViewBag.SelectedCategoryId = id;
 
             return View("Index", result);
         }
 
         // GET: Product/Brand/1
+        [HttpGet("Product/Brand/{id:int}")]
         public IActionResult Brand(int id, int page = 1)
         {
+            var allCategories = _categoryService.GetAllCategories();
+            var allBrands = _brandService.GetAllBrands();
+
             var filter = new ProductFilterVM
             {
                 BrandId = id,
@@ -208,7 +314,8 @@ namespace HDKmall.Controllers
             };
 
             var result = _searchService.SearchProducts(filter);
-            ViewBag.Brands = _brandService.GetAllBrands();
+            ViewBag.Categories = allCategories;
+            ViewBag.Brands = allBrands;
             ViewBag.SelectedBrandId = id;
 
             return View("Index", result);

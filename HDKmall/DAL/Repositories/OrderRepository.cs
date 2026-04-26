@@ -24,6 +24,7 @@ namespace HDKmall.DAL.Repositories
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.ProductVariant)
                         .ThenInclude(v => v.ProductVersion)
+                            .ThenInclude(v => v.Reviews)
                 .FirstOrDefault(o => o.Id == id);
         }
 
@@ -36,6 +37,7 @@ namespace HDKmall.DAL.Repositories
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.ProductVariant)
                         .ThenInclude(v => v.ProductVersion)
+                            .ThenInclude(v => v.Reviews)
                 .Where(o => o.UserId == userId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
@@ -50,6 +52,7 @@ namespace HDKmall.DAL.Repositories
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.ProductVariant)
                         .ThenInclude(v => v.ProductVersion)
+                            .ThenInclude(v => v.Reviews)
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
         }

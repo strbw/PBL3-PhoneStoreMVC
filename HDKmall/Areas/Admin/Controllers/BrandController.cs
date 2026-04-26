@@ -19,6 +19,7 @@ namespace HDKmall.Areas.Admin.Controllers
         // GET: Admin/Brand
         public IActionResult Index()
         {
+            ViewBag.ActiveTab = "brands";
             var brands = _brandService.GetAllBrands();
             return View(brands);
         }

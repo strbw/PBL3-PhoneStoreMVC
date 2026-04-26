@@ -35,8 +35,10 @@
     .pl-product-card .img-box { background:#fafafa; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; padding:12px; }
     .pl-product-card img { max-height:100%; object-fit:contain; transition:transform .2s; }
     .pl-product-card:hover img { transform:scale(1.05); }
-    .pl-buy-btn { background:#d70018; color:#fff; border:none; border-radius:6px; padding:8px 0; font-size:13px; font-weight:700; width:100%; cursor:pointer; transition:background .15s; }
-    .pl-buy-btn:hover { background:#b5000f; }
+    .pl-wishlist-btn { background:none; border:none; padding:0; cursor:pointer; color:#aaa; font-size:18px; transition:color .2s; display:flex; align-items:center; gap:4px; }
+    .pl-wishlist-btn:hover, .pl-wishlist-btn.active { color:#d70018; }
+    .pl-wishlist-btn .heart-label { font-size:12px; color:#888; }
+    .pl-wishlist-btn.active .heart-label { color:#d70018; }
     .sidebar-section-title { font-size:14px; font-weight:700; color:#222; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #d70018; display:inline-block; }
 </style>
 
@@ -145,27 +147,44 @@
                 foreach (var item in Model.Products)
                 {
                     <div class="col">
-                        <div class="pl-product-card h-100">
-                            <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)" class="img-box d-block text-center text-decoration-none" style="height:180px;">
+                        <div class="pl-product-card h-100 position-relative">
+                            @if (item.DiscountPercent > 0)
+                            {
+                                <span class="position-absolute top-0 start-0 m-2 badge bg-danger rounded-pill fw-bold z-1" style="font-size: 0.7rem;">Giảm @(item.DiscountPercent)%</span>
+                            }
+                            <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)@(item.VersionId.HasValue ? "?versionId=" + item.VersionId : "")" class="img-box d-block text-center text-decoration-none" style="height:180px;">
                                 <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/img/Product_Default.jpg" : item.ImageUrl)"
                                      alt="@item.Name" style="max-height:100%; object-fit:contain; display:inline-block;" onerror="this.src='/img/Product_Default.jpg'">
                             </a>
                             <div class="p-3 d-flex flex-column flex-grow-1">
                                 <div class="text-muted" style="font-size:12px; margin-bottom:4px;">@item.BrandName</div>
-                                <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)" class="text-decoration-none text-dark fw-semibold lh-sm mb-2" style="font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">@item.Name</a>
+                                <a href="/product/@(string.IsNullOrEmpty(item.Slug) ? HDKmall.Helpers.SlugHelper.GenerateSlug(item.Name) : item.Slug)@(item.VersionId.HasValue ? "?versionId=" + item.VersionId : "")" class="text-decoration-none text-dark fw-semibold lh-sm mb-2" style="font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                                    @item.Name @(string.IsNullOrEmpty(item.VersionName) || item.Name.Contains(item.VersionName) ? "" : " - " + item.VersionName)
+                                </a>
                                 <div class="mt-auto">
-                                    <!-- Stars -->
-                                    <div style="color:#ffc107; font-size:12px; margin-bottom:4px;">
-                                        @for (int s = 1; s <= 5; s++)
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="text-danger fw-bold fs-6">@item.Price.ToString("N0")₫</div>
+                                        @if (item.OriginalPrice > item.Price)
                                         {
-                                            <span>@(s <= Math.Round(item.AverageRating) ? "★" : "☆")</span>
+                                            <div class="text-muted text-decoration-line-through small" style="font-size: 0.75rem;">@item.OriginalPrice.Value.ToString("N0")₫</div>
                                         }
-                                        <span class="text-muted" style="font-size:11px;">(@item.ReviewCount)</span>
                                     </div>
-                                    <!-- Price -->
-                                    <div class="text-danger fw-bolder mb-3" style="font-size:16px;">@item.Price.ToString("N0")₫</div>
-                                    <!-- Add to cart -->
-                                    <button type="button" class="pl-buy-btn" onclick="addToCartFromList(@item.Id, this)">🛒 Thêm vào giỏ</button>
+                                    <!-- Stars + Wishlist row -->
+                                    <div class="d-flex align-items-center justify-content-between mt-1">
+                                        <div style="color:#ffc107; font-size:13px; display:flex; align-items:center; gap:2px;">
+                                            @for (int s = 1; s <= 5; s++)
+                                            {
+                                                <span>@(s <= Math.Round(item.AverageRating) ? "★" : "☆")</span>
+                                            }
+                                            <span class="text-muted" style="font-size:11px; margin-left:3px;">@item.AverageRating.ToString("F1")</span>
+                                        </div>
+                                        <button type="button" class="pl-wishlist-btn" onclick="toggleWishlist(event, @item.Id, @(item.VersionId ?? 0), this)" title="Yêu thích">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748z"/>
+                                            </svg>
+                                            <span class="heart-label">Yêu thích</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -210,61 +229,49 @@
   </div>
 </div>
 
-<!-- Toast thông báo giỏ hàng -->
-<div id="pl-cart-toast" style="display:none; position:fixed; bottom:24px; right:24px; z-index:9999; min-width:280px; border-radius:10px; font-size:15px; box-shadow:0 4px 20px rgba(0,0,0,.15); padding:14px 18px;" class="alert"></div>
+<!-- Toast thông báo -->
+@* Removed local toast, using global global-toast *@
 
 @section Scripts {
 <script>
-    function addToCartFromList(productId, btn) {
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value
-            || document.querySelector('meta[name="csrf-token"]')?.content || '';
+    // Wishlist stored in localStorage (simple client-side)
+    const wishlistKey = 'hdkmall_wishlist';
+    function getWishlist() {
+        try { return JSON.parse(localStorage.getItem(wishlistKey) || '[]'); } catch { return []; }
+    }
+    function saveWishlist(list) {
+        localStorage.setItem(wishlistKey, JSON.stringify(list));
+    }
 
-        btn.disabled = true;
-        btn.classList.add('btn-loading');
+    function toggleWishlist(e, productId, versionId, btn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const list = getWishlist();
+        const key = productId + '_' + versionId;
+        const idx = list.indexOf(key);
+        if (idx === -1) {
+            list.push(key);
+            btn.classList.add('active');
+            showSuccessToast('❤️ Đã thêm vào danh sách yêu thích!');
+        } else {
+            list.splice(idx, 1);
+            btn.classList.remove('active');
+            showSuccessToast('💔 Đã xóa khỏi danh sách yêu thích');
+        }
+        saveWishlist(list);
+    }
 
-        fetch('/Cart/Add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest',
-                'RequestVerificationToken': token
-            },
-            body: 'productId=' + productId + '&variantId=0&quantity=1'
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (typeof toastr !== 'undefined') {
-                if (data.success) toastr.success(data.message);
-                else toastr.error(data.message);
-            } else {
-                showPlToast(data.message || (data.success ? 'Đã thêm vào giỏ hàng!' : 'Lỗi thêm sản phẩm'), data.success ? 'success' : 'danger');
+    // Mark already-wishlisted items on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const list = getWishlist();
+        document.querySelectorAll('.pl-wishlist-btn').forEach(btn => {
+            const onclick = btn.getAttribute('onclick') || '';
+            const match = onclick.match(/toggleWishlist\(event,\s*(\d+),\s*(\d+)/);
+            if (match) {
+                const key = match[1] + '_' + match[2];
+                if (list.includes(key)) btn.classList.add('active');
             }
-            
-            if (data.success) {
-                const badge = document.getElementById('cart-badge');
-                if (badge) {
-                    badge.textContent = data.cartCount;
-                    badge.classList.remove('d-none');
-                }
-            }
-        })
-        .catch(() => {
-            if (typeof toastr !== 'undefined') toastr.error('Có lỗi xảy ra, vui lòng thử lại');
-            else showPlToast('Có lỗi xảy ra, vui lòng thử lại', 'danger');
-        })
-        .finally(() => {
-            btn.classList.remove('btn-loading');
-            btn.disabled = false;
         });
-    }
-
-    function showPlToast(msg, type) {
-        const toast = document.getElementById('pl-cart-toast');
-        toast.className = 'alert alert-' + type;
-        toast.style.display = 'block';
-        toast.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + msg;
-        clearTimeout(toast._timer);
-        toast._timer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
-    }
+    });
 </script>
 }

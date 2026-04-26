@@ -19,6 +19,7 @@ namespace HDKmall.Areas.Admin.Controllers
         // GET: Admin/Category
         public IActionResult Index()
         {
+            ViewBag.ActiveTab = "categories";
             var categories = _categoryService.GetAllCategories();
             return View(categories);
         }

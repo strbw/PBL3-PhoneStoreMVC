@@ -170,10 +170,11 @@
                                             </form>
                                         }
                                         <form asp-area="Admin" asp-controller="Review" asp-action="Delete" method="post"
-                                              onsubmit="return confirm('Bạn có chắc muốn xóa đánh giá này?');">
+                                              onsubmit="return false;" id="del-review-@review.Id">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@review.Id" />
-                                            <button type="submit" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3" title="Xóa">
+                                            <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3" title="Xóa"
+                                                    onclick="modernConfirm('Xóa đánh giá?','Bạn có chắc muốn xóa đánh giá này? Hành động không thể hoàn tác.').then(ok => { if(ok) document.getElementById('del-review-@review.Id').submit(); })">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>

@@ -73,7 +73,7 @@ function initSearch() {
       .then(data => {
         if (data && data.length > 0) {
           recommendedList.innerHTML = data.map(p => `
-            <div class="search-result-item" onclick="location.href='/product/${p.slug || p.id}'">
+            <div class="search-result-item" onclick="location.href='/product/${p.slug || p.id}${p.versionId ? '?versionId=' + p.versionId : ''}'">
               <img src="${p.imageUrl}" alt="${p.name}" class="search-result-img" loading="lazy">
               <div>
                 <div class="search-result-name">${p.name}</div>
@@ -116,7 +116,7 @@ function initSearch() {
                 dropdown.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">Không tìm thấy sản phẩm nào</div>';
             } else {
                 dropdown.innerHTML = results.map(p => `
-                    <div class="search-result-item" onclick="location.href='/product/${p.slug || p.id}'">
+                    <div class="search-result-item" onclick="location.href='/product/${p.slug || p.id}${p.versionId ? '?versionId=' + p.versionId : ''}'">
                       <img src="${p.imageUrl}" alt="${p.name}" class="search-result-img" loading="lazy">
                       <div>
                         <div class="search-result-name">${p.name}</div>
@@ -236,21 +236,61 @@ function quickAddToCart(productId) {
   Cart.addItem(product, variant, 1);
 }
 
-// Wishlist toggle
-function toggleWishlist(productId, btn) {
-  const key = 'phonestore_wishlist';
-  let list = JSON.parse(localStorage.getItem(key) || '[]');
-  const idx = list.indexOf(productId);
-  if (idx >= 0) {
-    list.splice(idx, 1);
-    btn.textContent = '♡';
-    btn.style.color = '';
-  } else {
-    list.push(productId);
-    btn.textContent = '♥';
-    btn.style.color = '#e74c3c';
-  }
-  localStorage.setItem(key, JSON.stringify(list));
+// Wishlist toggle (Server-side)
+function toggleWishlist(event, productId, versionId, btn) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    $.post('/Wishlist/Toggle', { productId: productId, versionId: versionId == 0 ? null : versionId }, function(res) {
+        if(res.success) {
+            if(res.isAdded) {
+                btn.classList.add('active');
+                // If it's the heart icon version
+                const svg = btn.querySelector('svg');
+                if(svg) svg.setAttribute('fill', '#d70018');
+            } else {
+                btn.classList.remove('active');
+                const svg = btn.querySelector('svg');
+                if(svg) svg.setAttribute('fill', 'currentColor');
+            }
+            
+            updateWishlistBadge(res.count);
+            
+            // Show modern toast
+            if(typeof showSuccessToast === 'function') {
+                showSuccessToast(res.message);
+            } else {
+                alert(res.message);
+            }
+        } else {
+            // If not logged in, show info toast then redirect
+            if(typeof showSuccessToast === 'function') {
+                showSuccessToast(res.message);
+                setTimeout(() => {
+                    window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+                }, 1500);
+            } else {
+                window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+            }
+        }
+    }).fail(function() {
+        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+    });
+}
+
+// Function specifically for Home/Search results if needed
+function toggleHomeWishlist(event, productId, versionId, btn) {
+    toggleWishlist(event, productId, versionId, btn);
+}
+
+function updateWishlistBadge(count) {
+    const badge = document.getElementById('wishlist-badge');
+    if(badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'block' : 'none';
+    }
 }
 
 // Active nav item
@@ -311,4 +351,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initMobileMenu();
   initTabs();
   setActiveNav();
+  
+  // Load wishlist count
+  fetch('/Wishlist/GetCount')
+    .then(r => r.json())
+    .then(count => updateWishlistBadge(count));
 });

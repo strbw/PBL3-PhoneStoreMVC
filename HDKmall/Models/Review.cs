@@ -18,5 +18,6 @@ namespace HDKmall.Models
         public string? Tags { get; set; }        // JSON array string
          public string? ImageUrl { get; set; }    // Cloudinary URL
          public string Status { get; set; } = "Pending"; // Pending/Approved/Hidden
+         public bool IsEdited { get; set; } = false;
     }
 }

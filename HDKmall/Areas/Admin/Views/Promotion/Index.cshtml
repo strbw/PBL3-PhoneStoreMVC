@@ -1,0 +1,118 @@
+@model IEnumerable<HDKmall.Models.Promotion>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý Khuyến mãi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">Quản lý Chiến dịch Khuyến mãi</h4>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Admin/Dashboard" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active">Khuyến mãi</li>
+            </ol>
+        </nav>
+    </div>
+    <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+        <i class="bi bi-plus-lg me-1"></i> Tạo chiến dịch mới
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4 py-3 border-0">Banner</th>
+                    <th class="py-3 border-0">Chiến dịch</th>
+                    <th class="py-3 border-0">Thời gian</th>
+                    <th class="py-3 border-0 text-center">Trạng thái</th>
+                    <th class="py-3 border-0 text-end pe-4">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    bool isActive = item.IsActive && item.StartDate <= DateTime.Now && item.EndDate >= DateTime.Now;
+                    <tr>
+                        <td class="ps-4">
+                            <div class="rounded-3 overflow-hidden shadow-xs" style="width: 120px; height: 60px;">
+                                <img src="@(string.IsNullOrEmpty(item.BannerUrl) ? "/img/promo_default.jpg" : item.BannerUrl)" 
+                                     class="w-100 h-100" style="object-fit: cover;" onerror="this.src='/img/promo_default.jpg'">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">@item.Name</div>
+                            <div class="small text-muted text-truncate" style="max-width: 250px;">@item.Description</div>
+                        </td>
+                        <td>
+                            <div class="small fw-medium">@item.StartDate.ToString("dd/MM/yyyy") - @item.EndDate.ToString("dd/MM/yyyy")</div>
+                            @if (item.EndDate < DateTime.Now)
+                            {
+                                <span class="badge bg-secondary-soft text-secondary rounded-pill mt-1" style="font-size: 10px;">Đã kết thúc</span>
+                            }
+                            else if (item.StartDate > DateTime.Now)
+                            {
+                                <span class="badge bg-info-soft text-info rounded-pill mt-1" style="font-size: 10px;">Sắp diễn ra</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (isActive)
+                            {
+                                <span class="badge bg-success-soft text-success rounded-pill px-3 py-2 border border-success">Đang chạy</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-soft text-danger rounded-pill px-3 py-2 border border-danger">Tạm dừng</span>
+                            }
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-xs rounded-pill overflow-hidden">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-white btn-sm px-3" title="Chỉnh sửa"><i class="bi bi-pencil-square text-primary"></i></a>
+                                <button type="button" class="btn btn-white btn-sm px-3" title="Xóa" onclick="confirmDelete(@item.Id, '@item.Name')">
+                                    <i class="bi bi-trash text-danger"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">Chưa có chiến dịch nào được tạo.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: `Bạn có chắc muốn xóa chiến dịch "${name}" không?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Có, xóa ngay!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Promotion/Delete/' + id,
+                        type: 'POST',
+                        success: function(res) {
+                            if (res.success) {
+                                Swal.fire('Đã xóa!', 'Chiến dịch đã được gỡ bỏ.', 'success').then(() => location.reload());
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
