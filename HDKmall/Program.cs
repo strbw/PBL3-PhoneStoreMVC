@@ -64,7 +64,11 @@ builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IChatService, ChatService>();
-builder.Services.AddHttpClient<IGeminiChatService, GeminiChatService>();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<IGeminiChatService, GeminiChatService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 var app = builder.Build();
 
