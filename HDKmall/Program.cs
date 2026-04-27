@@ -65,12 +65,37 @@ builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddMemoryCache();
-builder.Services.AddHttpClient<IGeminiChatService, GeminiChatService>(client =>
-{
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
+builder.Services.AddHttpClient<IGeminiChatService, GeminiChatService>();
+
 
 var app = builder.Build();
+
+// Tự động thêm cột OriginalPrice nếu chưa có
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+            // Kiểm tra cột OriginalPrice
+            context.Database.ExecuteSqlRaw(@"
+                IF NOT EXISTS (SELECT * FROM sys.columns 
+                               WHERE object_id = OBJECT_ID(N'[dbo].[Products]') 
+                               AND name = 'OriginalPrice')
+                BEGIN
+                    ALTER TABLE [dbo].[Products] ADD [OriginalPrice] decimal(18,2) NULL;
+                END");
+
+            // Kiểm tra cột ProductType
+            context.Database.ExecuteSqlRaw(@"
+                IF NOT EXISTS (SELECT * FROM sys.columns 
+                               WHERE object_id = OBJECT_ID(N'[dbo].[Products]') 
+                               AND name = 'ProductType')
+                BEGIN
+                    ALTER TABLE [dbo].[Products] ADD [ProductType] int NOT NULL DEFAULT 1;
+                END");
+    }
+    catch { /* Bỏ qua nếu có lỗi hoặc đã tồn tại */ }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

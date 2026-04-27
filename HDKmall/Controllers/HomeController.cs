@@ -10,25 +10,35 @@ namespace HDKmall.Controllers
         private readonly IProductSearchService _searchService;
         private readonly ICategoryService _categoryService;
         private readonly IBrandService _brandService;
+        private readonly IRecommendationService _recommendationService;
         private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, ILogger<HomeController> logger)
+        public HomeController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IRecommendationService recommendationService, ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _searchService = searchService;
             _categoryService = categoryService;
             _brandService = brandService;
+            _recommendationService = recommendationService;
             _logger = logger;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
         {
             var featuredProducts = _searchService.GetFeaturedProducts(8);
             var newProducts = _searchService.GetNewProducts(8);
+            
+            // Get Recommendations
+            var recentlyViewed = _recommendationService.GetRecentlyViewedProducts(8);
+            var personalized = _recommendationService.GetPersonalizedRecommendations(8);
 
             ViewBag.Categories = _categoryService.GetAllCategories();
             ViewBag.Brands = _brandService.GetAllBrands();
             ViewBag.FeaturedProducts = featuredProducts;
             ViewBag.NewProducts = newProducts;
+            ViewBag.RecentlyViewed = recentlyViewed;
+            ViewBag.PersonalizedRecommendations = personalized;
 
             if (User.Identity.IsAuthenticated)
             {

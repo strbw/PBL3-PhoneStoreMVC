@@ -1,7 +1,8 @@
 @model HDKmall.ViewModels.ProductVM
+@using HDKmall.ViewModels
 
 @{
-    ViewData["Title"] = "Sửa Sản Phẩm (CellphoneS Style)";
+    ViewData["Title"] = "Chỉnh sửa Sản phẩm";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -10,121 +11,58 @@
     .version-card:hover { border-color: #0d6efd; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important; }
     .nested-card { background-color: #f8f9fa; border: 1px dashed #dee2e6; }
     .btn-remove { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; padding: 0; }
-    .tiny-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-    
-    /* Styles for Preview Modal to look like real Detail page */
-    .preview-option-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-bottom: 24px; }
-    .preview-option-item {
-        border: 1.5px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 10px;
-        background: #fff;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        min-height: 56px;
-    }
+    .preview-option-item { border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 10px; background: #fff; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 56px; }
     .preview-option-item.active { border-color: #d70018; background: #fff5f5; box-shadow: 0 0 0 1px #d70018; }
-    .preview-option-name { font-size: 13px; font-weight: 700; color: #333; display: block; }
-    .preview-option-price { font-size: 11px; color: #666; margin-top: 2px; }
-    .preview-selector-label { font-size: 14px; font-weight: 700; color: #444; margin-bottom: 12px; display: block; }
     .preview-current-price { color: #d70018; font-size: 2.2rem; font-weight: 800; line-height: 1; }
-    
-    .preview-current-price { color: #d70018; font-size: 2.2rem; font-weight: 800; line-height: 1; }
-    
-    .preview-current-price { color: #d70018; font-size: 2.2rem; font-weight: 800; line-height: 1; }
-    
-    /* IN-PAGE PREVIEW SECTION STYLING */
-    #livePreviewSection {
-        background: #f8fafc;
-        border-radius: 32px;
-        padding: 60px 40px;
-        margin-top: 50px;
-        box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
-    }
-
-    #previewContent {
-        max-width: 1300px;
-        margin: 0 auto;
-    }
-
-    .preview-card-inner {
-        background: #fff;
-        border-radius: 24px;
-        padding: 50px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-        width: 100%;
-    }
-
-    #previewModal .modal-header {
-        flex: 0 0 auto;
-        padding: 20px 40px;
-        background: #fff;
-        border-bottom: 1px solid #f1f5f9;
-        border-radius: 24px 24px 0 0;
-    }
-
-    #previewModal .modal-body {
-        flex: 1 1 auto;
-        overflow-y: auto !important;
-        padding: 0 !important;
-        background: #f8fafc;
-    }
-    
-    #previewModal .modal-footer {
-        flex: 0 0 auto;
-        background: #fff;
-        border-top: 1px solid #f1f5f9;
-        border-radius: 0 0 24px 24px;
-        padding: 15px 40px;
-    }
-
-    #previewContent {
-        padding: 40px !important;
-    }
-
-    .preview-card-inner {
-        background: #fff;
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        margin: 0 auto;
-        max-width: 1300px;
-        width: 100%;
-    }
-
-    .preview-img-container {
-        background: #fafafa;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 30px;
-        min-height: 500px;
-        border: 1px solid #f0f0f0;
-    }
-
-    .preview-img-container img {
-        max-width: 100%;
-        max-height: 600px;
-        object-fit: contain;
-    }
+    #livePreviewSection { background: #f8fafc; border-radius: 32px; padding: 60px 40px; margin-top: 50px; }
+    .preview-card-inner { background: #fff; border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; }
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold mb-0">✏️ Chỉnh sửa Sản Phẩm #@Model.Id</h2>
+    <h2 class="fw-bold mb-0">✏️ Chỉnh sửa Sản phẩm</h2>
     <a asp-action="Index" class="btn btn-light shadow-sm border rounded-pill px-4 fw-bold">
         <i class="bi bi-arrow-left me-1"></i> Quay lại
     </a>
 </div>
 
-<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+<form asp-action="Edit" method="post" enctype="multipart/form-data" id="productForm">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
     <div class="row">
         <div class="col-lg-12">
+            <!-- ===== CHỌN LOẠI SẢN PHẨM ===== -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                    <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-grid-1x2-fill me-2"></i>Loại sản phẩm</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="radio" class="btn-check" asp-for="ProductType" id="typeVersions" value="1">
+                            <label class="btn btn-outline-primary w-100 py-3 rounded-3 text-start" for="typeVersions">
+                                <strong>Dung lượng</strong>
+                                <div class="small mt-1">iPhone, Laptop...</div>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="radio" class="btn-check" asp-for="ProductType" id="typeColors" value="2">
+                            <label class="btn btn-outline-success w-100 py-3 rounded-3 text-start" for="typeColors">
+                                <strong>Chỉ màu sắc</strong>
+                                <div class="small mt-1">Loa, Tai nghe...</div>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="radio" class="btn-check" asp-for="ProductType" id="typeSimple" value="3">
+                            <label class="btn btn-outline-secondary w-100 py-3 rounded-3 text-start" for="typeSimple">
+                                <strong>Đơn giản</strong>
+                                <div class="small mt-1">Ốp lưng, Cáp...</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Thông tin chung -->
             <div class="card shadow-sm border-0 rounded-4 mb-4">
                 <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
@@ -133,13 +71,12 @@
                 <div class="card-body p-4">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="Name" class="form-label fw-bold text-muted small">Tên sản phẩm (Model) <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control bg-light border-0" />
-                            <span asp-validation-for="Name" class="text-danger small"></span>
+                            <label asp-for="Name" class="form-label fw-bold text-muted small">Tên (Model)</label>
+                            <input asp-for="Name" class="form-control bg-light border-0" required />
                         </div>
                         <div class="col-md-3">
-                            <label asp-for="CategoryId" class="form-label fw-bold text-muted small">Danh mục <span class="text-danger">*</span></label>
-                            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select bg-light border-0"></select>
+                            <label asp-for="CategoryId" class="form-label fw-bold text-muted small">Danh mục</label>
+                            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select bg-light border-0" required></select>
                         </div>
                         <div class="col-md-3">
                             <label asp-for="BrandId" class="form-label fw-bold text-muted small">Thương hiệu</label>
@@ -148,209 +85,180 @@
                             </select>
                         </div>
 
+                        <input type="hidden" name="Versions[0].Name" id="hiddenDefaultVersionName" value="Mặc định" />
 
-                        <div class="col-md-12">
-                            <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Hình ảnh chung cho các dung lượng (Gallery)</label>
+                        <div class="col-md-3" id="directPriceSection" style="display:none;">
+                            <label asp-for="Price" class="form-label fw-bold text-muted small">Giá bán (₫)</label>
+                            <input asp-for="Price" class="form-control bg-light border-0 fw-bold text-danger" type="number" />
+                        </div>
+                        <div class="col-md-3" id="directOriginalPriceSection" style="display:none;">
+                            <label asp-for="OriginalPrice" class="form-label fw-bold text-muted small">Giá gốc</label>
+                            <input asp-for="OriginalPrice" class="form-control bg-light border-0" type="number" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Ảnh Gallery mới</label>
                             <input asp-for="GalleryFiles" type="file" multiple class="form-control bg-light border-0" accept="image/*" />
-                            <small class="text-muted d-block mb-2">Thêm nhiều ảnh để hiển thị chung ở đầu Slider.</small>
-                            @if (Model.ExistingImages != null && Model.ExistingImages.Any())
-                            {
-                                <div class="d-flex flex-wrap gap-2 mt-2">
+                        </div>
+
+                        @if (Model.ExistingImages != null && Model.ExistingImages.Any())
+                        {
+                            <div class="col-12 mt-2">
+                                <div class="d-flex flex-wrap gap-2">
                                     @for (int i = 0; i < Model.ExistingImages.Count; i++)
                                     {
-                                        <div class="position-relative" style="width:60px; height:60px;">
-                                            <img src="@Model.ExistingImages[i].ImageUrl" class="rounded shadow-sm w-100 h-100" style="object-fit:cover;" />
+                                        <div class="position-relative border rounded" style="width:70px; height:70px;">
+                                            <img src="@Model.ExistingImages[i].ImageUrl" class="w-100 h-100 rounded" style="object-fit:cover;" />
                                             <input type="hidden" name="ExistingImages[@i].Id" value="@Model.ExistingImages[i].Id" />
                                             <input type="hidden" name="ExistingImages[@i].ImageUrl" value="@Model.ExistingImages[i].ImageUrl" />
-                                            <input type="hidden" name="ExistingImages[@i].PublicId" value="@Model.ExistingImages[i].PublicId" />
-                                            <div class="form-check position-absolute top-0 end-0 m-1 bg-white rounded-circle" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;padding:0;">
-                                                <input class="form-check-input m-0" type="checkbox" name="ExistingImages[@i].IsMain" value="true" title="Đánh dấu để Xóa" />
-                                                <input type="hidden" name="ExistingImages[@i].IsMain" value="false" />
-                                            </div>
+                                            <input class="form-check-input position-absolute top-0 end-0 m-1" type="checkbox" name="ExistingImages[@i].IsMain" value="true" />
+                                            <input type="hidden" name="ExistingImages[@i].IsMain" value="false" />
                                         </div>
                                     }
-                                    <div class="w-100 mt-1"><small class="text-danger"><i class="bi bi-info-circle me-1"></i>Tích vào ô vuông trên ảnh để xóa ảnh đó.</small></div>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
+
                         <div class="col-12">
-                            <label asp-for="Description" class="form-label fw-bold text-muted small">Mô tả tổng quát</label>
-                            <textarea asp-for="Description" class="form-control bg-light border-0" rows="2"></textarea>
+                            <label asp-for="Description" class="form-label fw-bold text-muted small">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control bg-light border-0" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Cấu trúc Dung lượng (Versions) -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0"><i class="bi bi-stack me-2"></i>Các phiên bản Dung lượng</h5>
-                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" onclick="addVersion()">
-                    <i class="bi bi-plus-lg me-1"></i> Thêm dung lượng mới
-                </button>
-            </div>
-
-            <div id="versionsContainer">
-                @if (Model.Versions != null)
-                {
-                    for (int v = 0; v < Model.Versions.Count; v++)
+            <!-- PHẦN 1: DUNG LƯỢNG -->
+            <div id="sectionVersions" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Phiên bản dung lượng</h5>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="addVersion()">
+                        <i class="bi bi-plus-lg me-1"></i> Thêm
+                    </button>
+                </div>
+                <div id="versionsContainer">
+                    @if (Model.Versions != null && Model.ProductType == ProductType.HasVersions)
                     {
-                        var version = Model.Versions[v];
-                        <div class="card shadow-sm border-0 rounded-4 mb-4 version-card" id="version_@v">
-                            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="fw-bold text-primary mb-1">Dung lượng: @version.Name</h6>
-                                    <input type="hidden" name="Versions[@v].Id" value="@version.Id" />
+                        for (int v = 0; v < Model.Versions.Count; v++)
+                        {
+                            <div class="card shadow-sm border-0 rounded-4 mb-4 version-card" id="version_@v">
+                                <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold text-primary mb-0">Phiên bản: @Model.Versions[v].Name</h6>
+                                    <button type="button" class="btn btn-outline-danger btn-remove rounded-circle" onclick="removeRow('version_@v')"><i class="bi bi-x"></i></button>
                                 </div>
-                                <button type="button" class="btn btn-outline-danger btn-remove rounded-circle" onclick="removeRow('version_@v')">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold small text-muted">Tên dung lượng</label>
-                                        <input type="text" name="Versions[@v].Name" value="@version.Name" class="form-control bg-light border-0 fw-bold" required />
+                                <div class="card-body p-4">
+                                    <input type="hidden" name="Versions[@v].Id" value="@Model.Versions[v].Id" />
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-3"><label class="small fw-bold">Dung lượng</label><input type="text" name="Versions[@v].Name" value="@Model.Versions[v].Name" class="form-control bg-light border-0" required /></div>
+                                        <div class="col-md-3"><label class="small fw-bold text-danger">Giá bán</label><input type="number" name="Versions[@v].BasePrice" value="@Model.Versions[v].BasePrice" class="form-control bg-light border-0" required /></div>
+                                        <div class="col-md-3"><label class="small fw-bold">Giá gốc</label><input type="number" name="Versions[@v].OriginalPrice" value="@Model.Versions[v].OriginalPrice" class="form-control bg-light border-0" /></div>
+                                        <div class="col-md-3"><label class="small fw-bold">Ảnh</label><input type="file" name="Versions[@v].ImageFile" class="form-control form-control-sm" /><input type="hidden" name="Versions[@v].ImageUrl" value="@Model.Versions[v].ImageUrl" /></div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-bold small text-muted">Giá hiện tại (₫)</label>
-                                        <input type="number" name="Versions[@v].BasePrice" value="@version.BasePrice" class="form-control bg-light border-0 fw-bold text-danger" required />
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-bold small text-muted">Giá gốc (để gạch ngang)</label>
-                                        <input type="number" name="Versions[@v].OriginalPrice" value="@version.OriginalPrice" class="form-control bg-light border-0" placeholder="Bỏ trống nếu không sale" />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-bold small text-muted">Ảnh đại diện dung lượng</label>
-                                        <div class="d-flex gap-2">
-                                            <input type="file" name="Versions[@v].ImageFile" class="form-control form-control-sm border-0 bg-light" accept="image/*" />
-                                            @if (!string.IsNullOrEmpty(version.ImageUrl))
+                                    <div class="row g-4">
+                                        <div class="col-lg-7" id="variantsContainer_@v">
+                                            @for (int vr = 0; vr < Model.Versions[v].Variants.Count; vr++)
                                             {
-                                                <img src="@version.ImageUrl" class="rounded shadow-sm" style="width:31px;height:31px;object-fit:cover;" />
-                                                <input type="hidden" name="Versions[@v].ImageUrl" value="@version.ImageUrl" />
+                                                var variant = Model.Versions[v].Variants[vr];
+                                                <div class="bg-white p-3 rounded-3 border mb-2 position-relative" id="variant_@v @vr">
+                                                    <button type="button" class="btn btn-sm text-danger position-absolute top-0 end-0 m-1 border-0" onclick="removeRow('variant_@v @vr')"><i class="bi bi-trash"></i></button>
+                                                    <div class="row g-2 align-items-end pe-3">
+                                                        <input type="hidden" name="Versions[@v].Variants[@vr].Id" value="@variant.Id" />
+                                                        <div class="col-4"><label class="tiny-label">Màu</label><input type="text" name="Versions[@v].Variants[@vr].Color" value="@variant.Color" class="form-control form-control-sm" required /></div>
+                                                        <div class="col-4"><label class="tiny-label">Giá</label><input type="number" name="Versions[@v].Variants[@vr].Price" value="@variant.Price" class="form-control form-control-sm" /></div>
+                                                        <div class="col-4"><label class="tiny-label">Kho</label><input type="number" name="Versions[@v].Variants[@vr].Stock" value="@variant.Stock" class="form-control form-control-sm" required /></div>
+                                                        <div class="col-12 mt-2"><input type="file" name="Versions[@v].Variants[@vr].ImageFile" class="form-control form-control-sm" /><input type="hidden" name="Versions[@v].Variants[@vr].ImageUrl" value="@variant.ImageUrl" /></div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="col-lg-5" id="specsContainer_@v">
+                                            @for (int s = 0; s < Model.Versions[v].Specifications.Count; s++)
+                                            {
+                                                var spec = Model.Versions[v].Specifications[s];
+                                                <div class="row g-1 bg-white p-1 rounded-3 border mb-1" id="spec_@v @s">
+                                                    <input type="hidden" name="Versions[@v].Specifications[@s].Id" value="@spec.Id" />
+                                                    <div class="col-5"><input type="text" name="Versions[@v].Specifications[@s].SpecName" value="@spec.SpecName" class="form-control form-control-sm" required /></div>
+                                                    <div class="col-6"><input type="text" name="Versions[@v].Specifications[@s].SpecValue" value="@spec.SpecValue" class="form-control form-control-sm" required /></div>
+                                                    <div class="col-1"><button type="button" class="btn btn-sm text-danger border-0 p-0" onclick="removeRow('spec_@v @s')"><i class="bi bi-x-circle-fill"></i></button></div>
+                                                </div>
                                             }
                                         </div>
                                     </div>
-                                    <div class="col-12">
-                                        <label class="form-label fw-bold small text-muted">Đặc điểm nổi bật</label>
-                                        <textarea name="Versions[@v].Description" class="form-control bg-light border-0" rows="3">@version.Description</textarea>
-                                    </div>
-                                </div>
-
-                                <div class="row g-4">
-                                    <div class="col-lg-7">
-                                        <div class="card nested-card rounded-3 h-100">
-                                            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold small text-dark">Màu sắc & Tồn kho</span>
-                                                <button type="button" class="btn btn-sm btn-white border shadow-sm rounded-pill px-3" onclick="addVariant(@v)">Thêm màu</button>
-                                            </div>
-                                            <div class="card-body pt-0">
-                                                <div id="variantsContainer_@v" class="d-flex flex-column gap-2">
-                                                    @for (int vr = 0; vr < version.Variants.Count; vr++)
-                                                    {
-                                                        var variant = version.Variants[vr];
-                                                        <div class="bg-white p-3 rounded-3 border shadow-xs position-relative mb-2" id="variant_@v @vr">
-                                                            <button type="button" class="btn btn-sm btn-light text-danger position-absolute top-0 end-0 m-2 rounded-circle" onclick="removeRow('variant_@v @vr')"><i class="bi bi-trash"></i></button>
-                                                            <div class="row g-2 align-items-end pe-4">
-                                                                <div class="col-md-4">
-                                                                    <label class="tiny-label fw-bold text-muted mb-1 d-block">Màu sắc</label>
-                                                                    <input type="text" name="Versions[@v].Variants[@vr].Color" value="@variant.Color" class="form-control form-control-sm border-light" />
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <label class="tiny-label fw-bold text-muted mb-1 d-block">Giá (₫)</label>
-                                                                    <input type="number" name="Versions[@v].Variants[@vr].Price" value="@variant.Price" class="form-control form-control-sm border-light" />
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <label class="tiny-label fw-bold text-muted mb-1 d-block">Tồn kho</label>
-                                                                    <input type="number" name="Versions[@v].Variants[@vr].Stock" value="@variant.Stock" class="form-control form-control-sm border-light" />
-                                                                </div>
-                                                                <div class="col-12 mt-2">
-                                                                    <div class="d-flex gap-2">
-                                                                        <input type="file" name="Versions[@v].Variants[@vr].ImageFile" class="form-control form-control-sm border-light" accept="image/*" />
-                                                                        @if (!string.IsNullOrEmpty(variant.ImageUrl))
-                                                                        {
-                                                                            <img src="@variant.ImageUrl" class="rounded shadow-sm" style="width:28px;height:28px;object-fit:cover;" />
-                                                                            <input type="hidden" name="Versions[@v].Variants[@vr].ImageUrl" value="@variant.ImageUrl" />
-                                                                            <input type="hidden" name="Versions[@v].Variants[@vr].Id" value="@variant.Id" />
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <input type="hidden" name="Versions[@v].Variants[@vr].Id" value="@variant.Id" />
-                                                                        }
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-5">
-                                        <div class="card nested-card rounded-3 h-100">
-                                            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold small text-dark">Thông số kỹ thuật</span>
-                                                <button type="button" class="btn btn-sm btn-white border shadow-sm rounded-pill px-3" onclick="addSpec(@v)">Thêm thông số</button>
-                                            </div>
-                                            <div class="card-body pt-0">
-                                                <div id="specsContainer_@v" class="d-flex flex-column gap-2">
-                                                    @for (int s = 0; s < version.Specifications.Count; s++)
-                                                    {
-                                                        var spec = version.Specifications[s];
-                                                        <div class="row g-1 bg-white p-2 rounded-3 border shadow-xs mb-1" id="spec_@v @s">
-                                                            <div class="col-5">
-                                                                <input type="text" name="Versions[@v].Specifications[@s].SpecName" value="@spec.SpecName" class="form-control form-control-sm border-light" />
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <input type="text" name="Versions[@v].Specifications[@s].SpecValue" value="@spec.SpecValue" class="form-control form-control-sm border-light" />
-                                                                <input type="hidden" name="Versions[@v].Specifications[@s].Id" value="@spec.Id" />
-                                                            </div>
-                                                            <div class="col-1 text-center">
-                                                                <button type="button" class="btn btn-sm text-danger border-0 p-0" onclick="removeRow('spec_@v @s')"><i class="bi bi-x-circle-fill"></i></button>
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div class="text-end mt-3">
+                                        <button type="button" class="btn btn-sm btn-light border me-2" onclick="addVariant(@v)">Thêm màu</button>
+                                        <button type="button" class="btn btn-sm btn-light border" onclick="addSpec(@v)">Thêm thông số</button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        }
                     }
-                }
+                </div>
+            </div>
+
+            <!-- PHẦN 2: CHỈ CÓ MÀU SẮC -->
+            <div id="sectionColors" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Danh sách màu sắc</h5>
+                    <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm" onclick="addColorVariant()">
+                        <i class="bi bi-plus-lg me-1"></i> Thêm màu
+                    </button>
+                </div>
+                <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="px-4">Màu sắc</th><th>Giá riêng</th><th>Tồn kho</th><th>Hình ảnh</th><th class="text-end px-4">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="colorVariantsContainer">
+                                @if (Model.ProductType == ProductType.ColorsOnly && Model.Versions != null && Model.Versions.Count > 0)
+                                {
+                                    var defaultV = Model.Versions[0];
+                                    for (int vr = 0; vr < defaultV.Variants.Count; vr++)
+                                    {
+                                        var variant = defaultV.Variants[vr];
+                                        <tr id="colorRow_@vr">
+                                            <input type="hidden" name="Versions[0].Variants[@vr].Id" value="@variant.Id" />
+                                            <td class="px-4"><input type="text" name="Versions[0].Variants[@vr].Color" value="@variant.Color" class="form-control border-light" required /></td>
+                                            <td><input type="number" name="Versions[0].Variants[@vr].Price" value="@variant.Price" class="form-control border-light" /></td>
+                                            <td><input type="number" name="Versions[0].Variants[@vr].Stock" value="@variant.Stock" class="form-control border-light" required /></td>
+                                            <td><input type="file" name="Versions[0].Variants[@vr].ImageFile" class="form-control form-control-sm" /><input type="hidden" name="Versions[0].Variants[@vr].ImageUrl" value="@variant.ImageUrl" /></td>
+                                            <td class="text-end px-4"><button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="removeRow('colorRow_@vr')"><i class="bi bi-trash"></i></button></td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="sticky-bottom bg-white border-top p-3 mt-4 text-end rounded-top-4 shadow-lg d-flex justify-content-end gap-3" style="z-index: 1000;">
         <button type="button" class="btn btn-outline-primary btn-lg px-4 rounded-pill fw-bold shadow-sm" onclick="showPreview()">
-            <i class="bi bi-eye-fill me-2"></i> XEM TRƯỚC GIAO DIỆN
+            <i class="bi bi-eye-fill me-2"></i> XEM TRƯỚC
         </button>
-        <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill fw-bold shadow">
-            <i class="bi bi-cloud-upload-fill me-2"></i> CẬP NHẬT SẢN PHẨM
+        <button type="submit" class="btn btn-danger btn-lg px-5 rounded-pill fw-bold shadow">
+            <i class="bi bi-cloud-upload-fill me-2"></i> CẬP NHẬT
         </button>
     </div>
 </form>
 
-<!-- Phần Xem trước trực tiếp tại trang -->
 <div id="livePreviewSection" style="display: none;">
     <div class="d-flex align-items-center mb-5">
         <div class="flex-grow-1 h-px bg-secondary opacity-10"></div>
-        <h2 class="mx-4 fw-bold text-dark"><i class="bi bi-display me-2 text-primary"></i>BẢN XEM TRƯỚC GIAO DIỆN NGƯỜI DÙNG</h2>
+        <h2 class="mx-4 fw-bold text-dark">BẢN XEM TRƯỚC GIAO DIỆN</h2>
         <div class="flex-grow-1 h-px bg-secondary opacity-10"></div>
     </div>
-    
-    <div id="previewContent">
-        <!-- Nội dung sẽ được đổ vào đây -->
-    </div>
+    <div id="previewContent"></div>
 </div>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
         let versionCount = @(Model.Versions?.Count ?? 0);
-        let variantCounters = {};
-        let specCounters = {};
+        let colorVariantCount = @( (Model.ProductType == ProductType.ColorsOnly && Model.Versions != null && Model.Versions.Count > 0) ? Model.Versions[0].Variants.Count : 0);
+        let variantCounters = {}; let specCounters = {};
 
         @if(Model.Versions != null) {
             for(int i=0; i<Model.Versions.Count; i++) {
@@ -359,53 +267,58 @@
             }
         }
 
+        window.onload = function() {
+            updateSections();
+        };
+
+        document.querySelectorAll('input[name="ProductType"]').forEach(radio => {
+            radio.addEventListener('change', updateSections);
+        });
+
+        function updateSections() {
+            const val = document.querySelector('input[name="ProductType"]:checked')?.value;
+            const sectionVersions  = document.getElementById('sectionVersions');
+            const sectionColors    = document.getElementById('sectionColors');
+            const directPrice      = document.getElementById('directPriceSection');
+            const directOrig       = document.getElementById('directOriginalPriceSection');
+
+            sectionVersions.style.display = (val === '1') ? 'block' : 'none';
+            sectionColors.style.display   = (val === '2') ? 'block' : 'none';
+            directPrice.style.display     = (val === '2' || val === '3') ? 'block' : 'none';
+            directOrig.style.display      = (val === '2' || val === '3') ? 'block' : 'none';
+        }
+
         function addVersion() {
-            const container = document.getElementById('versionsContainer');
             const vIdx = versionCount++;
-            const vHtml = `
-            <div class="card shadow-sm border-0 rounded-4 mb-4 version-card" id="version_${vIdx}">
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-start">
-                    <h6 class="fw-bold text-primary mb-1">Phiên bản mới #${vIdx + 1}</h6>
+            const html = `<div class="card shadow-sm border-0 rounded-4 mb-4 version-card" id="version_${vIdx}">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-primary mb-0">Phiên bản mới #${vIdx + 1}</h6>
                     <button type="button" class="btn btn-outline-danger btn-remove rounded-circle" onclick="removeRow('version_${vIdx}')"><i class="bi bi-x"></i></button>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3 mb-4">
-                        <div class="col-md-3"><label class="form-label fw-bold small">Dung lượng</label><input type="text" name="Versions[${vIdx}].Name" class="form-control bg-light border-0 fw-bold" required /></div>
-                        <div class="col-md-3"><label class="form-label fw-bold small text-danger">Giá bán (₫)</label><input type="number" name="Versions[${vIdx}].BasePrice" class="form-control bg-light border-0 fw-bold" required /></div>
-                        <div class="col-md-3"><label class="form-label fw-bold small">Giá gốc (₫)</label><input type="number" name="Versions[${vIdx}].OriginalPrice" class="form-control bg-light border-0" placeholder="Giá niêm yết..." /></div>
-                        <div class="col-md-3"><label class="form-label fw-bold small">Ảnh</label><input type="file" name="Versions[${vIdx}].ImageFile" class="form-control form-control-sm border-0 bg-light" accept="image/*" /></div>
-                        <div class="col-12"><textarea name="Versions[${vIdx}].Description" class="form-control bg-light border-0" rows="3" placeholder="Đặc điểm nổi bật..."></textarea></div>
+                        <div class="col-md-3"><label class="small fw-bold">Dung lượng</label><input type="text" name="Versions[${vIdx}].Name" class="form-control bg-light border-0" required /></div>
+                        <div class="col-md-3"><label class="small fw-bold text-danger">Giá bán</label><input type="number" name="Versions[${vIdx}].BasePrice" class="form-control bg-light border-0" required /></div>
+                        <div class="col-md-3"><label class="small fw-bold">Giá gốc</label><input type="number" name="Versions[${vIdx}].OriginalPrice" class="form-control bg-light border-0" /></div>
+                        <div class="col-md-3"><label class="small fw-bold">Ảnh</label><input type="file" name="Versions[${vIdx}].ImageFile" class="form-control form-control-sm" /></div>
+                        <div class="col-12"><textarea name="Versions[${vIdx}].Description" class="form-control bg-light border-0" rows="2"></textarea></div>
                     </div>
-                    <div class="row g-4">
-                        <div class="col-lg-7">
-                            <div class="card nested-card rounded-3">
-                                <div class="card-header border-0 d-flex justify-content-between align-items-center"><span>Màu sắc</span><button type="button" class="btn btn-sm btn-white border rounded-pill px-3" onclick="addVariant(${vIdx})">Thêm</button></div>
-                                <div class="card-body pt-0"><div id="variantsContainer_${vIdx}"></div></div>
-                            </div>
-                        </div>
-                        <div class="col-lg-5">
-                            <div class="card nested-card rounded-3">
-                                <div class="card-header border-0 d-flex justify-content-between align-items-center"><span>Thông số</span><button type="button" class="btn btn-sm btn-white border rounded-pill px-3" onclick="addSpec(${vIdx})">Thêm</button></div>
-                                <div class="card-body pt-0"><div id="specsContainer_${vIdx}"></div></div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="row g-4"><div class="col-lg-7" id="variantsContainer_${vIdx}"></div><div class="col-lg-5" id="specsContainer_${vIdx}"></div></div>
+                    <div class="text-end mt-3"><button type="button" class="btn btn-sm btn-light border me-2" onclick="addVariant(${vIdx})">Thêm màu</button><button type="button" class="btn btn-sm btn-light border" onclick="addSpec(${vIdx})">Thêm thông số</button></div>
                 </div>
             </div>`;
-            container.insertAdjacentHTML('beforeend', vHtml);
+            document.getElementById('versionsContainer').insertAdjacentHTML('beforeend', html);
         }
 
         function addVariant(vIdx) {
             if (!variantCounters[vIdx]) variantCounters[vIdx] = 0;
-            const varIdx = variantCounters[vIdx]++;
-            const html = `
-            <div class="bg-white p-3 rounded-3 border mb-2 position-relative" id="variant_${vIdx}_${varIdx}">
-                <button type="button" class="btn btn-sm text-danger position-absolute top-0 end-0 m-1 border-0" onclick="removeRow('variant_${vIdx}_${varIdx}')"><i class="bi bi-trash"></i></button>
+            const vr = variantCounters[vIdx]++;
+            const html = `<div class="bg-white p-2 rounded-3 border mb-2 position-relative" id="variant_${vIdx}_${vr}">
+                <button type="button" class="btn btn-sm text-danger position-absolute top-0 end-0 m-1 border-0" onclick="removeRow('variant_${vIdx}_${vr}')"><i class="bi bi-trash"></i></button>
                 <div class="row g-2 align-items-end pe-3">
-                    <div class="col-4"><label class="tiny-label fw-bold text-muted">Màu</label><input type="text" name="Versions[${vIdx}].Variants[${varIdx}].Color" class="form-control form-control-sm" required /></div>
-                    <div class="col-4"><label class="tiny-label fw-bold text-muted">Giá</label><input type="number" name="Versions[${vIdx}].Variants[${varIdx}].Price" class="form-control form-control-sm" value="0" /></div>
-                    <div class="col-4"><label class="tiny-label fw-bold text-muted">Kho</label><input type="number" name="Versions[${vIdx}].Variants[${varIdx}].Stock" class="form-control form-control-sm" value="0" /></div>
-                    <div class="col-12 mt-2"><input type="file" name="Versions[${vIdx}].Variants[${varIdx}].ImageFile" class="form-control form-control-sm" accept="image/*" /></div>
+                    <div class="col-4"><input type="text" name="Versions[${vIdx}].Variants[${vr}].Color" placeholder="Màu" class="form-control form-control-sm" required /></div>
+                    <div class="col-4"><input type="number" name="Versions[${vIdx}].Variants[${vr}].Price" placeholder="Giá" class="form-control form-control-sm" /></div>
+                    <div class="col-4"><input type="number" name="Versions[${vIdx}].Variants[${vr}].Stock" placeholder="Kho" class="form-control form-control-sm" value="10" /></div>
                 </div>
             </div>`;
             document.getElementById(`variantsContainer_${vIdx}`).insertAdjacentHTML('beforeend', html);
@@ -413,14 +326,25 @@
 
         function addSpec(vIdx) {
             if (!specCounters[vIdx]) specCounters[vIdx] = 0;
-            const sIdx = specCounters[vIdx]++;
-            const html = `
-            <div class="row g-1 bg-white p-1 rounded-3 border mb-1" id="spec_${vIdx}_${sIdx}">
-                <div class="col-5"><input type="text" name="Versions[${vIdx}].Specifications[${sIdx}].SpecName" class="form-control form-control-sm" placeholder="Tên" required /></div>
-                <div class="col-6"><input type="text" name="Versions[${vIdx}].Specifications[${sIdx}].SpecValue" class="form-control form-control-sm" placeholder="Giá trị" required /></div>
-                <div class="col-1"><button type="button" class="btn btn-sm text-danger border-0 p-0" onclick="removeRow('spec_${vIdx}_${sIdx}')"><i class="bi bi-x-circle-fill"></i></button></div>
+            const s = specCounters[vIdx]++;
+            const html = `<div class="row g-1 mb-1" id="spec_${vIdx}_${s}">
+                <div class="col-5"><input type="text" name="Versions[${vIdx}].Specifications[${s}].SpecName" placeholder="Tên" class="form-control form-control-sm" required /></div>
+                <div class="col-6"><input type="text" name="Versions[${vIdx}].Specifications[${s}].SpecValue" placeholder="Giá trị" class="form-control form-control-sm" required /></div>
+                <div class="col-1"><button type="button" class="btn btn-sm text-danger border-0" onclick="removeRow('spec_${vIdx}_${s}')"><i class="bi bi-x-circle"></i></button></div>
             </div>`;
             document.getElementById(`specsContainer_${vIdx}`).insertAdjacentHTML('beforeend', html);
+        }
+
+        function addColorVariant() {
+            const idx = colorVariantCount++;
+            const html = `<tr id="colorRow_${idx}">
+                <td class="px-4"><input type="text" name="Versions[0].Variants[${idx}].Color" class="form-control border-light shadow-xs" required /></td>
+                <td><input type="number" name="Versions[0].Variants[${idx}].Price" class="form-control border-light shadow-xs" value="0" /></td>
+                <td><input type="number" name="Versions[0].Variants[${idx}].Stock" class="form-control border-light shadow-xs" value="10" required /></td>
+                <td><input type="file" name="Versions[0].Variants[${idx}].ImageFile" class="form-control form-control-sm" /></td>
+                <td class="text-end px-4"><button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="removeRow('colorRow_${idx}')"><i class="bi bi-trash"></i></button></td>
+            </tr>`;
+            document.getElementById('colorVariantsContainer').insertAdjacentHTML('beforeend', html);
         }
 
         function removeRow(id) { document.getElementById(id).remove(); }
@@ -428,109 +352,49 @@
         function showPreview() {
             const productName = document.querySelector('input[name="Name"]').value || "Tên sản phẩm";
             const description = document.querySelector('textarea[name="Description"]').value || "Mô tả sản phẩm...";
+            const productType = document.querySelector('input[name="ProductType"]:checked')?.value;
+            let html = '';
 
-            const versionElements = document.querySelectorAll('.version-card');
-            if (versionElements.length === 0) {
-                alert('Chưa có dung lượng nào để xem trước!');
-                return;
+            if (productType === "1") {
+                const versionElements = document.querySelectorAll('.version-card');
+                let tabsHtml = ''; let tabContentsHtml = '';
+                versionElements.forEach((vEl, vIdx) => {
+                    const vName = vEl.querySelector('input[name*=".Name"]')?.value || `Dung lượng ${vIdx+1}`;
+                    const vPrice = parseFloat(vEl.querySelector('input[name*=".BasePrice"]')?.value || '0');
+                    let varsHtml = '';
+                    [...vEl.querySelectorAll('[id^="variant_"]')].forEach((vr, i) => {
+                        const color = vr.querySelector('input[name*=".Color"]')?.value || 'Màu';
+                        const price = parseFloat(vr.querySelector('input[name*=".Price"]')?.value || '0');
+                        varsHtml += `<div class="preview-option-item ${i===0?'active':''}"><span class="fw-bold small">${color}</span><small>${(price > 0 ? price : vPrice).toLocaleString('vi-VN')}₫</small></div>`;
+                    });
+                    tabsHtml += `<button type="button" class="btn ${vIdx===0?'btn-danger':'btn-outline-secondary'} btn-sm rounded-pill px-3 me-2 mb-2" onclick="switchPreviewTab(${vIdx}, ${versionElements.length})" id="ptab_${vIdx}">${vName}</button>`;
+                    tabContentsHtml += `<div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">${buildInnerHtml(productName, vName, vPrice, 0, varsHtml, description)}</div>`;
+                });
+                html = `<div class="mb-4 d-flex justify-content-center flex-wrap">${tabsHtml}</div>${tabContentsHtml}`;
+            } else {
+                const p = parseFloat(document.querySelector('input[name="Price"]').value || '0'), op = parseFloat(document.querySelector('input[name="OriginalPrice"]').value || '0');
+                let varsHtml = '';
+                if (productType === "2") {
+                    [...document.querySelectorAll('[id^="colorRow_"]')].forEach((row, i) => {
+                        const color = row.querySelector('input[name*=".Color"]')?.value || 'Màu';
+                        const vp = parseFloat(row.querySelector('input[name*=".Price"]')?.value || '0');
+                        varsHtml += `<div class="preview-option-item ${i===0?'active':''}"><span class="fw-bold small">${color}</span><small>${(vp > 0 ? vp : p).toLocaleString('vi-VN')}₫</small></div>`;
+                    });
+                }
+                html = buildInnerHtml(productName, "", p, op, varsHtml, description);
             }
-
-            // Build version tabs
-            let tabsHtml = '';
-            let tabContentsHtml = '';
-
-            versionElements.forEach((vEl, vIdx) => {
-                const nameEl = vEl.querySelector(`input[name="Versions[${vIdx}].Name"]`);
-                const priceEl = vEl.querySelector(`input[name="Versions[${vIdx}].BasePrice"]`);
-                const originalPriceEl = vEl.querySelector(`input[name="Versions[${vIdx}].OriginalPrice"]`);
-                const imgHiddenEl = vEl.querySelector(`input[name="Versions[${vIdx}].ImageUrl"]`);
-
-                const vName = nameEl?.value || `Dung lượng ${vIdx+1}`;
-                const vBasePrice = parseFloat(priceEl?.value || '0');
-                const vOriginalPrice = parseFloat(originalPriceEl?.value || '0');
-                const existingImgUrl = imgHiddenEl?.value || '';
-
-                // Get variants
-                let variantsHtml = '';
-                const variantRows = [...vEl.querySelectorAll(`[id^="variant_${vIdx} "],[id^="variant_${vIdx}_"]`)];
-                variantRows.forEach((varRow, varIdx) => {
-                    const color = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Color"]`)?.value || 'Màu';
-                    const price = parseFloat(varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Price"]`)?.value || '0');
-                    const displayPrice = price > 0 ? price : vBasePrice;
-                    variantsHtml += `<div class="preview-option-item ${varIdx===0?'active':''}"><span class="preview-option-name">${color}</span><span class="preview-option-price">${displayPrice.toLocaleString('vi-VN')}₫</span></div>`;
-                });
-                if (!variantsHtml) variantsHtml = '<div class="text-muted small">Chưa cấu hình màu sắc</div>';
-
-                // Get specs
-                let specsHtml = '';
-                const specRows = [...vEl.querySelectorAll(`[id^="spec_${vIdx} "],[id^="spec_${vIdx}_"]`)];
-                specRows.forEach((sRow, sIdx) => {
-                    const name = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecName"]`)?.value || '';
-                    const value = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecValue"]`)?.value || '';
-                    if (name) specsHtml += `<tr><td class="text-muted border-0 py-1" style="width:45%">${name}</td><td class="fw-bold border-0 py-1">${value}</td></tr>`;
-                });
-                if (!specsHtml) specsHtml = '<tr><td class="text-muted">Chưa cấu hình thông số</td></tr>';
-
-                // Image
-                const imgSrc = existingImgUrl || '';
-                const imgHtml = imgSrc
-                    ? `<img src="${imgSrc}" class="img-fluid" />`
-                    : `<div class="text-center py-4"><i class="bi bi-image fs-1 text-muted"></i><p class="text-muted small mt-2">Chưa có ảnh</p></div>`;
-
-                tabsHtml += `<button type="button" class="btn ${vIdx===0?'btn-danger':'btn-outline-secondary'} btn-sm rounded-pill px-3 me-2 mb-2 preview-tab-btn" onclick="switchPreviewTab(${vIdx}, ${versionElements.length})" id="ptab_${vIdx}">${vName} — ${vBasePrice.toLocaleString('vi-VN')}₫</button>`;
-
-                tabContentsHtml += `
-                <div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">
-                    <div class="preview-card-inner">
-                        <div class="row gx-5">
-                            <div class="col-lg-6 mb-4">
-                                <div class="preview-img-container">${imgHtml}</div>
-                            </div>
-                            <div class="col-lg-6">
-                                <h2 class="fw-bolder mb-3">${productName}</h2>
-                                <h4 class="text-muted mb-4">${vName}</h4>
-                                <div class="preview-price-container mb-4">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="preview-current-price">${vBasePrice.toLocaleString('vi-VN')}₫</div>
-                                        ${vOriginalPrice > vBasePrice ? `<div class="text-muted text-decoration-line-through small">${vOriginalPrice.toLocaleString('vi-VN')}₫</div> <span class="badge bg-danger">Giảm ${Math.round((1 - vBasePrice/vOriginalPrice)*100)}%</span>` : ''}
-                                    </div>
-                                    <div class="small text-muted mt-2"><i class="bi bi-truck me-2"></i>Miễn phí giao hàng toàn quốc</div>
-                                </div>
-                                <div class="mb-4">
-                                    <span class="preview-selector-label">Chọn màu sắc (Demo)</span>
-                                    <div class="preview-option-grid">${variantsHtml}</div>
-                                </div>
-                                <div class="mt-4 pt-4 border-top">
-                                    <h5 class="fw-bold mb-3"><i class="bi bi-cpu me-2"></i>Thông số kỹ thuật</h5>
-                                    <table class="table table-sm border-0"><tbody>${specsHtml}</tbody></table>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-5 p-4 bg-light rounded-4">
-                            <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Mô tả sản phẩm</h5>
-                            <div class="small text-dark" style="white-space:pre-wrap; line-height: 1.6;">${description}</div>
-                        </div>
-                    </div>
-                </div>`;
-            });
-
-            const html = `<div class="mb-4 d-flex justify-content-center">${tabsHtml}</div>${tabContentsHtml}`;
-            const previewSection = document.getElementById('livePreviewSection');
-            const previewContent = document.getElementById('previewContent');
-            
-            previewContent.innerHTML = html;
-            previewSection.style.display = 'block';
-            
-            // Cuộn xuống phần xem trước
-            previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('previewContent').innerHTML = html; document.getElementById('livePreviewSection').style.display = 'block'; document.getElementById('livePreviewSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function switchPreviewTab(activeIdx, total) {
+        function buildInnerHtml(n, sn, p, op, vh, d) {
+            const ph = (op > p) ? `<div class="preview-current-price">${p.toLocaleString('vi-VN')}₫</div><del class="text-muted ms-2 small">${op.toLocaleString('vi-VN')}₫</del>` : `<div class="preview-current-price">${p.toLocaleString('vi-VN')}₫</div>`;
+            return `<div class="preview-card-inner border"><div class="row"><div class="col-lg-5 text-center bg-light rounded-4 py-5 mb-4 mb-lg-0"><i class="bi bi-image fs-1 text-muted"></i></div><div class="col-lg-7 px-lg-5"><h3 class="fw-bold">${n}</h3>${sn?`<p class="text-muted">${sn}</p>`:''}<div class="d-flex align-items-center mb-4">${ph}</div>${vh?`<div class="mb-4"><label class="small fw-bold d-block mb-2">Màu sắc:</label><div class="d-flex flex-wrap gap-2">${vh}</div></div>`:''}<div class="border-top pt-3"><label class="small fw-bold d-block mb-1">Mô tả:</label><div class="small text-muted" style="white-space:pre-wrap">${d}</div></div></div></div></div>`;
+        }
+
+        function switchPreviewTab(idx, total) {
             for(let i=0;i<total;i++) {
-                const content = document.getElementById(`ptabContent_${i}`);
-                const btn = document.getElementById(`ptab_${i}`);
-                if(content) content.style.display = i===activeIdx ? 'block' : 'none';
-                if(btn) { btn.classList.toggle('btn-danger', i===activeIdx); btn.classList.toggle('btn-outline-secondary', i!==activeIdx); }
+                if(document.getElementById(`ptabContent_${i}`)) document.getElementById(`ptabContent_${i}`).style.display = i===idx?'block':'none';
+                if(document.getElementById(`ptab_${i}`)) { document.getElementById(`ptab_${i}`).classList.toggle('btn-danger', i===idx); document.getElementById(`ptab_${i}`).classList.toggle('btn-outline-secondary', i!==idx); }
             }
         }
     </script>

@@ -467,10 +467,10 @@
         body.scrollTop = 99999;
 
         try {
-            const res = await fetch('/Chat/AskAI', {
+            const res = await fetch('/ChatAI/Ask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(msg)
+                body: JSON.stringify({ message: msg })
             });
             typingEl.remove();
 

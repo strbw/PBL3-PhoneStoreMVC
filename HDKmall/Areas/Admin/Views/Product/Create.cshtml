@@ -1,7 +1,7 @@
 @model HDKmall.ViewModels.ProductVM
 
 @{
-    ViewData["Title"] = "Thêm Sản Phẩm Mới (Cấu trúc 3 cấp)";
+    ViewData["Title"] = "Thêm Sản Phẩm Mới ";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -94,61 +94,128 @@
 
     <div class="row">
         <div class="col-lg-12">
-            <!-- Thông tin chung -->
-            <div class="card shadow-sm border-0 rounded-4 mb-4">
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
-                    <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-info-circle-fill me-2"></i>Thông tin chung của sản phẩm</h5>
-                    <p class="text-muted small mt-1">Thông tin này sẽ được dùng chung cho tất cả các phiên bản dung lượng.</p>
+    <!-- ===== CHỌN LOẠI SẢN PHẨM ===== -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+            <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-grid-1x2-fill me-2"></i>Chọn loại sản phẩm</h5>
+            <p class="text-muted small mt-1">Chọn đúng loại để hệ thống lưu giá chính xác.</p>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="radio" class="btn-check" asp-for="ProductType" id="typeVersions" value="1" checked>
+                    <label class="btn btn-outline-primary w-100 py-3 rounded-3 text-start" for="typeVersions">
+                        <i class="bi bi-phone fs-3 d-block mb-2"></i>
+                        <strong>Có phiên bản dung lượng</strong>
+                        <div class="small text-muted mt-1">VD: iPhone (256GB, 512GB...), Laptop</div>
+                    </label>
                 </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="Name" class="form-label fw-bold text-muted small">Tên sản phẩm (Model) <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control bg-light border-0" placeholder="VD: iPhone 15 Pro Max" />
-                            <span asp-validation-for="Name" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-3">
-                            <label asp-for="CategoryId" class="form-label fw-bold text-muted small">Danh mục <span class="text-danger">*</span></label>
-                            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select bg-light border-0">
-                                <option value="">-- Chọn danh mục --</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label asp-for="BrandId" class="form-label fw-bold text-muted small">Thương hiệu</label>
-                            <select asp-for="BrandId" asp-items="ViewBag.Brands" class="form-select bg-light border-0">
-                                <option value="">-- Chọn thương hiệu --</option>
-                            </select>
-                        </div>
-
-
-                        <div class="col-md-12">
-                            <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Hình ảnh chung cho các dung lượng (Gallery)</label>
-                            <input asp-for="GalleryFiles" type="file" multiple class="form-control bg-light border-0" accept="image/*" />
-                            <p class="text-muted tiny-label mt-1 mb-0">Có thể chọn nhiều ảnh để hiển thị chung ở đầu Slider.</p>
-                        </div>
-                        <div class="col-12">
-                            <label asp-for="Description" class="form-label fw-bold text-muted small">Mô tả tổng quát (Tùy chọn)</label>
-                            <textarea asp-for="Description" class="form-control bg-light border-0" rows="2" placeholder="Thông tin giới thiệu chung về dòng sản phẩm này..."></textarea>
-                        </div>
-                    </div>
+                <div class="col-md-4">
+                    <input type="radio" class="btn-check" asp-for="ProductType" id="typeColors" value="2">
+                    <label class="btn btn-outline-success w-100 py-3 rounded-3 text-start" for="typeColors">
+                        <i class="bi bi-palette fs-3 d-block mb-2"></i>
+                        <strong>Chỉ có màu sắc</strong>
+                        <div class="small text-muted mt-1">VD: Loa Bluetooth, Tai nghe, Đồng hồ</div>
+                    </label>
+                </div>
+                <div class="col-md-4">
+                    <input type="radio" class="btn-check" asp-for="ProductType" id="typeSimple" value="3">
+                    <label class="btn btn-outline-secondary w-100 py-3 rounded-3 text-start" for="typeSimple">
+                        <i class="bi bi-box fs-3 d-block mb-2"></i>
+                        <strong>Sản phẩm đơn giản</strong>
+                        <div class="small text-muted mt-1">VD: Ốp lưng, Cáp sạc, Củ sạc</div>
+                    </label>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Cấu trúc Dung lượng (Versions) -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0"><i class="bi bi-stack me-2"></i>Danh sách các phiên bản Dung lượng</h5>
-                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" onclick="addVersion()">
-                    <i class="bi bi-plus-lg me-1"></i> Thêm dung lượng mới
+    <!-- Thông tin chung -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-info-circle-fill me-2"></i>Thông tin chung của sản phẩm</h5>
+            <p class="text-muted small mt-1">Thông tin hiển thị trên trang sản phẩm.</p>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Name" class="form-label fw-bold text-muted small">Tên sản phẩm (Model) <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control bg-light border-0" placeholder="VD: iPhone 15 Pro Max" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="CategoryId" class="form-label fw-bold text-muted small">Danh mục <span class="text-danger">*</span></label>
+                    <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select bg-light border-0">
+                        <option value="">-- Chọn danh mục --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="BrandId" class="form-label fw-bold text-muted small">Thương hiệu</label>
+                    <select asp-for="BrandId" asp-items="ViewBag.Brands" class="form-select bg-light border-0">
+                        <option value="">-- Chọn thương hiệu --</option>
+                    </select>
+                </div>
+
+                <!-- Ô ẩn để Model Binder nhận diện Versions[0] khi là Loa -->
+                <input type="hidden" name="Versions[0].Name" id="hiddenDefaultVersionName" value="Mặc định" />
+
+                <!-- Giá trực tiếp – hiện khi ColorsOnly hoặc Simple -->
+                <div class="col-md-3" id="directPriceSection" style="display:none;">
+                    <label asp-for="Price" class="form-label fw-bold text-muted small">Giá bán (₫) <span class="text-danger">*</span></label>
+                    <input asp-for="Price" type="number" class="form-control bg-light border-0" placeholder="VD: 1090000" min="0" />
+                </div>
+                <div class="col-md-3" id="directOriginalPriceSection" style="display:none;">
+                    <label asp-for="OriginalPrice" class="form-label fw-bold text-muted small">Giá gốc (₫) - Khuyến mãi</label>
+                    <input asp-for="OriginalPrice" type="number" class="form-control bg-light border-0" placeholder="VD: 1290000" min="0" />
+                </div>
+
+                <div class="col-md-12">
+                    <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Hình ảnh sản phẩm (Gallery)</label>
+                    <input asp-for="GalleryFiles" type="file" multiple class="form-control bg-light border-0" accept="image/*" />
+                </div>
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label fw-bold text-muted small">Mô tả tổng quát (Tùy chọn)</label>
+                    <textarea asp-for="Description" class="form-control bg-light border-0" rows="2" placeholder="Thông tin giới thiệu chung..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION: Có phiên bản dung lượng ===== -->
+    <div id="sectionVersions">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-stack me-2"></i>Danh sách các phiên bản Dung lượng</h5>
+            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" onclick="addVersion()">
+                <i class="bi bi-plus-lg me-1"></i> Thêm dung lượng mới
+            </button>
+        </div>
+        <div id="versionsContainer">
+            <div class="text-center p-5 bg-white rounded-4 shadow-sm mb-4 border border-dashed" id="noVersionHint">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="mt-2 text-muted">Sản phẩm này chưa có phiên bản dung lượng nào. Hãy bấm nút phía trên để thêm.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION: Chỉ có màu sắc ===== -->
+    <div id="sectionColors" style="display:none;">
+        <div class="card shadow-sm border-0 rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-0 text-success"><i class="bi bi-palette-fill me-2"></i>Màu sắc và Tồn kho</h5>
+                    <p class="text-muted small mt-1">Giá của mỗi màu sẽ dùng giá chung bên trên, hoặc nhập riêng nếu khác giá.</p>
+                </div>
+                <button type="button" class="btn btn-success rounded-pill px-3" onclick="addColorVariant()">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm màu
                 </button>
             </div>
-
-            <div id="versionsContainer">
-                <!-- Nơi chứa các Version cards -->
-                <div class="text-center p-5 bg-white rounded-4 shadow-sm mb-4 border border-dashed" id="noVersionHint">
-                    <i class="bi bi-inbox fs-1 text-muted"></i>
-                    <p class="mt-2 text-muted">Sản phẩm này chưa có phiên bản dung lượng nào. Hãy bấm nút phía trên để thêm.</p>
-                </div>
+            <div class="card-body p-4">
+                <div id="colorVariantsContainer" class="d-flex flex-column gap-2"></div>
+                <div class="text-center py-3 text-muted small" id="noColorHint">Chưa có màu nào. Bấm "Thêm màu" để thêm.</div>
             </div>
+        </div>
+    </div>
+
         </div>
     </div>
 
@@ -178,6 +245,59 @@
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
+        // ===== XỬ LÝ CHỌN LOẠI SẢN PHẨM =====
+        document.querySelectorAll('input[name="ProductType"]').forEach(radio => {
+            radio.addEventListener('change', updateSections);
+        });
+
+        function updateSections() {
+            const val = document.querySelector('input[name="ProductType"]:checked')?.value;
+            const sectionVersions  = document.getElementById('sectionVersions');
+            const sectionColors    = document.getElementById('sectionColors');
+            const directPrice      = document.getElementById('directPriceSection');
+
+            sectionVersions.style.display  = (val === '1') ? 'block' : 'none';
+            sectionColors.style.display    = (val === '2') ? 'block' : 'none';
+            directPrice.style.display      = (val === '2' || val === '3') ? 'block' : 'none';
+            document.getElementById('directOriginalPriceSection').style.display = (val === '2' || val === '3') ? 'block' : 'none';
+        }
+
+        // ===== THÊM MÀU SẮC (cho ColorsOnly) =====
+        let colorCount = 0;
+        function addColorVariant() {
+            const container = document.getElementById('colorVariantsContainer');
+            const hint      = document.getElementById('noColorHint');
+            if (hint) hint.style.display = 'none';
+            const idx = colorCount++;
+            container.insertAdjacentHTML('beforeend', `
+            <div class="bg-white p-3 rounded-3 border shadow-sm position-relative mb-2" id="colorRow_${idx}">
+                <button type="button" class="btn btn-sm btn-light text-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                    onclick="removeRow('colorRow_${idx}')"><i class="bi bi-trash"></i></button>
+                <div class="row g-2 align-items-end pe-4">
+                    <div class="col-md-4">
+                        <label class="form-label tiny-label fw-bold text-muted mb-1" style="font-size:10px">Màu sắc *</label>
+                        <input type="text" name="Versions[0].Variants[${idx}].Color"
+                               class="form-control form-control-sm" placeholder="VD: Đen" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label tiny-label fw-bold text-muted mb-1" style="font-size:10px">Giá riêng (₫) – 0 = dùng giá chung</label>
+                        <input type="number" name="Versions[0].Variants[${idx}].Price"
+                               class="form-control form-control-sm" value="0" min="0" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label tiny-label fw-bold text-muted mb-1" style="font-size:10px">Tồn kho</label>
+                        <input type="number" name="Versions[0].Variants[${idx}].Stock"
+                               class="form-control form-control-sm" value="0" min="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label tiny-label fw-bold text-muted mb-1" style="font-size:10px">Ảnh màu</label>
+                        <input type="file" name="Versions[0].Variants[${idx}].ImageFile"
+                               class="form-control form-control-sm" accept="image/*" />
+                    </div>
+                </div>
+            </div>`);
+        }
+
         let versionCount = 0;
 
         function addVersion() {
@@ -319,99 +439,90 @@
             container.insertAdjacentHTML('beforeend', html);
         }
 
-        function removeRow(id) {
-            const el = document.getElementById(id);
-            if (el) el.remove();
-        }
-
         function showPreview() {
             const productName = document.querySelector('input[name="Name"]').value || "Tên sản phẩm";
             const description = document.querySelector('textarea[name="Description"]').value || "Mô tả sản phẩm...";
+            const productType = document.querySelector('input[name="ProductType"]:checked')?.value;
 
-            const versionElements = document.querySelectorAll('.version-card');
-            if (versionElements.length === 0) {
-                alert('Chưa có dung lượng nào để xem trước!');
-                return;
+            let html = '';
+
+            if (productType === "1") {
+                const versionElements = document.querySelectorAll('.version-card');
+                if (versionElements.length === 0) {
+                    alert('Hãy thêm ít nhất một dung lượng để xem trước!');
+                    return;
+                }
+
+                let tabsHtml = '';
+                let tabContentsHtml = '';
+
+                versionElements.forEach((vEl, vIdx) => {
+                    const vName = vEl.querySelector(`input[name="Versions[${vIdx}].Name"]`)?.value || `Dung lượng ${vIdx+1}`;
+                    const vBasePrice = parseFloat(vEl.querySelector(`input[name="Versions[${vIdx}].BasePrice"]`)?.value || '0');
+
+                    let variantsHtml = '';
+                    const variantRows = [...vEl.querySelectorAll(`[id^="variant_${vIdx}_"]`)];
+                    variantRows.forEach((varRow, varIdx) => {
+                        const color = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Color"]`)?.value || 'Màu';
+                        const price = parseFloat(varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Price"]`)?.value || '0');
+                        const displayPrice = price > 0 ? price : vBasePrice;
+                        variantsHtml += `<div class="preview-option-item ${varIdx===0?'active':''}"><span class="preview-option-name">${color}</span><span class="preview-option-price">${displayPrice.toLocaleString('vi-VN')}₫</span></div>`;
+                    });
+
+                    tabsHtml += `<button type="button" class="btn ${vIdx===0?'btn-danger':'btn-outline-secondary'} btn-sm rounded-pill px-3 me-2 mb-2" onclick="switchPreviewTab(${vIdx}, ${versionElements.length})" id="ptab_${vIdx}">${vName}</button>`;
+                    tabContentsHtml += `<div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">${buildProductInnerHtml(productName, vName, vBasePrice, 0, variantsHtml, description)}</div>`;
+                });
+                html = `<div class="mb-4 d-flex justify-content-center flex-wrap">${tabsHtml}</div>${tabContentsHtml}`;
+
+            } else {
+                const price = parseFloat(document.querySelector('input[name="Price"]').value || '0');
+                const originalPrice = parseFloat(document.querySelector('input[name="OriginalPrice"]').value || '0');
+                
+                let variantsHtml = '';
+                if (productType === "2") {
+                    const variantRows = [...document.querySelectorAll(`[id^="colorRow_"]`)];
+                    variantRows.forEach((row, idx) => {
+                        const color = row.querySelector(`input[name*=".Color"]`)?.value || 'Màu';
+                        const vPrice = parseFloat(row.querySelector(`input[name*=".Price"]`)?.value || '0');
+                        const displayPrice = vPrice > 0 ? vPrice : price;
+                        variantsHtml += `<div class="preview-option-item ${idx===0?'active':''}"><span class="preview-option-name">${color}</span><span class="preview-option-price">${displayPrice.toLocaleString('vi-VN')}₫</span></div>`;
+                    });
+                }
+
+                html = buildProductInnerHtml(productName, "", price, originalPrice, variantsHtml, description);
             }
 
-            // Build version tabs
-            let tabsHtml = '';
-            let tabContentsHtml = '';
+            const previewSection = document.getElementById('livePreviewSection');
+            document.getElementById('previewContent').innerHTML = html;
+            previewSection.style.display = 'block';
+            previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
-            versionElements.forEach((vEl, vIdx) => {
-                const nameEl = vEl.querySelector(`input[name="Versions[${vIdx}].Name"]`);
-                const priceEl = vEl.querySelector(`input[name="Versions[${vIdx}].BasePrice"]`);
+        function buildProductInnerHtml(name, subName, price, originalPrice, variantsHtml, desc) {
+            const priceHtml = (originalPrice > 0 && originalPrice > price)
+                ? `<div class="preview-current-price">${price.toLocaleString('vi-VN')}₫</div><div class="text-decoration-line-through text-muted ms-2 small">${originalPrice.toLocaleString('vi-VN')}₫</div>`
+                : `<div class="preview-current-price">${price.toLocaleString('vi-VN')}₫</div>`;
 
-                const vName = nameEl?.value || `Dung lượng ${vIdx+1}`;
-                const vBasePrice = parseFloat(priceEl?.value || '0');
-
-                // Get variants
-                let variantsHtml = '';
-                const variantRows = [...vEl.querySelectorAll(`[id^="variant_${vIdx}_"]`)];
-                variantRows.forEach((varRow, varIdx) => {
-                    const color = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Color"]`)?.value || 'Màu';
-                    const price = parseFloat(varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Price"]`)?.value || '0');
-                    const displayPrice = price > 0 ? price : vBasePrice;
-                    variantsHtml += `<div class="preview-option-item ${varIdx===0?'active':''}"><span class="preview-option-name">${color}</span><span class="preview-option-price">${displayPrice.toLocaleString('vi-VN')}₫</span></div>`;
-                });
-                if (!variantsHtml) variantsHtml = '<div class="text-muted small">Chưa cấu hình màu sắc</div>';
-
-                // Get specs
-                let specsHtml = '';
-                const specRows = [...vEl.querySelectorAll(`[id^="spec_${vIdx}_"]`)];
-                specRows.forEach((sRow, sIdx) => {
-                    const name = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecName"]`)?.value || '';
-                    const value = sRow.querySelector(`input[name="Versions[${vIdx}].Specifications[${sIdx}].SpecValue"]`)?.value || '';
-                    if (name) specsHtml += `<tr><td class="text-muted border-0 py-1" style="width:45%">${name}</td><td class="fw-bold border-0 py-1">${value}</td></tr>`;
-                });
-                if (!specsHtml) specsHtml = '<tr><td class="text-muted">Chưa cấu hình thông số</td></tr>';
-
-                // Image placeholder for Create page
-                const imgHtml = `<div class="text-center py-4"><i class="bi bi-image fs-1 text-muted"></i><p class="text-muted small mt-2">Ảnh sẽ hiển thị sau khi tải lên</p></div>`;
-
-                tabsHtml += `<button type="button" class="btn ${vIdx===0?'btn-danger':'btn-outline-secondary'} btn-sm rounded-pill px-3 me-2 mb-2 preview-tab-btn" onclick="switchPreviewTab(${vIdx}, ${versionElements.length})" id="ptab_${vIdx}">${vName} — ${vBasePrice.toLocaleString('vi-VN')}₫</button>`;
-
-                tabContentsHtml += `
-                <div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">
-                    <div class="preview-card-inner">
-                        <div class="row gx-5">
-                            <div class="col-lg-6 mb-4">
-                                <div class="preview-img-container">${imgHtml}</div>
-                            </div>
-                            <div class="col-lg-6">
-                                <h2 class="fw-bolder mb-3">${productName}</h2>
-                                <h4 class="text-muted mb-4">${vName}</h4>
-                                <div class="preview-price-container mb-4">
-                                    <div class="preview-current-price">${vBasePrice.toLocaleString('vi-VN')}₫</div>
-                                    <div class="small text-muted mt-2"><i class="bi bi-truck me-2"></i>Miễn phí giao hàng toàn quốc</div>
-                                </div>
-                                <div class="mb-4">
-                                    <span class="preview-selector-label">Chọn màu sắc (Demo)</span>
-                                    <div class="preview-option-grid">${variantsHtml}</div>
-                                </div>
-                                <div class="mt-4 pt-4 border-top">
-                                    <h5 class="fw-bold mb-3"><i class="bi bi-cpu me-2"></i>Thông số kỹ thuật</h5>
-                                    <table class="table table-sm border-0"><tbody>${specsHtml}</tbody></table>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-5 p-4 bg-light rounded-4">
-                            <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Mô tả sản phẩm</h5>
-                            <div class="small text-dark" style="white-space:pre-wrap; line-height: 1.6;">${description}</div>
+            return `
+            <div class="preview-card-inner bg-white p-4 rounded-4 shadow-sm border">
+                <div class="row gx-4">
+                    <div class="col-lg-5 mb-4 mb-lg-0">
+                        <div class="preview-img-container rounded-4 bg-light d-flex align-items-center justify-content-center" style="height:300px">
+                            <i class="bi bi-image fs-1 text-muted"></i>
                         </div>
                     </div>
-                </div>`;
-            });
-
-            const html = `<div class="mb-4 d-flex justify-content-center">${tabsHtml}</div>${tabContentsHtml}`;
-            const previewSection = document.getElementById('livePreviewSection');
-            const previewContent = document.getElementById('previewContent');
-            
-            previewContent.innerHTML = html;
-            previewSection.style.display = 'block';
-            
-            // Cuộn xuống phần xem trước
-            previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    <div class="col-lg-7">
+                        <h3 class="fw-bold mb-1 text-dark">${name}</h3>
+                        ${subName ? `<p class="text-muted mb-2">${subName}</p>` : ''}
+                        <div class="d-flex align-items-center mb-4">${priceHtml}</div>
+                        ${variantsHtml ? `<div class="mb-4"><label class="small fw-bold text-muted d-block mb-2">Lựa chọn màu sắc:</label><div class="preview-option-grid d-flex flex-wrap gap-2">${variantsHtml}</div></div>` : ''}
+                        <div class="mt-3 pt-3 border-top">
+                            <label class="small fw-bold text-muted d-block mb-1">Mô tả tóm tắt:</label>
+                            <div class="small text-muted" style="white-space:pre-wrap">${desc || "Chưa có mô tả..."}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
         }
 
         function switchPreviewTab(activeIdx, total) {

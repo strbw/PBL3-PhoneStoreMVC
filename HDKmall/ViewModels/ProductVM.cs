@@ -1,7 +1,19 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace HDKmall.ViewModels
 {
+    /// <summary>
+    /// Loại cấu trúc sản phẩm
+    /// </summary>
+    public enum ProductType
+    {
+        HasVersions = 1,   // Điện thoại: có phiên bản dung lượng (256GB, 512GB...)
+        ColorsOnly  = 2,   // Loa, tai nghe: chỉ màu sắc, giá lưu ở Product.Price hoặc Variant.Price
+        Simple      = 3    // Ốp lưng, cáp...: đơn giản, chỉ tên + giá + ảnh
+    }
+
     public class ProductVM
     {
         public int Id { get; set; }
@@ -9,26 +21,32 @@ namespace HDKmall.ViewModels
         [Required(ErrorMessage = "Vui lòng nhập tên sản phẩm")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập giá")]
+        /// <summary>Loại sản phẩm — quyết định cấu trúc giá và phiên bản</summary>
+        public ProductType ProductType { get; set; } = ProductType.HasVersions;
+
+        /// <summary>
+        /// Giá trực tiếp – dùng cho ColorsOnly và Simple.
+        /// Với HasVersions, giá lưu trong Version.BasePrice.
+        /// </summary>
         public decimal Price { get; set; }
+
+        /// <summary>Giá chưa giảm (để hiển thị giá gạch đi)</summary>
+        public decimal? OriginalPrice { get; set; }
 
         public string? Description { get; set; }
 
+        [Required(ErrorMessage = "Vui lòng chọn danh mục")]
         public int CategoryId { get; set; }
 
         public int? BrandId { get; set; }
 
-        // Existing image URL (for display on edit)
         public string? ImageUrl { get; set; }
-
-        // Main product image file for upload
         public IFormFile? ImageFile { get; set; }
 
-        // Gallery images
         public List<IFormFile>? GalleryFiles { get; set; } = new List<IFormFile>();
         public List<ProductImageVM>? ExistingImages { get; set; } = new List<ProductImageVM>();
 
-        // Versions (Capacities)
+        // Chỉ dùng khi ProductType = HasVersions
         public List<ProductVersionVM> Versions { get; set; } = new List<ProductVersionVM>();
     }
 }

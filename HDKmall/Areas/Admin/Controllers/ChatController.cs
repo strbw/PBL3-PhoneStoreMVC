@@ -54,6 +54,12 @@ namespace HDKmall.Areas.Admin.Controllers
             var result = await _chatService.SendMessageAsync(chatMsg);
             return Json(new { success = result });
         }
+        [HttpPost]
+        public async Task<IActionResult> DeleteHistory(int userId)
+        {
+            var result = await _chatService.DeleteChatHistoryAsync(userId);
+            return Json(new { success = result });
+        }
     }
 
     public class AdminChatRequest

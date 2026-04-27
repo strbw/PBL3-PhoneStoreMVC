@@ -31,13 +31,20 @@ namespace HDKmall.BLL.Services
 
         public async Task<bool> AddProductAsync(ProductVM vm)
         {
+            // Tính giá lưu vào Product tuỳ theo loại
+            decimal productPrice = vm.ProductType == ProductType.HasVersions
+                ? (vm.Versions?.Where(v => v.BasePrice > 0).Min(v => (decimal?)v.BasePrice) ?? 0)
+                : vm.Price;
+
             var product = new Product
             {
                 Name = vm.Name,
-                Price = vm.Price,
+                Price = productPrice,
+                OriginalPrice = vm.OriginalPrice,
                 Description = vm.Description,
                 CategoryId = vm.CategoryId,
-                BrandId = vm.BrandId
+                BrandId = vm.BrandId,
+                ProductType = (int)vm.ProductType // Ép kiểu sang int
             };
 
             // Handle main product image
@@ -50,7 +57,7 @@ namespace HDKmall.BLL.Services
 
             _productRepository.Add(product);
 
-            if (vm.Versions != null && vm.Versions.Count > 0)
+            if (vm.ProductType == ProductType.HasVersions && vm.Versions != null && vm.Versions.Count > 0)
             {
                 bool firstVersion = true;
                 foreach (var vVM in vm.Versions)
@@ -131,6 +138,42 @@ namespace HDKmall.BLL.Services
                     }
                 }
             }
+            else if (vm.ProductType == ProductType.ColorsOnly && vm.Versions != null && vm.Versions.Count > 0)
+            {
+                // Tạo Version "Mặc định" ẩn để gắn màu sắc vào
+                var defaultVersion = new ProductVersion
+                {
+                    ProductId = product.Id,
+                    Name = "Mặc định",
+                    BasePrice = vm.Price,
+                    OriginalPrice = vm.Price
+                };
+                _productRepository.AddVersion(defaultVersion);
+
+                var colorVM = vm.Versions[0];
+                if (colorVM.Variants != null)
+                {
+                    foreach (var varVM in colorVM.Variants)
+                    {
+                        if (string.IsNullOrWhiteSpace(varVM.Color)) continue;
+                        string? variantImageUrl = null;
+                        if (varVM.ImageFile != null && varVM.ImageFile.Length > 0)
+                        {
+                            var upload = await _photoService.AddPhotoAsync(varVM.ImageFile);
+                            if (upload.Error == null) variantImageUrl = upload.SecureUrl.AbsoluteUri;
+                        }
+                        _productRepository.AddVariant(new ProductVariant
+                        {
+                            ProductVersionId = defaultVersion.Id,
+                            Color = varVM.Color,
+                            Price = varVM.Price > 0 ? varVM.Price : vm.Price,
+                            Stock = varVM.Stock,
+                            ImageUrl = variantImageUrl
+                        });
+                    }
+                }
+            }
+            // Simple: chỉ Product.Price, không cần Version/Variant
 
             if (vm.GalleryFiles != null)
             {
@@ -163,6 +206,8 @@ namespace HDKmall.BLL.Services
 
             product.Name = vm.Name;
             product.Price = vm.Price;
+            product.OriginalPrice = vm.OriginalPrice; // Lưu giá gốc
+            product.ProductType = (int)vm.ProductType; // Ép kiểu sang int
             product.Description = vm.Description;
             product.CategoryId = vm.CategoryId;
             product.BrandId = vm.BrandId;
@@ -223,8 +268,9 @@ namespace HDKmall.BLL.Services
                         else
                         {
                             version.Name = vVM.Name;
-                            version.BasePrice = vVM.BasePrice;
-                            version.OriginalPrice = vVM.OriginalPrice;
+                            // Nếu ColorsOnly, dùng giá của Product cho Version mặc định
+                            version.BasePrice = (vm.ProductType == ProductType.ColorsOnly) ? vm.Price : vVM.BasePrice;
+                            version.OriginalPrice = (vm.ProductType == ProductType.ColorsOnly) ? vm.OriginalPrice : vVM.OriginalPrice;
                             version.Description = vVM.Description;
                         }
                     }
@@ -275,7 +321,11 @@ namespace HDKmall.BLL.Services
                             {
                                 variant = existingVariants.FirstOrDefault(ex => ex.Id == vrVM.Id);
                                 if (variant == null) { variant = new ProductVariant { ProductVersionId = version.Id }; isNewVariant = true; }
-                                else { variant.Color = vrVM.Color; variant.Price = vrVM.Price > 0 ? vrVM.Price : version.BasePrice; variant.Stock = vrVM.Stock; }
+                                else { 
+                                    variant.Color = vrVM.Color; 
+                                    variant.Price = vrVM.Price > 0 ? vrVM.Price : version.BasePrice; 
+                                    variant.Stock = vrVM.Stock; 
+                                }
                             }
                             else
                             {

@@ -34,7 +34,12 @@
         <!-- Chat Area -->
         <div class="col-md-8 col-lg-9 h-100 d-flex flex-column bg-white">
             <div id="chatHeader" class="p-3 border-bottom bg-light d-none">
-                <h6 class="fw-bold mb-0" id="activeUserName">Chọn một khách hàng để chat</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0" id="activeUserName">Chọn một khách hàng để chat</h6>
+                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="deleteConversation()">
+                        <i class="bi bi-trash-fill me-1"></i> Xóa hội thoại
+                    </button>
+                </div>
             </div>
             
             <div id="adminChatBody" class="flex-1 p-4 overflow-auto d-flex flex-column gap-3" style="background: #f8f9fa;">
@@ -126,6 +131,27 @@
                 });
                 if (res.ok) loadAdminChatHistory();
             } catch (e) { console.error(e); }
+        }
+
+        async function deleteConversation() {
+            if (!selectedUserId) return;
+            if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử hội thoại với khách hàng này không?')) return;
+
+            try {
+                const res = await fetch(`/Admin/Chat/DeleteHistory?userId=${selectedUserId}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Đã xóa hội thoại thành công.');
+                    location.reload();
+                } else {
+                    alert('Lỗi khi xóa hội thoại.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Lỗi kết nối server.');
+            }
         }
     </script>
 }

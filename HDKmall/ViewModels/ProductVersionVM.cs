@@ -8,10 +8,8 @@ namespace HDKmall.ViewModels
     {
         public int Id { get; set; }
         
-        [Required(ErrorMessage = "Vui lòng nhập tên dung lượng")]
-        public string Name { get; set; } // e.g. "256GB"
+        public string? Name { get; set; } // e.g. "256GB"
 
-        [Required(ErrorMessage = "Vui lòng nhập giá cơ bản")]
         public decimal BasePrice { get; set; }
 
         public decimal? OriginalPrice { get; set; }

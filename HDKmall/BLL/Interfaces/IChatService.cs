@@ -11,5 +11,6 @@ namespace HDKmall.BLL.Interfaces
         Task<IEnumerable<User>> GetActiveChatUsersAsync();
         Task<int> GetUnreadCountAsync(int userId, bool forAdmin);
         Task MarkAsReadAsync(int userId, bool forAdmin);
+        Task<bool> DeleteChatHistoryAsync(int userId);
     }
 }

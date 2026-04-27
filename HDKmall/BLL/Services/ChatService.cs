@@ -76,5 +76,26 @@ namespace HDKmall.BLL.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<bool> DeleteChatHistoryAsync(int userId)
+        {
+            try
+            {
+                var messages = await _context.ChatMessages
+                    .Where(m => m.UserId == userId)
+                    .ToListAsync();
+
+                if (messages.Any())
+                {
+                    _context.ChatMessages.RemoveRange(messages);
+                    await _context.SaveChangesAsync();
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }
