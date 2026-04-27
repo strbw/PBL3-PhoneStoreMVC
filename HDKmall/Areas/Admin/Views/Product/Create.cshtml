@@ -28,6 +28,8 @@
     }
     
     .preview-current-price { color: #d70018; font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .preview-option-item { border: 1.5px solid #e0e0e0; border-radius: 10px; padding: 10px; background: #fff; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 56px; }
+    .preview-option-item.active { border-color: #d70018; background: #fff5f5; box-shadow: 0 0 0 1px #d70018; }
     
     /* IN-PAGE PREVIEW SECTION STYLING */
     #livePreviewSection {
@@ -156,9 +158,6 @@
                     </select>
                 </div>
 
-                <!-- Ô ẩn để Model Binder nhận diện Versions[0] khi là Loa -->
-                <input type="hidden" name="Versions[0].Name" id="hiddenDefaultVersionName" value="Mặc định" />
-
                 <!-- Giá trực tiếp – hiện khi ColorsOnly hoặc Simple -->
                 <div class="col-md-3" id="directPriceSection" style="display:none;">
                     <label asp-for="Price" class="form-label fw-bold text-muted small">Giá bán (₫) <span class="text-danger">*</span></label>
@@ -199,6 +198,9 @@
 
     <!-- ===== SECTION: Chỉ có màu sắc ===== -->
     <div id="sectionColors" style="display:none;">
+        <!-- Hidden inputs for the default version required by model binder -->
+        <input type="hidden" name="Versions[0].Name" value="Mặc định" />
+        <input type="hidden" name="Versions[0].BasePrice" value="0" />
         <div class="card shadow-sm border-0 rounded-4 mb-4">
             <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center">
                 <div>
@@ -260,6 +262,23 @@
             sectionColors.style.display    = (val === '2') ? 'block' : 'none';
             directPrice.style.display      = (val === '2' || val === '3') ? 'block' : 'none';
             document.getElementById('directOriginalPriceSection').style.display = (val === '2' || val === '3') ? 'block' : 'none';
+
+            // Disable inputs in hidden sections to prevent form submission conflicts
+            toggleSectionInputs('sectionVersions', val === '1');
+            toggleSectionInputs('sectionColors', val === '2');
+        }
+
+        function toggleSectionInputs(sectionId, enabled) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            section.querySelectorAll('input, textarea, select').forEach(el => {
+                el.disabled = !enabled;
+            });
+        }
+
+        function removeRow(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
         }
 
         // ===== THÊM MÀU SẮC (cho ColorsOnly) =====
@@ -534,9 +553,10 @@
             }
         }
 
-        // Add first version by default
+        // Add first version by default then sync section states
         window.onload = function() {
             addVersion();
+            updateSections();
         };
     </script>
 }
