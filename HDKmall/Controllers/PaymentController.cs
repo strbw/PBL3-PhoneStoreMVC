@@ -13,6 +13,7 @@ namespace HDKmall.Controllers
         private readonly IVNPayService _vnPayService;
         private readonly IMoMoService _moMoService;
         private readonly IPaymentService _paymentService;
+        private readonly ICartService _cartService;
         private readonly ILogger<PaymentController> _logger;
 
         public PaymentController(
@@ -20,12 +21,14 @@ namespace HDKmall.Controllers
             IVNPayService vnPayService,
             IMoMoService moMoService,
             IPaymentService paymentService,
+            ICartService cartService,
             ILogger<PaymentController> logger)
         {
             _orderService = orderService;
             _vnPayService = vnPayService;
             _moMoService = moMoService;
             _paymentService = paymentService;
+            _cartService = cartService;
             _logger = logger;
         }
 
@@ -160,10 +163,9 @@ namespace HDKmall.Controllers
             if (!response.Success)
             {
                 _logger.LogWarning("VNPay return: signature invalid or payment failed for order {OrderId}. Message: {Message}", orderId, response.Message);
-                _orderService.UpdateOrderStatus(orderId, "Failed");
-                _paymentService.UpdatePaymentStatus(orderId, "Failed", response.TransactionId ?? "");
-                TempData["Error"] = "Thanh toán VNPay thất bại hoặc chữ ký không hợp lệ.";
-                return RedirectToAction("Detail", "Order", new { id = orderId });
+                _orderService.DeleteOrder(orderId);
+                TempData["Error"] = "Thanh toán VNPay thất bại hoặc người dùng đã hủy thanh toán.";
+                return RedirectToAction("Index", "Cart");
             }
 
             // Cross-check số tiền: vnp_Amount (đơn vị xu) / 100 phải khớp order.TotalAmount
@@ -172,10 +174,9 @@ namespace HDKmall.Controllers
                 _logger.LogWarning(
                     "VNPay return: amount mismatch for order {OrderId}. Expected {Expected}, got {Got}",
                     orderId, order.TotalAmount, response.Amount);
-                _orderService.UpdateOrderStatus(orderId, "Failed");
-                _paymentService.UpdatePaymentStatus(orderId, "Failed", response.TransactionId ?? "");
-                TempData["Error"] = "Số tiền thanh toán không khớp. Vui lòng liên hệ hỗ trợ.";
-                return RedirectToAction("Detail", "Order", new { id = orderId });
+                _orderService.DeleteOrder(orderId);
+                TempData["Error"] = "Số tiền thanh toán không khớp. Đơn hàng đã bị hủy.";
+                return RedirectToAction("Index", "Cart");
             }
 
             // Tránh cập nhật lại nếu đơn đã được xử lý trước đó
@@ -189,6 +190,26 @@ namespace HDKmall.Controllers
             // Thành công – chuyển đơn sang Processing
             _orderService.UpdateOrderStatus(orderId, "Processing");
             _paymentService.UpdatePaymentStatus(orderId, "Success", response.TransactionId);
+
+            // Xóa các sản phẩm đã đặt khỏi giỏ hàng
+            var cart = _cartService.GetOrCreateCart(order.UserId, null);
+            if (cart != null && cart.Items != null && order.OrderDetails != null)
+            {
+                var itemsToRemove = new List<int>();
+                foreach (var detail in order.OrderDetails)
+                {
+                    var cartItem = cart.Items.FirstOrDefault(i => i.ProductId == detail.ProductId && i.VariantId == detail.ProductVariantId);
+                    if (cartItem != null)
+                    {
+                        itemsToRemove.Add(cartItem.Id);
+                    }
+                }
+                if (itemsToRemove.Any())
+                {
+                    _cartService.RemoveFromCart(itemsToRemove);
+                }
+            }
+
             _logger.LogInformation("VNPay payment successful for order {OrderId}, transactionId={TransactionId}", orderId, response.TransactionId);
             TempData["Success"] = "Thanh toán VNPay thành công! Đơn hàng đang được xử lý.";
             return RedirectToAction("Detail", "Order", new { id = orderId });
@@ -233,22 +254,19 @@ namespace HDKmall.Controllers
             if (!response.Success)
             {
                 _logger.LogWarning("MoMo return: payment failed for order {OrderId}. Message: {Message}", orderId, response.Message);
-                _orderService.UpdateOrderStatus(orderId, "Failed");
-                _paymentService.UpdatePaymentStatus(orderId, "Failed", response.TransactionId ?? "");
-                TempData["Error"] = response.Message ?? "Thanh toán MoMo thất bại.";
-                return RedirectToAction("Detail", "Order", new { id = orderId });
+                _orderService.DeleteOrder(orderId);
+                TempData["Error"] = response.Message ?? "Thanh toán MoMo thất bại hoặc người dùng đã hủy.";
+                return RedirectToAction("Index", "Cart");
             }
 
-            // Cross-check số tiền: response.Amount (đã chia 1000) phải khớp order.TotalAmount
             if (response.Amount != order.TotalAmount)
             {
                 _logger.LogWarning(
                     "MoMo return: amount mismatch for order {OrderId}. Expected {Expected}, got {Got}",
                     orderId, order.TotalAmount, response.Amount);
-                _orderService.UpdateOrderStatus(orderId, "Failed");
-                _paymentService.UpdatePaymentStatus(orderId, "Failed", response.TransactionId ?? "");
-                TempData["Error"] = "Số tiền thanh toán không khớp. Vui lòng liên hệ hỗ trợ.";
-                return RedirectToAction("Detail", "Order", new { id = orderId });
+                _orderService.DeleteOrder(orderId);
+                TempData["Error"] = "Số tiền thanh toán không khớp. Đơn hàng đã bị hủy.";
+                return RedirectToAction("Index", "Cart");
             }
 
             // Tránh cập nhật lại nếu đơn đã được xử lý trước đó
@@ -262,6 +280,26 @@ namespace HDKmall.Controllers
             // Thành công – chuyển đơn sang Processing
             _orderService.UpdateOrderStatus(orderId, "Processing");
             _paymentService.UpdatePaymentStatus(orderId, "Success", response.TransactionId);
+
+            // Xóa các sản phẩm đã đặt khỏi giỏ hàng
+            var cart = _cartService.GetOrCreateCart(order.UserId, null);
+            if (cart != null && cart.Items != null && order.OrderDetails != null)
+            {
+                var itemsToRemove = new List<int>();
+                foreach (var detail in order.OrderDetails)
+                {
+                    var cartItem = cart.Items.FirstOrDefault(i => i.ProductId == detail.ProductId && i.VariantId == detail.ProductVariantId);
+                    if (cartItem != null)
+                    {
+                        itemsToRemove.Add(cartItem.Id);
+                    }
+                }
+                if (itemsToRemove.Any())
+                {
+                    _cartService.RemoveFromCart(itemsToRemove);
+                }
+            }
+
             _logger.LogInformation("MoMo payment successful for order {OrderId}, transactionId={TransactionId}", orderId, response.TransactionId);
             TempData["Success"] = "Thanh toán MoMo thành công! Đơn hàng đang được xử lý.";
             return RedirectToAction("Detail", "Order", new { id = orderId });

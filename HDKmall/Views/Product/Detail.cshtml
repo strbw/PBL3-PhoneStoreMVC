@@ -652,8 +652,24 @@
             Swal.fire({ title: 'Thông báo', text: 'Vui lòng chọn màu sắc', icon: 'info', confirmButtonColor: '#d70018' });
             return;
         }
-        handleAddToCart();
-        window.location.href = '/Cart';
+        
+        // Thêm vào giỏ hàng và đợi phản hồi, sau đó chuyển thẳng tới trang Thanh Toán
+        fetch('/Cart/Add', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: `productId=${productData.Id}&variantId=${currentVariant.Id}&quantity=1`
+        }).then(r => r.json()).then(data => {
+            if(data.success) {
+                window.location.href = '/Order/Checkout';
+            } else {
+                Swal.fire('Thông báo', data.message || 'Lỗi thêm vào giỏ', 'error');
+            }
+        }).catch(() => {
+            Swal.fire('Thông báo', 'Lỗi kết nối', 'error');
+        });
     }
 
     // Init

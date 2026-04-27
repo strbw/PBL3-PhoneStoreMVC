@@ -76,5 +76,16 @@ namespace HDKmall.BLL.Services
         {
             UpdateOrderStatus(id, "Cancelled");
         }
+
+        public void DeleteOrder(int id)
+        {
+            var order = _orderRepository.GetById(id);
+            if (order != null)
+            {
+                _orderRepository.Delete(id);
+                _orderRepository.SaveChanges();
+                _logger.LogInformation("Đã xóa hoàn toàn đơn hàng #{OrderId} do thanh toán thất bại", id);
+            }
+        }
     }
 }

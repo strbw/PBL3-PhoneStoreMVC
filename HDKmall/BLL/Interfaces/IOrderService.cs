@@ -11,5 +11,6 @@ namespace HDKmall.BLL.Interfaces
         Order GetOrderById(int id);
         void UpdateOrderStatus(int id, string status);
         void CancelOrder(int id);
+        void DeleteOrder(int id);
     }
 }

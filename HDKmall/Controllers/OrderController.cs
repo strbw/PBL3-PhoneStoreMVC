@@ -122,8 +122,12 @@ namespace HDKmall.Controllers
 
             var order = _orderService.CreateOrder(userId, itemsToOrder, fullAddress, paymentMethod, totalAmount, 0);
 
-            // Remove only the ordered items from cart
-            _cartService.RemoveFromCart(itemsToOrder.Select(i => i.Id).ToList());
+            // Xóa sản phẩm khỏi giỏ hàng NGAY LẬP TỨC nếu là thanh toán khi nhận hàng (COD).
+            // Đối với VNPay/MoMo, giữ lại giỏ hàng và chỉ xóa khi thanh toán THÀNH CÔNG trong callback.
+            if (paymentMethod == "COD")
+            {
+                _cartService.RemoveFromCart(itemsToOrder.Select(i => i.Id).ToList());
+            }
 
             // Always redirect to ProcessPayment which will handle COD or redirect to MoMo/VNPay directly
             return RedirectToAction("ProcessPayment", "Payment", new { orderId = order.Id, paymentMethod = paymentMethod });
