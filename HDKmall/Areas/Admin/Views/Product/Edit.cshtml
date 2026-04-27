@@ -85,8 +85,6 @@
                             </select>
                         </div>
 
-                        <input type="hidden" name="Versions[0].Name" id="hiddenDefaultVersionName" value="Mặc định" />
-
                         <div class="col-md-3" id="directPriceSection" style="display:none;">
                             <label asp-for="Price" class="form-label fw-bold text-muted small">Giá bán (₫)</label>
                             <input asp-for="Price" class="form-control bg-light border-0 fw-bold text-danger" type="number" />
@@ -196,6 +194,12 @@
 
             <!-- PHẦN 2: CHỈ CÓ MÀU SẮC -->
             <div id="sectionColors" style="display:none;">
+                @* Hidden inputs for the default version — needed for proper update (avoid delete+recreate) *@
+                @if (Model.Versions != null && Model.Versions.Any())
+                {
+                    <input type="hidden" name="Versions[0].Id" value="@Model.Versions[0].Id" />
+                }
+                <input type="hidden" name="Versions[0].Name" value="Mặc định" />
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold mb-0">Danh sách màu sắc</h5>
                     <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm" onclick="addColorVariant()">
@@ -286,6 +290,18 @@
             sectionColors.style.display   = (val === '2') ? 'block' : 'none';
             directPrice.style.display     = (val === '2' || val === '3') ? 'block' : 'none';
             directOrig.style.display      = (val === '2' || val === '3') ? 'block' : 'none';
+
+            // Disable inputs in hidden sections to prevent form submission conflicts
+            toggleSectionInputs('sectionVersions', val === '1');
+            toggleSectionInputs('sectionColors', val === '2');
+        }
+
+        function toggleSectionInputs(sectionId, enabled) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            section.querySelectorAll('input, textarea, select').forEach(el => {
+                el.disabled = !enabled;
+            });
         }
 
         function addVersion() {

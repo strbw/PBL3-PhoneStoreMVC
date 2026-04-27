@@ -146,7 +146,7 @@ namespace HDKmall.BLL.Services
                     ProductId = product.Id,
                     Name = "Mặc định",
                     BasePrice = vm.Price,
-                    OriginalPrice = vm.Price
+                    OriginalPrice = vm.OriginalPrice
                 };
                 _productRepository.AddVersion(defaultVersion);
 
