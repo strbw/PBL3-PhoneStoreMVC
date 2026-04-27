@@ -3,6 +3,7 @@ using System.Text;
 using System.Globalization;
 using HDKmall.BLL.Interfaces;
 using HDKmall.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using HDKmall.Models;
 using System.Security.Claims;
@@ -18,9 +19,10 @@ namespace HDKmall.Controllers
         private readonly IReviewService _reviewService;
         private readonly HDKmall.DAL.Interfaces.IProductRepository _productRepo;
         private readonly IRecommendationService _recommendationService;
+        private readonly IWishlistService _wishlistService;
         private readonly ApplicationDbContext _context;
 
-        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo, IRecommendationService recommendationService, ApplicationDbContext context)
+        public ProductController(IProductSearchService searchService, ICategoryService categoryService, IBrandService brandService, IReviewService reviewService, HDKmall.DAL.Interfaces.IProductRepository productRepo, IRecommendationService recommendationService, IWishlistService wishlistService, ApplicationDbContext context)
         {
             _searchService = searchService;
             _categoryService = categoryService;
@@ -28,6 +30,7 @@ namespace HDKmall.Controllers
             _reviewService = reviewService;
             _productRepo = productRepo;
             _recommendationService = recommendationService;
+            _wishlistService = wishlistService;
             _context = context;
         }
 
@@ -98,12 +101,8 @@ namespace HDKmall.Controllers
                 var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (int.TryParse(userIdStr, out int userId))
                 {
-                    var wishlistService = HttpContext.RequestServices.GetService<IWishlistService>();
-                    if (wishlistService != null)
-                    {
-                        var wishlist = await wishlistService.GetUserWishlistAsync(userId);
-                        ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
-                    }
+                    var wishlist = await _wishlistService.GetUserWishlistAsync(userId);
+                    ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
                 }
             }
 
@@ -164,25 +163,15 @@ namespace HDKmall.Controllers
             var activeVersionId = versionId ?? product.Versions.FirstOrDefault()?.Id ?? 0;
             ViewBag.ActiveVersionId = activeVersionId;
 
-            if (User.Identity.IsAuthenticated)
-            {
-                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (int.TryParse(userIdStr, out int userId))
-                {
-                    var wishlistService = HttpContext.RequestServices.GetService<IWishlistService>();
-                    if (wishlistService != null)
-                    {
-                        var wishlist = await wishlistService.GetUserWishlistAsync(userId);
-                        ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
-                    }
-                }
-            }
-
             if (User.Identity?.IsAuthenticated == true)
             {
-                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (int.TryParse(userIdString, out var userId) && userId > 0)
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdStr, out int userId) && userId > 0)
                 {
+                    // Load wishlist for heart-icon state
+                    var wishlist = await _wishlistService.GetUserWishlistAsync(userId);
+                    ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
+
                     // Check if user bought THIS SPECIFIC version
                     var hasBoughtActive = _reviewService.HasUserBoughtVersion(userId, activeVersionId);
                     ViewBag.HasBought = hasBoughtActive;
@@ -190,11 +179,10 @@ namespace HDKmall.Controllers
                     // Get user's existing review for this specific version
                     var existingReview = _reviewService.GetUserReviewForVersion(userId, activeVersionId);
                     ViewBag.UserExistingReview = existingReview;
-                    
+
                     // Can review if bought AND (no existing review OR existing review is not edited yet)
-                    ViewBag.CanReview = hasBoughtActive && (existingReview == null || !existingReview.IsEdited); 
-                    
-                    ViewBag.ActiveVersionId = activeVersionId;
+                    ViewBag.CanReview = hasBoughtActive && (existingReview == null || !existingReview.IsEdited);
+
                     ViewBag.DefaultReviewVersionId = activeVersionId;
                 }
                 else
@@ -265,12 +253,8 @@ namespace HDKmall.Controllers
                 var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (int.TryParse(userIdStr, out int userId))
                 {
-                    var wishlistService = HttpContext.RequestServices.GetService<IWishlistService>();
-                    if (wishlistService != null)
-                    {
-                        var wishlist = await wishlistService.GetUserWishlistAsync(userId);
-                        ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
-                    }
+                    var wishlist = await _wishlistService.GetUserWishlistAsync(userId);
+                    ViewBag.WishlistProductIds = wishlist.Select(w => w.Id).ToList();
                 }
             }
 
@@ -365,6 +349,7 @@ namespace HDKmall.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("Product/UpdateAllSlugs")]
         public IActionResult UpdateAllSlugs()
         {

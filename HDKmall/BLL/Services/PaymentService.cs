@@ -1,40 +1,63 @@
 using HDKmall.BLL.Interfaces;
+using HDKmall.Models;
 using HDKmall.ViewModels;
 
 namespace HDKmall.BLL.Services
 {
     public class PaymentService : IPaymentService
     {
-        private static Dictionary<int, PaymentHistoryVM> _paymentHistory = new();
+        private readonly ApplicationDbContext _context;
+
+        public PaymentService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public void CreatePayment(int orderId, string paymentMethod, decimal amount)
         {
-            var payment = new PaymentHistoryVM
+            // Avoid duplicate entries (idempotent)
+            if (_context.Payments.Any(p => p.OrderId == orderId))
+                return;
+
+            var payment = new Payment
             {
                 OrderId = orderId,
                 PaymentMethod = paymentMethod,
                 Amount = amount,
                 Status = "Pending",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
-            if (!_paymentHistory.ContainsKey(orderId))
-            {
-                _paymentHistory[orderId] = payment;
-            }
+            _context.Payments.Add(payment);
+            _context.SaveChanges();
         }
 
         public PaymentHistoryVM GetPaymentHistory(int orderId)
         {
-            return _paymentHistory.ContainsKey(orderId) ? _paymentHistory[orderId] : null;
+            var payment = _context.Payments.FirstOrDefault(p => p.OrderId == orderId);
+            if (payment == null) return null;
+
+            return new PaymentHistoryVM
+            {
+                Id = payment.Id,
+                OrderId = payment.OrderId,
+                PaymentMethod = payment.PaymentMethod,
+                Amount = payment.Amount,
+                Status = payment.Status,
+                TransactionId = payment.TransactionId,
+                CreatedAt = payment.CreatedAt
+            };
         }
 
         public void UpdatePaymentStatus(int orderId, string status, string transactionId)
         {
-            if (_paymentHistory.ContainsKey(orderId))
+            var payment = _context.Payments.FirstOrDefault(p => p.OrderId == orderId);
+            if (payment != null)
             {
-                _paymentHistory[orderId].Status = status;
-                _paymentHistory[orderId].TransactionId = transactionId;
+                payment.Status = status;
+                payment.TransactionId = transactionId;
+                payment.UpdatedAt = DateTime.UtcNow;
+                _context.SaveChanges();
             }
         }
     }
