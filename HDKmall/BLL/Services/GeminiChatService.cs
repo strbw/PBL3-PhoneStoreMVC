@@ -213,7 +213,7 @@ namespace HDKmall.BLL.Services
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
                 _logger.LogInformation("Đang xây dựng system instruction từ database (cache miss).");
                 return BuildSystemInstructionFromDb();
-            }) ?? BuildSystemInstructionFromDb();
+            })!;
         }
 
         private string BuildSystemInstructionFromDb()
@@ -274,8 +274,9 @@ namespace HDKmall.BLL.Services
                     sb.AppendLine();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Lỗi khi tải dữ liệu sản phẩm từ database.");
                 sb.AppendLine("(Không thể tải dữ liệu sản phẩm lúc này — vẫn có thể tư vấn chung)");
                 sb.AppendLine();
             }
