@@ -104,12 +104,17 @@ namespace HDKmall.Controllers
                 if (coupon != null)
                 {
                     discountAmount = coupon.DiscountAmount;
+                    // Increment usage count so the coupon cannot be reused beyond its limit
+                    _couponService.ApplyCoupon(coupon.Id);
                 }
             }
 
             var fullAddress = string.IsNullOrEmpty(districtName)
                 ? $"{address}, {cityName}"
                 : $"{address}, {districtName}, {cityName}";
+
+            // Validate shippingFee server-side to prevent client manipulation
+            if (shippingFee < 0) shippingFee = 0;
 
             var subTotal = itemsToOrder.Sum(i =>
                 (i.Variant != null ? i.Variant.Price : i.Product?.Price ?? 0) * i.Quantity);
@@ -183,6 +188,7 @@ namespace HDKmall.Controllers
 
         // POST: Order/Cancel
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Cancel(int id)
         {
             var order = _orderService.GetOrderById(id);

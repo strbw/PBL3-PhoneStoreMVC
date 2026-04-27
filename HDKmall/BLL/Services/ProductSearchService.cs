@@ -42,12 +42,16 @@ namespace HDKmall.BLL.Services
 
             if (filter.MinPrice.HasValue)
             {
-                query = query.Where(p => p.Price >= filter.MinPrice.Value);
+                query = query.Where(p =>
+                    (p.Versions.Any() && p.Versions.Any(v => v.BasePrice >= filter.MinPrice.Value)) ||
+                    (!p.Versions.Any() && p.Price >= filter.MinPrice.Value));
             }
 
             if (filter.MaxPrice.HasValue)
             {
-                query = query.Where(p => p.Price <= filter.MaxPrice.Value);
+                query = query.Where(p =>
+                    (p.Versions.Any() && p.Versions.Any(v => v.BasePrice <= filter.MaxPrice.Value)) ||
+                    (!p.Versions.Any() && p.Price <= filter.MaxPrice.Value));
             }
 
             if (!string.IsNullOrEmpty(filter.SearchQuery))
@@ -192,7 +196,7 @@ namespace HDKmall.BLL.Services
             if (product == null) return null;
 
             var allReviews = product.Versions.SelectMany(v => v.Reviews)
-                .Where(r => r.Status == "Approved" || r.Status == "Pending")
+                .Where(r => r.Status == "Approved")
                 .ToList();
 
             return new ProductDetailVM

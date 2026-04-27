@@ -153,7 +153,7 @@ namespace HDKmall.BLL.Services
             if (userOrders == null) return false;
 
             return userOrders.Any(o =>
-                (o.Status == "Delivered" || o.Status == "Completed") &&
+                o.Status == "Delivered" &&
                 o.OrderDetails != null &&
                 o.OrderDetails.Any(od => od.ProductVariant != null && od.ProductVariant.ProductVersionId == productVersionId));
         }

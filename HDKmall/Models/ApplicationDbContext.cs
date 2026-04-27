@@ -29,6 +29,7 @@ namespace HDKmall.Models
         public DbSet<UserAddress> UserAddresses { get; set; }
         public DbSet<Wishlist> Wishlists { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -70,6 +71,16 @@ namespace HDKmall.Models
                 .WithMany(pv => pv.Reviews)
                 .HasForeignKey(r => r.ProductVersionId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Order)
+                .WithMany()
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Payment>()
+                .HasIndex(p => p.OrderId)
+                .IsUnique();
 
             // ==================== ROLES ====================
             modelBuilder.Entity<Role>().HasData(
