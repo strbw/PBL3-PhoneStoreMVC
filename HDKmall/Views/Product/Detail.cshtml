@@ -103,26 +103,29 @@
                         }
                     </div>
 
-                    <!-- Versions (Capacities) -->
-                    <span class="selector-label">Chọn dung lượng</span>
-                    <div class="option-grid">
-                        @foreach (var v in Model.Versions)
-                        {
-                            bool isActive = v.Id == (int)(ViewBag.ActiveVersionId ?? 0);
-                            <div class="option-item @(isActive ? "active" : "")" 
-                                 onclick="goToVersion(@v.Id)" 
-                                 data-version-id="@v.Id">
-                                <span class="option-name">@v.Name</span>
-                                <div class="d-flex flex-column align-items-end">
-                                    <span class="option-price">@v.BasePrice.ToString("N0")₫</span>
-                                    @if (v.DiscountPercent > 0)
-                                    {
-                                        <span class="badge bg-danger rounded-pill py-0" style="font-size: 10px;">-@(v.DiscountPercent)%</span>
-                                    }
+                    @if (Model.ProductType == 1)
+                    {
+                        <!-- Versions (Capacities) -->
+                        <span class="selector-label">Chọn dung lượng</span>
+                        <div class="option-grid">
+                            @foreach (var v in Model.Versions)
+                            {
+                                bool isActive = v.Id == (int)(ViewBag.ActiveVersionId ?? 0);
+                                <div class="option-item @(isActive ? "active" : "")" 
+                                     onclick="goToVersion(@v.Id)" 
+                                     data-version-id="@v.Id">
+                                    <span class="option-name">@v.Name</span>
+                                    <div class="d-flex flex-column align-items-end">
+                                        <span class="option-price">@v.BasePrice.ToString("N0")₫</span>
+                                        @if (v.DiscountPercent > 0)
+                                        {
+                                            <span class="badge bg-danger rounded-pill py-0" style="font-size: 10px;">-@(v.DiscountPercent)%</span>
+                                        }
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                    </div>
+                            }
+                        </div>
+                    }
 
                     <!-- Variants (Colors) -->
                     <span class="selector-label">Chọn màu sắc</span>
@@ -517,7 +520,14 @@
         if (rvName) rvName.innerText = productData.Name;
         
         const rvVer = document.getElementById('reviewProductVersion');
-        if (rvVer) rvVer.innerText = `Phiên bản: ${currentVersion.Name}`;
+        if (rvVer) {
+            if (productData.ProductType === 2) {
+                rvVer.style.display = 'none';
+            } else {
+                rvVer.innerText = `Phiên bản: ${currentVersion.Name}`;
+                rvVer.style.display = 'block';
+            }
+        }
         
         const rvImg = document.getElementById('reviewProductImg');
         if (rvImg) {
@@ -530,7 +540,10 @@
         const vId = currentVersion.Id;
         const reviews = productData.Reviews.filter(r => r.ProductVersionId === vId);
         // Update Title
-        document.getElementById('reviewVersionTitle').innerText = `- Phiên bản ${currentVersion.Name}`;
+        const titleEl = document.getElementById('reviewVersionTitle');
+        if (titleEl) {
+            titleEl.innerText = productData.ProductType === 2 ? "" : `- Phiên bản ${currentVersion.Name}`;
+        }
 
         const total = reviews.length;
         const avg = total > 0 ? reviews.reduce((sum, r) => sum + r.Rating, 0) / total : 0;

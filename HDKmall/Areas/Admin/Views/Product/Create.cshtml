@@ -104,7 +104,7 @@
         </div>
         <div class="card-body p-4">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <input type="radio" class="btn-check" asp-for="ProductType" id="typeVersions" value="1" checked>
                     <label class="btn btn-outline-primary w-100 py-3 rounded-3 text-start" for="typeVersions">
                         <i class="bi bi-phone fs-3 d-block mb-2"></i>
@@ -112,20 +112,12 @@
                         <div class="small text-muted mt-1">VD: iPhone (256GB, 512GB...), Laptop</div>
                     </label>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <input type="radio" class="btn-check" asp-for="ProductType" id="typeColors" value="2">
                     <label class="btn btn-outline-success w-100 py-3 rounded-3 text-start" for="typeColors">
                         <i class="bi bi-palette fs-3 d-block mb-2"></i>
                         <strong>Chỉ có màu sắc</strong>
                         <div class="small text-muted mt-1">VD: Loa Bluetooth, Tai nghe, Đồng hồ</div>
-                    </label>
-                </div>
-                <div class="col-md-4">
-                    <input type="radio" class="btn-check" asp-for="ProductType" id="typeSimple" value="3">
-                    <label class="btn btn-outline-secondary w-100 py-3 rounded-3 text-start" for="typeSimple">
-                        <i class="bi bi-box fs-3 d-block mb-2"></i>
-                        <strong>Sản phẩm đơn giản</strong>
-                        <div class="small text-muted mt-1">VD: Ốp lưng, Cáp sạc, Củ sạc</div>
                     </label>
                 </div>
             </div>
@@ -158,7 +150,7 @@
                     </select>
                 </div>
 
-                <!-- Giá trực tiếp – hiện khi ColorsOnly hoặc Simple -->
+                <!-- Giá trực tiếp – hiện khi ColorsOnly -->
                 <div class="col-md-3" id="directPriceSection" style="display:none;">
                     <label asp-for="Price" class="form-label fw-bold text-muted small">Giá bán (₫) <span class="text-danger">*</span></label>
                     <input asp-for="Price" type="number" class="form-control bg-light border-0" placeholder="VD: 1090000" min="0" />
@@ -168,8 +160,12 @@
                     <input asp-for="OriginalPrice" type="number" class="form-control bg-light border-0" placeholder="VD: 1290000" min="0" />
                 </div>
 
-                <div class="col-md-12">
-                    <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Hình ảnh sản phẩm (Gallery)</label>
+                <div class="col-md-3">
+                    <label asp-for="ImageFile" class="form-label fw-bold text-muted small">Ảnh đại diện (Thumbnail) <span class="text-danger">*</span></label>
+                    <input asp-for="ImageFile" type="file" class="form-control bg-light border-0" accept="image/*" required />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Hình ảnh bổ sung (Gallery)</label>
                     <input asp-for="GalleryFiles" type="file" multiple class="form-control bg-light border-0" accept="image/*" />
                 </div>
                 <div class="col-12">
@@ -260,8 +256,8 @@
 
             sectionVersions.style.display  = (val === '1') ? 'block' : 'none';
             sectionColors.style.display    = (val === '2') ? 'block' : 'none';
-            directPrice.style.display      = (val === '2' || val === '3') ? 'block' : 'none';
-            document.getElementById('directOriginalPriceSection').style.display = (val === '2' || val === '3') ? 'block' : 'none';
+            directPrice.style.display      = (val === '2') ? 'block' : 'none';
+            document.getElementById('directOriginalPriceSection').style.display = (val === '2') ? 'block' : 'none';
 
             // Disable inputs in hidden sections to prevent form submission conflicts
             toggleSectionInputs('sectionVersions', val === '1');
@@ -462,53 +458,46 @@
             const productName = document.querySelector('input[name="Name"]').value || "Tên sản phẩm";
             const description = document.querySelector('textarea[name="Description"]').value || "Mô tả sản phẩm...";
             const productType = document.querySelector('input[name="ProductType"]:checked')?.value;
+            const imageFileInput = document.querySelector('input[name="ImageFile"]');
+            let imageUrl = '';
+            if (imageFileInput && imageFileInput.files && imageFileInput.files[0]) {
+                imageUrl = URL.createObjectURL(imageFileInput.files[0]);
+            }
 
             let html = '';
-
             if (productType === "1") {
                 const versionElements = document.querySelectorAll('.version-card');
-                if (versionElements.length === 0) {
-                    alert('Hãy thêm ít nhất một dung lượng để xem trước!');
-                    return;
-                }
-
-                let tabsHtml = '';
-                let tabContentsHtml = '';
-
+                let tabsHtml = ''; let tabContentsHtml = '';
                 versionElements.forEach((vEl, vIdx) => {
-                    const vName = vEl.querySelector(`input[name="Versions[${vIdx}].Name"]`)?.value || `Dung lượng ${vIdx+1}`;
-                    const vBasePrice = parseFloat(vEl.querySelector(`input[name="Versions[${vIdx}].BasePrice"]`)?.value || '0');
+                    const vName = vEl.querySelector('input[name*=".Name"]')?.value || `Dung lượng ${vIdx+1}`;
+                    const vPrice = parseFloat(vEl.querySelector('input[name*=".BasePrice"]')?.value || '0');
+                    const vImgInput = vEl.querySelector('input[name*=".ImageFile"]');
+                    let vImgUrl = imageUrl;
+                    if (vImgInput && vImgInput.files && vImgInput.files[0]) {
+                        vImgUrl = URL.createObjectURL(vImgInput.files[0]);
+                    }
 
-                    let variantsHtml = '';
-                    const variantRows = [...vEl.querySelectorAll(`[id^="variant_${vIdx}_"]`)];
-                    variantRows.forEach((varRow, varIdx) => {
-                        const color = varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Color"]`)?.value || 'Màu';
-                        const price = parseFloat(varRow.querySelector(`input[name="Versions[${vIdx}].Variants[${varIdx}].Price"]`)?.value || '0');
-                        const displayPrice = price > 0 ? price : vBasePrice;
-                        variantsHtml += `<div class="preview-option-item ${varIdx===0?'active':''}"><span class="preview-option-name">${color}</span><span class="preview-option-price">${displayPrice.toLocaleString('vi-VN')}₫</span></div>`;
+                    let varsHtml = '';
+                    [...vEl.querySelectorAll('[id^="variant_"]')].forEach((vr, i) => {
+                        const color = vr.querySelector('input[name*=".Color"]')?.value || 'Màu';
+                        const price = parseFloat(vr.querySelector('input[name*=".Price"]')?.value || '0');
+                        varsHtml += `<div class="preview-option-item ${i===0?'active':''}"><span class="fw-bold small">${color}</span><small>${(price > 0 ? price : vPrice).toLocaleString('vi-VN')}₫</small></div>`;
                     });
-
                     tabsHtml += `<button type="button" class="btn ${vIdx===0?'btn-danger':'btn-outline-secondary'} btn-sm rounded-pill px-3 me-2 mb-2" onclick="switchPreviewTab(${vIdx}, ${versionElements.length})" id="ptab_${vIdx}">${vName}</button>`;
-                    tabContentsHtml += `<div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">${buildProductInnerHtml(productName, vName, vBasePrice, 0, variantsHtml, description)}</div>`;
+                    tabContentsHtml += `<div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">${buildInnerHtml(productName, vName, vPrice, 0, varsHtml, description, vImgUrl)}</div>`;
                 });
                 html = `<div class="mb-4 d-flex justify-content-center flex-wrap">${tabsHtml}</div>${tabContentsHtml}`;
-
             } else {
-                const price = parseFloat(document.querySelector('input[name="Price"]').value || '0');
-                const originalPrice = parseFloat(document.querySelector('input[name="OriginalPrice"]').value || '0');
-                
-                let variantsHtml = '';
+                const p = parseFloat(document.querySelector('input[name="Price"]').value || '0'), op = parseFloat(document.querySelector('input[name="OriginalPrice"]').value || '0');
+                let varsHtml = '';
                 if (productType === "2") {
-                    const variantRows = [...document.querySelectorAll(`[id^="colorRow_"]`)];
-                    variantRows.forEach((row, idx) => {
-                        const color = row.querySelector(`input[name*=".Color"]`)?.value || 'Màu';
-                        const vPrice = parseFloat(row.querySelector(`input[name*=".Price"]`)?.value || '0');
-                        const displayPrice = vPrice > 0 ? vPrice : price;
-                        variantsHtml += `<div class="preview-option-item ${idx===0?'active':''}"><span class="preview-option-name">${color}</span><span class="preview-option-price">${displayPrice.toLocaleString('vi-VN')}₫</span></div>`;
+                    [...document.querySelectorAll('[id^="colorRow_"]')].forEach((row, i) => {
+                        const color = row.querySelector('input[name*=".Color"]')?.value || 'Màu';
+                        const vp = parseFloat(row.querySelector('input[name*=".Price"]')?.value || '0');
+                        varsHtml += `<div class="preview-option-item ${i===0?'active':''}"><span class="fw-bold small">${color}</span><small>${(vp > 0 ? vp : p).toLocaleString('vi-VN')}₫</small></div>`;
                     });
                 }
-
-                html = buildProductInnerHtml(productName, "", price, originalPrice, variantsHtml, description);
+                html = buildInnerHtml(productName, "", p, op, varsHtml, description, imageUrl);
             }
 
             const previewSection = document.getElementById('livePreviewSection');
@@ -517,27 +506,20 @@
             previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function buildProductInnerHtml(name, subName, price, originalPrice, variantsHtml, desc) {
-            const priceHtml = (originalPrice > 0 && originalPrice > price)
-                ? `<div class="preview-current-price">${price.toLocaleString('vi-VN')}₫</div><div class="text-decoration-line-through text-muted ms-2 small">${originalPrice.toLocaleString('vi-VN')}₫</div>`
-                : `<div class="preview-current-price">${price.toLocaleString('vi-VN')}₫</div>`;
-
-            return `
-            <div class="preview-card-inner bg-white p-4 rounded-4 shadow-sm border">
+        function buildInnerHtml(n, sn, p, op, vh, d, img) {
+            const ph = (op > p) ? `<div class="preview-current-price">${p.toLocaleString('vi-VN')}₫</div><del class="text-muted ms-2 small">${op.toLocaleString('vi-VN')}₫</del>` : `<div class="preview-current-price">${p.toLocaleString('vi-VN')}₫</div>`;
+            const imgHtml = img ? `<img src="${img}" class="img-fluid rounded-4" style="max-height:300px; object-fit:contain;">` : `<i class="bi bi-image fs-1 text-muted"></i>`;
+            return `<div class="preview-card-inner border p-4 bg-white rounded-4 shadow-sm">
                 <div class="row gx-4">
-                    <div class="col-lg-5 mb-4 mb-lg-0">
-                        <div class="preview-img-container rounded-4 bg-light d-flex align-items-center justify-content-center" style="height:300px">
-                            <i class="bi bi-image fs-1 text-muted"></i>
-                        </div>
-                    </div>
-                    <div class="col-lg-7">
-                        <h3 class="fw-bold mb-1 text-dark">${name}</h3>
-                        ${subName ? `<p class="text-muted mb-2">${subName}</p>` : ''}
-                        <div class="d-flex align-items-center mb-4">${priceHtml}</div>
-                        ${variantsHtml ? `<div class="mb-4"><label class="small fw-bold text-muted d-block mb-2">Lựa chọn màu sắc:</label><div class="preview-option-grid d-flex flex-wrap gap-2">${variantsHtml}</div></div>` : ''}
-                        <div class="mt-3 pt-3 border-top">
-                            <label class="small fw-bold text-muted d-block mb-1">Mô tả tóm tắt:</label>
-                            <div class="small text-muted" style="white-space:pre-wrap">${desc || "Chưa có mô tả..."}</div>
+                    <div class="col-lg-5 text-center bg-light rounded-4 py-5 mb-4 mb-lg-0 d-flex align-items-center justify-content-center">${imgHtml}</div>
+                    <div class="col-lg-7 px-lg-5">
+                        <h3 class="fw-bold">${n}</h3>
+                        ${sn?`<p class="text-muted">${sn}</p>`:''}
+                        <div class="d-flex align-items-center mb-4">${ph}</div>
+                        ${vh?`<div class="mb-4"><label class="small fw-bold d-block mb-2">Lựa chọn màu sắc:</label><div class="d-flex flex-wrap gap-2">${vh}</div></div>`:''}
+                        <div class="border-top pt-3">
+                            <label class="small fw-bold d-block mb-1">Mô tả tóm tắt:</label>
+                            <div class="small text-muted" style="white-space:pre-wrap">${d || 'Mô tả sản phẩm...'}</div>
                         </div>
                     </div>
                 </div>

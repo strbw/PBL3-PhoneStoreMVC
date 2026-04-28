@@ -173,7 +173,7 @@ namespace HDKmall.BLL.Services
                     }
                 }
             }
-            // Simple: chỉ Product.Price, không cần Version/Variant
+            // Mặc định: chỉ Product.Price, không cần Version/Variant (ví dụ cho các loại khác nếu có)
 
             if (vm.GalleryFiles != null)
             {

@@ -10,8 +10,7 @@ namespace HDKmall.ViewModels
     public enum ProductType
     {
         HasVersions = 1,   // Điện thoại: có phiên bản dung lượng (256GB, 512GB...)
-        ColorsOnly  = 2,   // Loa, tai nghe: chỉ màu sắc, giá lưu ở Product.Price hoặc Variant.Price
-        Simple      = 3    // Ốp lưng, cáp...: đơn giản, chỉ tên + giá + ảnh
+        ColorsOnly  = 2    // Loa, tai nghe: chỉ màu sắc, giá lưu ở Product.Price hoặc Variant.Price
     }
 
     public class ProductVM

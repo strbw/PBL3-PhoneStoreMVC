@@ -111,6 +111,7 @@ namespace HDKmall.Areas.Admin.Controllers
                 Description = product.Description,
                 CategoryId = product.CategoryId,
                 BrandId = product.BrandId,
+                ProductType = (ProductType)product.ProductType,
                 ImageUrl = product.ImageUrl,
                 ExistingImages = (product.Images ?? new List<ProductImage>())
                     .OrderBy(i => i.DisplayOrder)

@@ -20,7 +20,7 @@ namespace HDKmall.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal? OriginalPrice { get; set; }
 
-        public int ProductType { get; set; } = 1; // 1: HasVersions, 2: ColorsOnly, 3: Simple
+        public int ProductType { get; set; } = 1; // 1: HasVersions, 2: ColorsOnly
 
         public string? Description { get; set; }
 

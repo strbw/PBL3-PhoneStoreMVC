@@ -185,7 +185,6 @@
     }
     .chat-floating-btn:hover { transform: scale(1.12); }
     .chat-floating-btn.admin-btn  { background: #d70018; color: #fff; box-shadow: 0 4px 16px rgba(215,0,24,0.45); }
-    .chat-floating-btn.ai-btn     { background: linear-gradient(135deg,#6c47ff,#3ecfff); color: #fff; box-shadow: 0 4px 16px rgba(108,71,255,0.45); }
 
     /* Button labels */
     .chat-btn-row { display: flex; align-items: center; gap: 10px; flex-direction: row-reverse; }
@@ -210,10 +209,8 @@
         to   { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* Admin panel header */
     #chatPanel .chat-panel-header   { background: linear-gradient(135deg,#d70018,#ff3d3d); }
-    /* AI panel header */
-    #aiChatPanel .chat-panel-header { background: linear-gradient(135deg,#6c47ff,#3ecfff); }
+    #aiChatPanel .chat-panel-header { background: linear-gradient(135deg,#6c47ff,#9d72ff); }
 
     .chat-panel-header {
         color: #fff; padding: 14px 18px;
@@ -244,23 +241,29 @@
     }
     .chat-send-btn:hover { transform: scale(1.1); }
     #chatPanel    .chat-send-btn { background: #d70018; color: #fff; }
-    #aiChatPanel  .chat-send-btn { background: linear-gradient(135deg,#6c47ff,#3ecfff); color: #fff; }
+    #aiChatPanel  .chat-send-btn { background: #6c47ff; color: #fff; }
 
     /* Messages */
     .chat-msg {
         max-width: 82%; padding: 10px 14px; border-radius: 16px;
         font-size: 14px; line-height: 1.5; word-break: break-word;
     }
-    .chat-msg.admin-msg, .chat-msg.ai-msg {
+    .chat-msg.admin-msg {
         align-self: flex-start; background: #fff; border: 1px solid #e8e8e8;
         color: #333; border-bottom-left-radius: 4px;
     }
-    .chat-msg.ai-msg { border-left: 3px solid #6c47ff; }
     .chat-msg.user-msg {
         align-self: flex-end; background: #d70018; color: #fff;
         border-bottom-right-radius: 4px;
     }
-    #aiChatPanel .chat-msg.user-msg { background: linear-gradient(135deg,#6c47ff,#3ecfff); }
+    .chat-msg.ai-msg {
+        align-self: flex-start; background: #f0f0f0; color: #333;
+        border-bottom-left-radius: 4px; border: 1px solid #ddd;
+    }
+    .chat-msg.ai-user-msg {
+        align-self: flex-end; background: #6c47ff; color: #fff;
+        border-bottom-right-radius: 4px;
+    }
 
     .chat-time { font-size: 10px; opacity: 0.55; margin-top: 4px; display: block; }
 
@@ -287,38 +290,7 @@
 
     @if (User.Identity.IsAuthenticated)
     {
-        <!-- === AI Chat Panel === -->
-        <div class="chat-widget-panel" id="aiChatPanel">
-            <div class="chat-panel-header">
-                <div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
-                        <div>
-                            <h6>HDKmall AI Assistant</h6>
-                            <div class="header-sub">✨ Powered by Gemini · Tư vấn 24/7</div>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="btn-close btn-close-white" style="font-size:10px;" onclick="toggleAIPanel()"></button>
-            </div>
-            <div class="chat-panel-body" id="aiChatBody">
-                <div class="chat-msg ai-msg" style="max-width:95%;">
-                    👋 Xin chào! Tôi là trợ lý AI của <strong>HDKmall</strong>.<br><br>
-                    Tôi có thể giúp bạn:<br>
-                    • 📱 Tư vấn điện thoại phù hợp<br>
-                    • ⚖️ So sánh cấu hình các máy<br>
-                    • 🔍 Tra cứu thông tin từ internet<br><br>
-                    Bạn cần hỏi gì?
-                    <span class="chat-time">HDKmall AI</span>
-                </div>
-            </div>
-            <div class="chat-panel-footer">
-                <input type="text" id="aiChatInput" placeholder="Hỏi AI về điện thoại..." onkeypress="handleAIKey(event)" />
-                <button type="button" class="chat-send-btn" onclick="sendAIMessage()">
-                    <i class="bi bi-send-fill"></i>
-                </button>
-            </div>
-        </div>
+
 
         <!-- === Admin Chat Panel === -->
         <div class="chat-widget-panel" id="chatPanel">
@@ -348,6 +320,34 @@
             </div>
         </div>
 
+        <!-- === AI Chat Panel === -->
+        <div class="chat-widget-panel" id="aiChatPanel">
+            <div class="chat-panel-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div>
+                        <h6>AI Tư vấn HDKmall</h6>
+                        <div class="header-sub">Hỗ trợ 24/7 bằng trí tuệ nhân tạo</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" style="font-size:10px;" onclick="toggleAIChatPanel()"></button>
+            </div>
+            <div class="chat-panel-body" id="aiChatBody">
+                <div class="chat-msg ai-msg">
+                    Dạ, em chào Anh/Chị! Em là trợ lý ảo của HDKmall. Em có thể giúp gì cho Anh/Chị về thông tin sản phẩm và khuyến mãi ạ?
+                    <span class="chat-time">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+                </div>
+            </div>
+            <div class="chat-panel-footer">
+                <input type="text" id="aiChatInput" placeholder="Hỏi AI về sản phẩm..." onkeypress="handleAIChatKey(event)" />
+                <button type="button" class="chat-send-btn" onclick="sendAIChatMessage()">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+
         <!-- === Buttons === -->
         <div class="chat-btn-row">
             <button class="chat-floating-btn admin-btn" onclick="toggleChatPanel()" id="chatFloatBtn" title="Chat với Admin">
@@ -355,12 +355,14 @@
             </button>
             <div class="chat-btn-label">Chat Admin</div>
         </div>
-        <div class="chat-btn-row">
-            <button class="chat-floating-btn ai-btn" onclick="toggleAIPanel()" id="aiBotBtn" title="Hỏi AI tư vấn">
-                🤖
+
+        <div class="chat-btn-row" style="margin-top: 10px;">
+            <button class="chat-floating-btn" style="background: #6c47ff; color: #fff; box-shadow: 0 4px 16px rgba(108,71,255,0.45);" onclick="toggleAIChatPanel()" id="aiChatFloatBtn" title="Hỏi AI tư vấn">
+                <i class="bi bi-robot"></i>
             </button>
-            <div class="chat-btn-label" style="background: linear-gradient(135deg,#6c47ff,#3ecfff);">AI Tư vấn</div>
+            <div class="chat-btn-label">AI Tư vấn</div>
         </div>
+
     }
     else
     {
@@ -379,8 +381,6 @@
 
     function toggleChatPanel() {
         const panel = document.getElementById('chatPanel');
-        const aiPanel = document.getElementById('aiChatPanel');
-        if (aiPanel) aiPanel.style.display = 'none'; // close AI if open
         const isVisible = panel.style.display === 'flex';
         panel.style.display = isVisible ? 'none' : 'flex';
         if (!isVisible) { loadChatHistory(); chatInterval = setInterval(loadChatHistory, 5000); }
@@ -427,86 +427,78 @@
     }
 
     // ===== AI CHAT =====
-    let aiTyping = false;
-
-    function toggleAIPanel() {
+    function toggleAIChatPanel() {
         const panel = document.getElementById('aiChatPanel');
-        const adminPanel = document.getElementById('chatPanel');
-        if (adminPanel) adminPanel.style.display = 'none'; // close admin if open
         const isVisible = panel.style.display === 'flex';
         panel.style.display = isVisible ? 'none' : 'flex';
-        if (!isVisible) { document.getElementById('aiChatInput').focus(); }
+        if (!isVisible) {
+            document.getElementById('aiChatInput').focus();
+            document.getElementById('aiChatBody').scrollTop = 99999;
+        }
     }
 
-    function handleAIKey(e) { if (e.key === 'Enter') sendAIMessage(); }
+    function handleAIChatKey(e) { if (e.key === 'Enter') sendAIChatMessage(); }
 
-    async function sendAIMessage() {
-        if (aiTyping) return;
+    async function sendAIChatMessage() {
         const input = document.getElementById('aiChatInput');
         const msg = input.value.trim();
         if (!msg) return;
-        input.value = '';
-        input.disabled = true;
-        aiTyping = true;
 
         const body = document.getElementById('aiChatBody');
+        
+        // Render user message
+        const userHtml = `
+            <div class="chat-msg ai-user-msg">
+                ${msg.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+                <span class="chat-time">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+            </div>
+        `;
+        body.insertAdjacentHTML('beforeend', userHtml);
+        input.value = '';
+        body.scrollTop = 99999;
 
-        // Append user bubble
-        const userBubble = document.createElement('div');
-        userBubble.className = 'chat-msg user-msg';
-        userBubble.innerHTML = msg.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') +
-            `<span class="chat-time">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
-        body.appendChild(userBubble);
-
-        // Typing indicator
-        const typingEl = document.createElement('div');
-        typingEl.className = 'typing-indicator';
-        typingEl.id = 'aiTypingIndicator';
-        typingEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-        body.appendChild(typingEl);
+        // Show typing indicator
+        const typingId = 'typing-' + Date.now();
+        const typingHtml = `
+            <div class="typing-indicator" id="${typingId}">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        `;
+        body.insertAdjacentHTML('beforeend', typingHtml);
         body.scrollTop = 99999;
 
         try {
-            const res = await fetch('/ChatAI/Ask', {
+            const res = await fetch('/Chatbot/Chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: msg })
             });
-            typingEl.remove();
+            
+            // Remove typing indicator
+            document.getElementById(typingId).remove();
 
             if (res.ok) {
                 const data = await res.json();
-                const aiBubble = document.createElement('div');
-                aiBubble.className = 'chat-msg ai-msg';
-                // Convert markdown-like to HTML
-                const formatted = (data.reply || 'Xin lỗi, không có phản hồi.')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/\n/g, '<br>');
-                aiBubble.innerHTML = formatted +
-                    `<span class="chat-time">HDKmall AI · ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>`;
-                body.appendChild(aiBubble);
+                const aiHtml = `
+                    <div class="chat-msg ai-msg">
+                        ${data.response.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+                        <span class="chat-time">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+                    </div>
+                `;
+                body.insertAdjacentHTML('beforeend', aiHtml);
             } else {
-                const errBubble = document.createElement('div');
-                errBubble.className = 'chat-msg ai-msg';
-                errBubble.innerHTML = '⚠️ Có lỗi xảy ra. Vui lòng thử lại.' +
-                    `<span class="chat-time">HDKmall AI</span>`;
-                body.appendChild(errBubble);
+                body.insertAdjacentHTML('beforeend', '<div class="chat-msg ai-msg">Dạ, em gặp chút lỗi kỹ thuật ạ. Anh/Chị thử lại nhé!</div>');
             }
         } catch (e) {
-            typingEl.remove();
-            const errBubble = document.createElement('div');
-            errBubble.className = 'chat-msg ai-msg';
-            errBubble.innerHTML = '⚠️ Lỗi kết nối. Vui lòng thử lại.' +
-                `<span class="chat-time">HDKmall AI</span>`;
-            body.appendChild(errBubble);
+            document.getElementById(typingId).remove();
+            body.insertAdjacentHTML('beforeend', '<div class="chat-msg ai-msg">Dạ, kết nối mạng có vấn đề ạ.</div>');
         }
-
         body.scrollTop = 99999;
-        input.disabled = false;
-        input.focus();
-        aiTyping = false;
     }
+
+
 </script>
 
 <partial name="_NotificationPartial" />

@@ -205,6 +205,7 @@ namespace HDKmall.BLL.Services
                 Name = product.Name,
                 Slug = product.Slug,
                 Description = product.Description,
+                ProductType = product.ProductType,
                 BasePrice = product.Price,
                 ImageUrl = product.ImageUrl,
                 CategoryId = product.CategoryId,

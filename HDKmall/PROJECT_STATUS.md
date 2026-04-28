@@ -1,230 +1,74 @@
-# HDKmall - E-Commerce Platform Project Setup Summary
+# HDKmall - Tình Trạng Dự Án (Cập nhật 2026)
 
-## ✅ Hoàn Thành
+## 🏆 TRẠNG THÁI: HOÀN TẤT 100% & SẴN SÀNG PUBLIC ✅
 
-### 1. Database (My_fear)
-- **Tạo lại hoàn toàn** với seed data đầy đủ
-- **11 Bảng chính:**
-  - Users (11 users: 1 admin + 10 customers)
-  - Roles (Admin, Customer)
-  - Products (50 sản phẩm)
-  - ProductVariants (76 variants với màu sắc, dung lượng, giá khác nhau)
-  - Categories (10 danh mục)
-  - Brands (10 thương hiệu)
-  - ShoppingCarts (Giỏ hàng)
-  - CartItems (Chi tiết giỏ)
-  - Orders (Đơn hàng)
-  - OrderDetails (Chi tiết đơn)
-  - Reviews (Đánh giá)
-  - Banners (5 banners trang chủ)
-  - Coupons (7 mã giảm giá)
-
-### 2. Models (Entities)
-- ✅ Product (Với Brand, Category, Variants, Reviews)
-- ✅ Category
-- ✅ Brand
-- ✅ ProductVariant
-- ✅ User
-- ✅ Order & OrderDetail
-- ✅ Review
-- ✅ ShoppingCart & CartItem
-- ✅ Coupon
-- ✅ Banner
-
-### 3. DAL Layer (Repository Pattern)
-- ✅ **Repositories:** CategoryRepository, BrandRepository, CartRepository, OrderRepository, ReviewRepository, CouponRepository, ProductRepository, UserRepository
-- ✅ **Interfaces:** Tương ứng cho mỗi repository
-
-### 4. BLL Layer (Services)
-- ✅ **Services:** 
-  - CategoryService, BrandService, CartService, OrderService
-  - ReviewService, CouponService, ProductService, AccountService, PhotoService
-  - ProductSearchService (tìm kiếm, lọc, phân trang, sorting)
-- ✅ **Interfaces:** Tương ứng cho mỗi service
-
-### 5. ViewModels
-- ✅ ProductListVM (danh sách sản phẩm)
-- ✅ ProductDetailVM (chi tiết sản phẩm)
-- ✅ ProductVariantVM (biến thể sản phẩm)
-- ✅ ReviewVM (đánh giá)
-- ✅ ProductFilterVM (tìm kiếm & lọc)
-- ✅ PaginationVM (phân trang)
-- ✅ ProductVM, LoginVM, RegisterVM, ErrorViewModel
-
-### 6. Dependency Injection
-- ✅ Tất cả repositories & services đã được register trong Program.cs
-
-## 📋 Cần Hoàn Thiện
-
-### Giai đoạn 2: Danh mục & Sản phẩm (Trang khách hàng)
-
-#### 1. Controllers:
-- [ ] HomeController: 
-  - [ ] Index() - Trang chủ với slider banners, sản phẩm nổi bật, sản phẩm mới
-- [ ] ProductController:
-  - [ ] Index(filter, page) - Danh sách sản phẩm (với filter, sort, phân trang)
-  - [ ] Detail(slug) - Chi tiết sản phẩm + đánh giá
-  - [ ] Search(q) - Tìm kiếm
-  - [ ] GetByCategory(categoryId)
-  - [ ] GetByBrand(brandId)
-
-#### 2. Admin Controllers (Areas/Admin):
-- [ ] ProductController (CRUD sản phẩm + variants)
-- [ ] CategoryController (CRUD danh mục)
-- [ ] BrandController (CRUD thương hiệu)
-
-#### 3. Views (Razor Pages)
-**Khách hàng:**
-- [ ] Home/Index.cshtml (banner slider, featured products, new products)
-- [ ] Product/Index.cshtml (danh sách với filter sidebar)
-- [ ] Product/Detail.cshtml (chi tiết + variants + đánh giá)
-- [ ] Product/Search.cshtml
-
-**Admin:**
-- [ ] Admin/Product/Index.cshtml (CRUD table)
-- [ ] Admin/Product/Create.cshtml
-- [ ] Admin/Product/Edit.cshtml (với variant management)
-- [ ] Admin/Category/Index.cshtml (CRUD table)
-- [ ] Admin/Category/Create.cshtml
-- [ ] Admin/Category/Edit.cshtml
-- [ ] Admin/Brand/Index.cshtml (CRUD table)
-- [ ] Admin/Brand/Create.cshtml
-- [ ] Admin/Brand/Edit.cshtml
-
-#### 4. Shared Views:
-- [ ] _Layout.cshtml (Layout chính - Header, Footer, menu)
-- [ ] Admin/_AdminLayout.cshtml (Layout admin - Sidebar)
-- [ ] Shared/_ProductCard.cshtml (Card sản phẩm)
-- [ ] Shared/_Pagination.cshtml (Phân trang)
-
-### Giai đoạn 3: Giỏ hàng & Đặt hàng
-
-#### Controllers:
-- [ ] CartController:
-  - [ ] Index() - Xem giỏ hàng
-  - [ ] Add(productId, variantId, quantity) - Thêm vào giỏ
-  - [ ] Update(cartItemId, quantity) - Cập nhật số lượng
-  - [ ] Remove(cartItemId) - Xoá sản phẩm
-- [ ] OrderController:
-  - [ ] Checkout() - Trang checkout
-  - [ ] CreateOrder(model) - Tạo đơn hàng
-  - [ ] History() - Lịch sử đơn hàng
-  - [ ] Detail(id) - Chi tiết đơn hàng
-
-#### ViewModels:
-- [ ] CartVM (giỏ hàng)
-- [ ] CheckoutVM (thông tin checkout)
-- [ ] OrderDetailVM (chi tiết đơn hàng)
-
-#### Views:
-- [ ] Cart/Index.cshtml
-- [ ] Order/Checkout.cshtml
-- [ ] Order/Confirmation.cshtml
-- [ ] Order/History.cshtml
-- [ ] Order/Detail.cshtml
-
-### Giai đoạn 4: Thanh toán
-
-#### Controllers:
-- [ ] PaymentController:
-  - [ ] ProcessPayment(orderId, paymentMethod)
-  - [ ] VNPayCallback()
-  - [ ] MoMoCallback()
-
-#### Services:
-- [ ] Tích hợp VNPay
-- [ ] Tích hợp MoMo
-- [ ] COD (Cash on Delivery)
-
-### Giai đoạn 5: Đánh giá sản phẩm
-
-#### Controllers:
-- [ ] ReviewController:
-  - [ ] AddReview(productId, model)
-  - [ ] DeleteReview(id)
-
-#### Views:
-- [ ] Partial review form
-- [ ] Review list component
-
-### Giai đoạn 6: Admin Dashboard
-
-#### Controllers:
-- [ ] DashboardController:
-  - [ ] Index() - Dashboard tổng quan
-  - [ ] Orders() - Quản lý đơn hàng
-  - [ ] Users() - Quản lý người dùng
-  - [ ] Banners() - Quản lý banner
-  - [ ] Coupons() - Quản lý coupon
-
-#### Views:
-- [ ] Dashboard/Index.cshtml (biểu đồ chart.js)
-- [ ] Dashboard/Orders.cshtml
-- [ ] Dashboard/Users.cshtml
-- [ ] Dashboard/Banners.cshtml
-- [ ] Dashboard/Coupons.cshtml
-
-### Giai đoạn 7: Giao diện & UX
-
-#### Static Files:
-- [ ] wwwroot/css/site.css (custom styles)
-- [ ] wwwroot/js/site.js (toast, loading states)
-- [ ] Bootstrap 5 integration
-
-#### Features:
-- [ ] Toast notifications
-- [ ] Loading states
-- [ ] SEO (meta tags, slug URLs)
-- [ ] Responsive design
-
-### Giai đoạn 8: Hoàn thiện & Deploy
-
-#### Features:
-- [ ] Error handling (Custom 404/500 pages)
-- [ ] Logging (ILogger)
-- [ ] Validation (Data Annotations + ModelState)
-- [ ] Authentication/Authorization middleware
-- [ ] Connection string configuration (SQL Server)
-
-## 📁 Cấu trúc Thư mục Hiện Tại
-
-```
-HDKmall/
-├── BLL/
-│   ├── Interfaces/ ✅
-│   └── Services/ ✅
-├── DAL/
-│   ├── Interfaces/ ✅
-│   ├── Repositories/ ✅
-│   └── Migrations/ ✅
-├── Models/ ✅
-├── ViewModels/ ✅
-├── Controllers/ (Cần: Home, Product, Cart, Order, Payment, Review)
-├── Areas/Admin/Controllers/ (Cần: Product, Category, Brand, Dashboard)
-├── Views/ (Cần tất cả)
-├── wwwroot/ (Cần: css, js, images)
-└── Program.cs ✅
-```
-
-## 🔧 Cách Sử Dụng
-
-1. **Khởi động project:**
-   ```bash
-   dotnet run
-   ```
-
-2. **Default Users:**
-   - Admin: admin@hdk.com / admin123
-   - Customers: các user khác được seed vào database
-
-3. **Database Connection:**
-   - Server: .\SQLEXPRESS
-   - Database: My_fear
-
-## 🚀 Tiếp Theo
-
-Hãy bắt đầu với Giai đoạn 2 - tạo controllers và views cho khách hàng (Home, Product listing, Product detail).
-Sau đó mới chuyển sang Admin CRUD và các giai đoạn tiếp theo.
+Dự án đã trải qua tất cả các giai đoạn phát triển cốt lõi và tích hợp thêm các công nghệ tiên tiến nhất hiện nay (AI, Thanh toán trực tuyến).
 
 ---
-**Trạng thái:** Database + BLL + DAL hoàn tất ✅ | Cần Controllers & Views ⏳
+
+## ✅ CÁC GIAI ĐOẠN ĐÃ HOÀN THÀNH
+
+### 1. Nền tảng & Bảo mật (Authentication & Security)
+- ✅ Đăng ký, Đăng nhập, Đăng xuất qua Cookie Authentication.
+- ✅ Phân quyền Customer/Admin chặt chẽ.
+- ✅ Quản lý hồ sơ, địa chỉ giao hàng và đổi mật khẩu.
+- ✅ **Bảo mật GitHub:** Đã cấu hình `.gitignore` và `appsettings.Example.json` để bảo vệ API Keys.
+
+### 2. Danh mục & Sản phẩm (Catalog & Products)
+- ✅ Trang chủ với Slider Banner và sản phẩm nổi bật/mới.
+- ✅ Danh sách sản phẩm với bộ lọc Brand/Category/Giá và phân trang.
+- ✅ Chi tiết sản phẩm với hệ thống Version/Variant cực kỳ chi tiết.
+- ✅ Tìm kiếm sản phẩm thông minh (Search Bar).
+- ✅ CRUD Admin cho Sản phẩm, Thương hiệu, Danh mục.
+
+### 3. Giỏ hàng & Đặt hàng (Cart & Order)
+- ✅ Giỏ hàng lưu trữ trong Database (Shopping Carts).
+- ✅ Áp dụng mã giảm giá (Coupons) linh hoạt.
+- ✅ Quy trình Checkout chuyên nghiệp, chọn địa chỉ và phương thức thanh toán.
+- ✅ Quản lý lịch sử và chi tiết đơn hàng cho khách hàng.
+
+### 4. Thanh toán (Payment Integration)
+- ✅ Tích hợp cổng thanh toán **VNPay**.
+- ✅ Tích hợp cổng thanh toán **MoMo**.
+- ✅ Hỗ trợ thanh toán khi nhận hàng (COD).
+- ✅ Hệ thống Callback xử lý trạng thái đơn hàng tự động.
+
+### 5. Đánh giá & Phản hồi (Reviews)
+- ✅ Khách hàng mua hàng mới được để lại đánh giá (1-5 sao).
+- ✅ Hiển thị đánh giá real-time trên trang chi tiết sản phẩm.
+- ✅ Admin quản lý và kiểm duyệt đánh giá.
+
+### 6. Quản trị Dashboard (Admin Management)
+- ✅ Dashboard tổng quan với biểu đồ doanh thu và thống kê đơn hàng.
+- ✅ Quản lý đơn hàng (Cập nhật trạng thái: Chờ xử lý -> Đã giao).
+- ✅ Quản lý Banner quảng cáo và Mã giảm giá.
+
+### 7. AI Chatbot Tư vấn (Tính năng đặc biệt 🌟)
+- ✅ **Trợ lý ảo AI:** Tích hợp Google Gemini 1.5 Flash AI.
+- ✅ **Hỗ trợ 24/7:** Tư vấn sản phẩm, so sánh cấu hình kỹ thuật.
+- ✅ **Nhận diện chính sách:** Tự động trả lời về Bảo hành, Đổi trả dựa trên dữ liệu cửa hàng.
+- ✅ **Giao diện hiện đại:** Hiệu ứng "AI is typing..." mượt mà, UX cao cấp.
+
+---
+
+## 🛠 CÔNG NGHỆ SỬ DỤNG
+- **Framework:** ASP.NET Core 9.0 MVC.
+- **ORM:** Entity Framework Core (Repository Pattern).
+- **Database:** SQL Server.
+- **AI:** Google Gemini API (v1beta/v1).
+- **UI/UX:** Bootstrap 5, jQuery, Toastr, SweetAlert2.
+- **Media:** Cloudinary API.
+
+---
+
+## 📁 CẤU TRÚC THƯ MỤC CHUẨN (HDKmall)
+- `BLL/`: Chứa các Business Services (ChatService, OrderService, AIChatService...). ✅
+- `DAL/`: Chứa Repositories và Migrations. ✅
+- `Controllers/`: Điều hướng và xử lý logic các trang. ✅
+- `Models/`: Các thực thể Database và ApplicationDbContext. ✅
+- `ViewModels/`: Các đối tượng truyền nhận dữ liệu giữa View và Controller. ✅
+- `Views/`: Giao diện Razor Pages hoàn chỉnh. ✅
+- `wwwroot/`: Tài nguyên tĩnh (CSS, JS, Images, StorePolicy.txt). ✅
+
+---
+**Trạng thái cuối cùng:** Đã kiểm tra (Test) toàn bộ luồng mua hàng và tư vấn AI -> **PASSED** ✅

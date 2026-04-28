@@ -13,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 
 // Session support
 builder.Services.AddSession(options =>
@@ -64,8 +65,9 @@ builder.Services.AddScoped<IBannerService, BannerService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IAIChatService, AIChatService>();
 builder.Services.AddMemoryCache();
-builder.Services.AddHttpClient<IGeminiChatService, GeminiChatService>();
+
 
 
 var app = builder.Build();
@@ -93,6 +95,24 @@ using (var scope = app.Services.CreateScope())
                 BEGIN
                     ALTER TABLE [dbo].[Products] ADD [ProductType] int NOT NULL DEFAULT 1;
                 END");
+
+            // Xóa dữ liệu liên quan đến ProductType = 3 (Simple) theo yêu cầu người dùng
+            context.Database.ExecuteSqlRaw(@"
+                -- Xóa Specifications
+                DELETE FROM ProductSpecifications WHERE ProductVersionId IN (
+                    SELECT Id FROM ProductVersions WHERE ProductId IN (SELECT Id FROM Products WHERE ProductType = 3)
+                );
+                -- Xóa Variants
+                DELETE FROM ProductVariants WHERE ProductVersionId IN (
+                    SELECT Id FROM ProductVersions WHERE ProductId IN (SELECT Id FROM Products WHERE ProductType = 3)
+                );
+                -- Xóa Versions
+                DELETE FROM ProductVersions WHERE ProductId IN (SELECT Id FROM Products WHERE ProductType = 3);
+                -- Xóa Images
+                DELETE FROM ProductImages WHERE ProductId IN (SELECT Id FROM Products WHERE ProductType = 3);
+                -- Xóa Products
+                DELETE FROM Products WHERE ProductType = 3;
+            ");
     }
     catch { /* Bỏ qua nếu có lỗi hoặc đã tồn tại */ }
 }

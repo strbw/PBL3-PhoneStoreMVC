@@ -38,25 +38,18 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <input type="radio" class="btn-check" asp-for="ProductType" id="typeVersions" value="1">
                             <label class="btn btn-outline-primary w-100 py-3 rounded-3 text-start" for="typeVersions">
                                 <strong>Dung lượng</strong>
                                 <div class="small mt-1">iPhone, Laptop...</div>
                             </label>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <input type="radio" class="btn-check" asp-for="ProductType" id="typeColors" value="2">
                             <label class="btn btn-outline-success w-100 py-3 rounded-3 text-start" for="typeColors">
                                 <strong>Chỉ màu sắc</strong>
                                 <div class="small mt-1">Loa, Tai nghe...</div>
-                            </label>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="radio" class="btn-check" asp-for="ProductType" id="typeSimple" value="3">
-                            <label class="btn btn-outline-secondary w-100 py-3 rounded-3 text-start" for="typeSimple">
-                                <strong>Đơn giản</strong>
-                                <div class="small mt-1">Ốp lưng, Cáp...</div>
                             </label>
                         </div>
                     </div>
@@ -94,7 +87,19 @@
                             <input asp-for="OriginalPrice" class="form-control bg-light border-0" type="number" />
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <label asp-for="ImageFile" class="form-label fw-bold text-muted small">Ảnh đại diện mới</label>
+                            <input asp-for="ImageFile" type="file" class="form-control bg-light border-0" accept="image/*" />
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.ImageUrl" style="width: 100px; height: 100px; object-fit: cover;" class="rounded border" />
+                                    <input type="hidden" asp-for="ImageUrl" />
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-md-3">
                             <label asp-for="GalleryFiles" class="form-label fw-bold text-muted small">Ảnh Gallery mới</label>
                             <input asp-for="GalleryFiles" type="file" multiple class="form-control bg-light border-0" accept="image/*" />
                         </div>
@@ -288,8 +293,8 @@
 
             sectionVersions.style.display = (val === '1') ? 'block' : 'none';
             sectionColors.style.display   = (val === '2') ? 'block' : 'none';
-            directPrice.style.display     = (val === '2' || val === '3') ? 'block' : 'none';
-            directOrig.style.display      = (val === '2' || val === '3') ? 'block' : 'none';
+            directPrice.style.display     = (val === '2') ? 'block' : 'none';
+            directOrig.style.display      = (val === '2') ? 'block' : 'none';
 
             // Disable inputs in hidden sections to prevent form submission conflicts
             toggleSectionInputs('sectionVersions', val === '1');
@@ -369,14 +374,25 @@
             const productName = document.querySelector('input[name="Name"]').value || "Tên sản phẩm";
             const description = document.querySelector('textarea[name="Description"]').value || "Mô tả sản phẩm...";
             const productType = document.querySelector('input[name="ProductType"]:checked')?.value;
-            let html = '';
+            
+            const imageFileInput = document.querySelector('input[name="ImageFile"]');
+            const existingImageUrl = document.querySelector('input[name="ImageUrl"]')?.value;
+            let imageUrl = existingImageUrl || '';
+            if (imageFileInput && imageFileInput.files && imageFileInput.files[0]) {
+                imageUrl = URL.createObjectURL(imageFileInput.files[0]);
+            }
 
+            let html = '';
             if (productType === "1") {
                 const versionElements = document.querySelectorAll('.version-card');
                 let tabsHtml = ''; let tabContentsHtml = '';
                 versionElements.forEach((vEl, vIdx) => {
                     const vName = vEl.querySelector('input[name*=".Name"]')?.value || `Dung lượng ${vIdx+1}`;
                     const vPrice = parseFloat(vEl.querySelector('input[name*=".BasePrice"]')?.value || '0');
+                    const vImgInput = vEl.querySelector('input[name*=".ImageFile"]');
+                    const vExistingImg = vEl.querySelector('input[name*=".ImageUrl"]')?.value;
+                    let vImgUrl = vImgInput && vImgInput.files && vImgInput.files[0] ? URL.createObjectURL(vImgInput.files[0]) : (vExistingImg || imageUrl);
+
                     let varsHtml = '';
                     [...vEl.querySelectorAll('[id^="variant_"]')].forEach((vr, i) => {
                         const color = vr.querySelector('input[name*=".Color"]')?.value || 'Màu';
@@ -384,7 +400,7 @@
                         varsHtml += `<div class="preview-option-item ${i===0?'active':''}"><span class="fw-bold small">${color}</span><small>${(price > 0 ? price : vPrice).toLocaleString('vi-VN')}₫</small></div>`;
                     });
                     tabsHtml += `<button type="button" class="btn ${vIdx===0?'btn-danger':'btn-outline-secondary'} btn-sm rounded-pill px-3 me-2 mb-2" onclick="switchPreviewTab(${vIdx}, ${versionElements.length})" id="ptab_${vIdx}">${vName}</button>`;
-                    tabContentsHtml += `<div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">${buildInnerHtml(productName, vName, vPrice, 0, varsHtml, description)}</div>`;
+                    tabContentsHtml += `<div id="ptabContent_${vIdx}" style="display:${vIdx===0?'block':'none'}">${buildInnerHtml(productName, vName, vPrice, 0, varsHtml, description, vImgUrl)}</div>`;
                 });
                 html = `<div class="mb-4 d-flex justify-content-center flex-wrap">${tabsHtml}</div>${tabContentsHtml}`;
             } else {
@@ -397,14 +413,29 @@
                         varsHtml += `<div class="preview-option-item ${i===0?'active':''}"><span class="fw-bold small">${color}</span><small>${(vp > 0 ? vp : p).toLocaleString('vi-VN')}₫</small></div>`;
                     });
                 }
-                html = buildInnerHtml(productName, "", p, op, varsHtml, description);
+                html = buildInnerHtml(productName, "", p, op, varsHtml, description, imageUrl);
             }
             document.getElementById('previewContent').innerHTML = html; document.getElementById('livePreviewSection').style.display = 'block'; document.getElementById('livePreviewSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function buildInnerHtml(n, sn, p, op, vh, d) {
+        function buildInnerHtml(n, sn, p, op, vh, d, img) {
             const ph = (op > p) ? `<div class="preview-current-price">${p.toLocaleString('vi-VN')}₫</div><del class="text-muted ms-2 small">${op.toLocaleString('vi-VN')}₫</del>` : `<div class="preview-current-price">${p.toLocaleString('vi-VN')}₫</div>`;
-            return `<div class="preview-card-inner border"><div class="row"><div class="col-lg-5 text-center bg-light rounded-4 py-5 mb-4 mb-lg-0"><i class="bi bi-image fs-1 text-muted"></i></div><div class="col-lg-7 px-lg-5"><h3 class="fw-bold">${n}</h3>${sn?`<p class="text-muted">${sn}</p>`:''}<div class="d-flex align-items-center mb-4">${ph}</div>${vh?`<div class="mb-4"><label class="small fw-bold d-block mb-2">Màu sắc:</label><div class="d-flex flex-wrap gap-2">${vh}</div></div>`:''}<div class="border-top pt-3"><label class="small fw-bold d-block mb-1">Mô tả:</label><div class="small text-muted" style="white-space:pre-wrap">${d}</div></div></div></div></div>`;
+            const imgHtml = img ? `<img src="${img}" class="img-fluid rounded-4" style="max-height:300px; object-fit:contain;">` : `<i class="bi bi-image fs-1 text-muted"></i>`;
+            return `<div class="preview-card-inner border p-4 bg-white rounded-4 shadow-sm">
+                <div class="row gx-4">
+                    <div class="col-lg-5 text-center bg-light rounded-4 py-5 mb-4 mb-lg-0 d-flex align-items-center justify-content-center">${imgHtml}</div>
+                    <div class="col-lg-7 px-lg-5">
+                        <h3 class="fw-bold">${n}</h3>
+                        ${sn?`<p class="text-muted">${sn}</p>`:''}
+                        <div class="d-flex align-items-center mb-4">${ph}</div>
+                        ${vh?`<div class="mb-4"><label class="small fw-bold d-block mb-2">Lựa chọn màu sắc:</label><div class="d-flex flex-wrap gap-2">${vh}</div></div>`:''}
+                        <div class="border-top pt-3">
+                            <label class="small fw-bold d-block mb-1">Mô tả tóm tắt:</label>
+                            <div class="small text-muted" style="white-space:pre-wrap">${d || 'Mô tả sản phẩm...'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
         }
 
         function switchPreviewTab(idx, total) {

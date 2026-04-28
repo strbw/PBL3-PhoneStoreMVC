@@ -17,3 +17,16 @@ packages/
 ## OS files
 .DS_Store
 Thumbs.db
+
+## Security & Secrets (BẮT BUỘC CHẶN ĐỂ BẢO MẬT)
+# Chặn file cấu hình chứa Key thật
+HDKmall/appsettings.json
+HDKmall/appsettings.Development.json
+
+# Chặn thư mục chứa User Secrets của .NET
+secrets.json
+.microsoft/usersecrets/
+
+# Chặn các file môi trường
+.env
+*.env.local
